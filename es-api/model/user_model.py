@@ -5,20 +5,21 @@ from sqlalchemy.orm import backref
 
 class UserModel(db.Model):
     __tablename__ = "users"
+    __table_args__ = ({"schema": "ES"})
     id = db.Column(Integer, primary_key=True)
     username = db.Column('username', String(50), nullable=False, unique=True)
     password = db.Column('password', String(100), nullable=False)
-    type_id = db.Column('type_id', Integer, ForeignKey('user_type.id'))
+    type_id = db.Column('type_id', Integer, ForeignKey('ES.user_type.id'))
     user_type = db.relationship(
         "UserType", backref=backref("user_type")
     )
-    status_id = db.Column('status_id', Integer, ForeignKey('status.id'))
+    status_id = db.Column('status_id', Integer, ForeignKey('ES.status.id'))
     user_status = db.relationship(
-        "UserStatus", backref=backref("status")
+        "UserStatus", backref=backref("user_status")
     )
-    scope_id = db.Column('scope_id', Integer, ForeignKey('scope.id'))
+    scope_id = db.Column('scope_id', Integer, ForeignKey('ES.scope.id'))
     user_scope = db.relationship(
-        "UserScope", backref=backref("scope_id")
+        "UserScope", backref=backref("user_scope")
     )
 
     def __init__(self, username, password, user_type, user_status, user_scope):

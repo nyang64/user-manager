@@ -11,11 +11,14 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["PROPAGATE_EXCEPTIONS"] = True
 main_bp = Blueprint('api', __name__)
 api = Api(main_bp)
+app.register_blueprint(main_bp)
 
 
+''' 
 @app.before_first_request
 def create_tables():
-    db.create_all()
+    db.create_all() 
+'''
 
 
 api.add_resource(UserRegister, "/register")
@@ -23,4 +26,5 @@ api.add_resource(UserRegister, "/register")
 if __name__ == "__main__":
     db.init_app(app)
     ma.init_app(app)
+
     app.run(port=5000, debug=True)

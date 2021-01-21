@@ -37,7 +37,7 @@ class UserLogin(Resource):
             encoded_jwt = jwt.encode({"username": user_json["username"],"exp":(tokenTime()), }, "TestSecret")
             # print("tkn", jwt.decode(encoded_jwt, "TestSecret", algorithms=["HS256"]))
             return {"message" : "Successfully Login","id_token" : encoded_jwt },200
-        return {"message": "Invalid Credentials"},200
+        return {"message": "Invalid Credentials"},401
 
 class UserResetPassword(Resource):
     @classmethod
@@ -48,11 +48,11 @@ class UserResetPassword(Resource):
             return {"message": "Invalid Request Parameters"},200
         dt = UserModel.find_by_username(username=user_json["username"])
         if dt == None:
-            return {"message": "No Such User Exist"}
+            return {"message": "No Such User Exist"},200
         if dt.password != user_json["oldpassword"]:
-            return {"message": "Incorrect Password"}
+            return {"message": "Incorrect Password"},200
         if user_json["newpassword"] == None or user_json["newpassword"] == "":
-            return {"message": "New password does not meet minimum criteria"}
+            return {"message": "New password does not meet minimum criteria"},200
         dt.password=user_json["newpassword"]
         dt.update_db()
-        return {"message":"Password Updated"}
+        return {"message":"Password Updated"},200

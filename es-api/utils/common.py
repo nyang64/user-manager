@@ -22,6 +22,7 @@ def have_keys(myjson,*args):
 
 def tokenTime():
     hours = 2
-    hours_added = datetime.timedelta(hours = hours)
-    future_date_and_time = datetime.datetime.now() + hours_added
-    return future_date_and_time
+    now = datetime.datetime.now()
+    hours_added = datetime.datetime(now.year,now.month,now.day, now.hour+hours,now.minute).timestamp()
+    # print('datedelta',str(hours_added))
+    return hours_added

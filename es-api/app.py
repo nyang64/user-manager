@@ -3,7 +3,7 @@ from flask_restful import Api
 from db import db
 from ma import ma
 from database.dbconnection import getConString
-from resources.user.user import UserRegister
+from resources.user.user import UserRegister,UserLogin
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = getConString()
@@ -22,6 +22,7 @@ def create_tables():
 
 
 api.add_resource(UserRegister, "/register")
+api.add_resource(UserLogin, "/login")
 
 if __name__ == "__main__":
     db.init_app(app)

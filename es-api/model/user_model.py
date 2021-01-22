@@ -36,3 +36,6 @@ class UserModel(db.Model):
     def save_to_db(self) -> None:
         db.session.add(self)
         db.session.commit()
+
+    def update_db(self) -> None:
+        db.session.commit()

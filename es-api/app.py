@@ -4,7 +4,7 @@ from db import db
 from ma import ma
 from flask_migrate import Migrate
 from database.dbconnection import getConString
-from resources.user.user import UserRegister,UserLogin
+from resources.user.user import *
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = getConString()
@@ -21,6 +21,7 @@ migrate.init_app(app, db)
 
 api.add_resource(UserRegister, "/register")
 api.add_resource(UserLogin, "/login")
+api.add_resource(UserResetPassword, "/resetpassword")
 
 if __name__ == "__main__":
     app.run(port=5000, debug=True)

@@ -25,9 +25,12 @@ class UserModel(db.Model):
     def __init__(self, username, password, user_type, user_status, user_scope):
         self.username = username
         self.password = password
-        self.user_type = user_type
-        self.user_status = user_status
-        self.user_scope = user_scope
+        self.type_id = user_type
+        self.status_id = user_status
+        self.scope_id = user_scope
+        # self.user_type = user_type
+        # self.user_status = user_status
+        # self.user_scope = user_scope
 
     @classmethod
     def find_by_username(cls, username: str) -> "UserModel":

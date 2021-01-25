@@ -1,14 +1,13 @@
 # database connection
+import os
 
 def getConString():
-    host = "es2db.caneampnjecs.us-west-1.rds.amazonaws.com"
-    port = "5432"
-    database = "escpdb"
-    user = "dbadmin"
-    password = "!Test12345"
-    # host = "ziggy.db.elephantsql.com"
-    # port = "5432"
-    # database = "ghyvyxgx"
-    # user = "ghyvyxgx"
-    # password = "HDeVUah-zVES6mDqWPJCCuOTVUUNrEq_"
-    return "postgresql://"+user+":"+password+"@"+host+":"+port+"/"+database
+    host = os.environ.get('POSTGRES_DB_HOST')
+    port = os.environ.get('POSTGRES_DB_PORT')
+    database_name = os.environ.get('POSTGRES_DB_NAME')
+    user = os.environ.get('POSTGRES_DB_USER_KEY')
+    password = os.environ.get('POSTGRES_DB_PASSWORD_KEY')
+    print(host, port, password, database_name, user, password)
+    if host is None or port is None or database_name is None or user is None or password is None:
+        raise Exception('Database connection error')
+    return "postgresql://"+user+":"+password+"@"+host+":"+port+"/"+database_name

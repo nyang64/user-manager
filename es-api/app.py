@@ -22,14 +22,13 @@ app.register_blueprint(main_bp)
 def create_tables():
     db.create_all()
 '''
-=======
 migrate = Migrate()
 db.init_app(app)
 ma.init_app(app)
 migrate.init_app(app, db)
 
 
-api.add_resource(UserRegister, "/register")
+# api.add_resource(UserRegister, "/register")
 api.add_resource(UserLogin, "/login")
 api.add_resource(UpdateUserPassword, "/updatepassword")
 api.add_resource(refreshAccessToken, "/refresh")

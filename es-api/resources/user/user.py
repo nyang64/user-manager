@@ -92,7 +92,7 @@ class ResetUserPassword(Resource):
             return {"message": "Invalid Request Parameters"}, 200
         dt = UserModel.find_by_username(username=user_json["username"])
         if dt is None:
-            return {"message": "No Such User Exist"}, 200
+            return {"message": "No Such User Exist"}, 404
         return {"message": "OTP Sent to Email"}, 200
 
 

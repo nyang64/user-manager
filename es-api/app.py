@@ -29,7 +29,7 @@ migrate.init_app(app, db)
 
 
 # api.add_resource(UserRegister, "/register")
-api.add_resource(UserLogin, "/login")
+api.add_resource(UserLogin, "/auth/token")
 api.add_resource(UpdateUserPassword, "/updatepassword")
 api.add_resource(refreshAccessToken, "/refresh")
 api.add_resource(ResetUserPassword, "/resetpassword")

@@ -10,4 +10,4 @@ def getConString():
     print(host, port, password, database_name, user, password)
     if host is None or port is None or database_name is None or user is None or password is None:
         raise Exception('Database connection error')
-    return "postgresql://"+user+":"+password+"@"+host+":"+port+"/"+database_name
+    return "postgresql://"+user+":"+password+"@"+host+":"+str(port)+"/"+database_name

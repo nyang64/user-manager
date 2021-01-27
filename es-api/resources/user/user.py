@@ -1,6 +1,11 @@
 from flask_restful import Resource
-from flask import request
+from flask import request, jsonify
 from model.user_model import UserModel
+from model.es_users import ES_Users
+from model.address import Address
+from model.device import Device
+from model.patient import Patient
+from model.user import User
 from database.user import UserSchema
 from utils.common import have_keys, tokenTime
 from utils.jwt import require_user_token, require_refresh_token

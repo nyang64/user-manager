@@ -8,6 +8,7 @@ from resources.user.user import (
     UserLogin, UserRegister, UpdateUserPassword, refreshAccessToken,
     ResetUserPassword
 )
+from user.blueprint import UserBluePrint
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = getConString()
@@ -33,5 +34,9 @@ api.add_resource(UserLogin, "/auth/token")
 api.add_resource(UpdateUserPassword, "/updatepassword")
 api.add_resource(refreshAccessToken, "/refresh")
 api.add_resource(ResetUserPassword, "/resetpassword")
+
+user_blueprint = UserBluePrint()
+app.register_blueprint(user_blueprint)
+
 if __name__ == "__main__":
     app.run(port=5000, debug=True)

@@ -3,6 +3,6 @@ flask_restful==0.3.8
 flask_sqlalchemy==2.4.4
 flask_marshmallow==0.14.0
 marshmallow_sqlalchemy==0.24.1
-psycopg2-binary
+psycopg2-binary==2.8.6
 flask_migrate==2.5.3
 pyjwt==2.0.1

@@ -9,8 +9,10 @@ from resources.user.user import (
     ResetUserPassword
 )
 from user.blueprint import UserBluePrint
+from patient.blueprint import PatientBluePrint
+from application import Appplication
 
-app = Flask(__name__)
+app = Appplication(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = getConString()
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 app.config["PROPAGATE_EXCEPTIONS"] = True
@@ -37,6 +39,9 @@ api.add_resource(ResetUserPassword, "/resetpassword")
 
 user_blueprint = UserBluePrint()
 app.register_blueprint(user_blueprint)
+
+patient_blueprint = PatientBluePrint()
+app.register_blueprint(patient_blueprint)
 
 if __name__ == "__main__":
     app.run(port=5000, debug=True)

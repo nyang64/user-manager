@@ -159,6 +159,11 @@ class refreshAccessToken(Resource):
                 }, 200
 
 
+class healthCheck(Resource):
+    @classmethod
+    def get(cls):
+        return {"message": "Sucess"}, 200
+
 # 200 -> Successful
 # 404 -> User doesn't exist
 # 401 -> Unauthorized

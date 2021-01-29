@@ -6,7 +6,7 @@ from flask_migrate import Migrate
 from database.dbconnection import getConString
 from resources.authentication.authentication import (
     UserLogin, UserRegister, UpdateUserPassword,
-    refreshAccessToken, ResetUserPassword
+    refreshAccessToken, ResetUserPassword, healthCheck
 )
 from user.blueprint import UserBluePrint
 from patient.blueprint import PatientBluePrint
@@ -36,6 +36,7 @@ api.add_resource(UserLogin, "/auth/token")
 api.add_resource(UpdateUserPassword, "/updatepassword")
 api.add_resource(refreshAccessToken, "/refresh")
 api.add_resource(ResetUserPassword, "/resetpassword")
+api.add_resource(healthCheck, "/health-checkup")
 
 user_blueprint = UserBluePrint()
 app.register_blueprint(user_blueprint)

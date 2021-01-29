@@ -49,6 +49,18 @@ class PatientManager():
              } for d in devices] '''
         resp = {'devices': device_list}
         return jsonify(resp), http.client.OK
+    
+    def mock_patient_device_list(self):
+        devices = [['1212', '12EE', True],
+                   ['1213', '13EE', True],
+                   ['1512', '12TE', False]]
+        device_list = [
+            {'serial_number': d[0],
+             'key': d[1],
+             'status': d[2]
+             } for d in devices]
+        resp = {'devices': device_list}
+        return jsonify(resp), http.client.OK
 
     def __read_device_input(self, request_data):
         device_id = int(get_param('device_id', request_data))

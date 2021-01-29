@@ -27,7 +27,11 @@ class PatientBluePrint(Blueprint):
                           'assign device to patient',
                           self.patientObj.assign_device,
                           methods=['POST'])
-        self.add_url_rule('/patient/device/get',
+        self.add_url_rule('/patient/device/getlist',
                           'patient device list',
                           self.patientObj.patient_device_list,
+                          methods=['GET'])
+        self.add_url_rule('/patient/device/get',
+                          'mock patient device list',
+                          self.patientObj.mock_patient_device_list,
                           methods=['GET'])

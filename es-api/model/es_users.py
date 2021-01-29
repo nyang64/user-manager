@@ -13,9 +13,9 @@ class ES_Users(db.Model):
     email = db.Column(String(50))
     address = db.Column(Integer)
     scope = db.Column(Integer)
-    user_id = db.Column(Integer, ForeignKey('ES.users.id'))
+    user_id = db.Column(Integer, ForeignKey('ES.user_registration.id'))
     UserID = db.relationship(
-        "UserModel", backref=backref("users", uselist=False)
+        "UserRegister", backref=backref("user_es", uselist=False)
     )
 
     def save_to_db(self) -> None:

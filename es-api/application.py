@@ -3,10 +3,19 @@ from flask import Flask, jsonify, Response
 from werkzeug.exceptions import BadRequest, HTTPException, Unauthorized, NotFound, Conflict, InternalServerError, MethodNotAllowed
 
 class Appplication(Flask):
-    def __init__(self, _name):
-        super().__init__(_name)
+    def __init__(self, import_name, url_prefix):
+        super().__init__(import_name)
+        self.__add_routes()
         self.__allow_cors()
         self.__handle_errors()
+        self._url_prefix = url_prefix
+        
+    def __add_routes(self):
+        self.add_url_rule("/", 'index', self.__index, ['GET'])
+        self.add_url_rule("/health-checkup", 'index', self.__index, ['GET'])
+
+    def __index(self):
+        return jsonify({"message":"ES API"})
         
     def __allow_cors(self):
         self.after_request(self.__add_cors_request)
@@ -43,11 +52,15 @@ class Appplication(Flask):
                 'title': error.name,
                 'detail': detail
             }]
-        }
-        
+        }       
         
     def __add_cors_request(self, response: Response)-> Response:
         response.headers.add('Access-Control-Allow-Origin', "*")
         response.headers.add("Access-Control-Allow-Headers", "Content-Type, Authorization")
         response.headers.add("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
         return response
+    
+    def register_blueprint(self, blueprint, **options):
+        url_prefix = options.get('url_prefix', '')
+        options['url_prefix'] = self._url_prefix + url_prefix
+        super().register_blueprint(blueprint, **options)

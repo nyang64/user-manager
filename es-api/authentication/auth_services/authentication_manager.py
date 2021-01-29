@@ -1,45 +1,50 @@
 from flask_restful import Resource
 from flask import request
-from model.user_registration import UserModel
+from model.user_registration import UserRegister
+from model.user import User
 from model.user_otp import UserOTPModel
+from model.es_users import ES_Users
+from model.address import Address
+from model.devices import Devices
+from model.patient import Patient
+from model.providers import Providers
 from database.user import UserSchema
 from utils.common import have_keys, tokenTime, generateOTP
 from utils.jwt import require_user_token, require_refresh_token
 import datetime
 import jwt
 import bcrypt
+
 user_schema = UserSchema()
 
 
-class UserRegister(Resource):
-    @classmethod
-    def post(cls):
+class AuthenticationManager():
+    def __init__(self):
+        pass
+    
+    def register_user(self):
         user_json = request.get_json()
         if have_keys(user_json, 'username', 'password') is False:
             return {"message": "Invalid Request Parameters"}, 200
-        if UserModel.find_by_username(user_json["username"]):
+        if UserRegister.find_by_username(user_json["username"]):
             return {"message": "User Already Exist"}, 400
         password = bytes(user_json["password"], 'utf-8')
         salt = bcrypt.gensalt()
-        # print('Salt-> ', salt)
+        print('Salt-> ', salt)
         hashed = bcrypt.hashpw(password, salt)
-        user = UserModel(
+        user = UserRegister(
             user_json["username"],
             hashed.decode('utf-8'),
             datetime.datetime.now()
             )
         user.save_to_db()
-
         return {"message": "User Created"}, 201
-
-
-class UserLogin(Resource):
-    @classmethod
-    def post(cls):
+    
+    def login_user(self):
         user_json = request.get_json()
         if have_keys(user_json, 'username', 'password') is False:
             return {"message": "Invalid Request Parameters"}, 200
-        udt = UserModel.find_by_username(user_json["username"])
+        udt = UserRegister.find_by_username(user_json["username"])
         if udt is None:
             return {"message": "No Such User Exist"}, 404
         db_pass = bytes(udt.password, 'utf-8')
@@ -63,12 +68,9 @@ class UserLogin(Resource):
                 "refresh_token": encoded_refreshToken
                 }, 200
         return {"message": "Invalid Credentials"}, 401
-
-
-class UpdateUserPassword(Resource):
-    @classmethod
+    
     @require_user_token
-    def put(cls):
+    def update_user_password(self):
         user_json = request.get_json()
         have_key = have_keys(
             user_json, 'username',
@@ -76,7 +78,7 @@ class UpdateUserPassword(Resource):
          )
         if have_key is False:
             return {"message": "Invalid Request Parameters"}, 200
-        dt = UserModel.find_by_username(username=user_json["username"])
+        dt = UserRegister.find_by_username(username=user_json["username"])
         if dt is None:
             return {"message": "No Such User Exist"}, 404
         db_pass = bytes(dt.password, 'utf-8')
@@ -96,53 +98,9 @@ class UpdateUserPassword(Resource):
         dt.password = hashed.decode('utf-8')
         dt.update_db()
         return {"message": "Password Updated"}, 200
-
-
-class ResetUserPassword(Resource):
-    @classmethod
-    def put(cls):
-        user_json = request.get_json()
-        have_key = have_keys(
-            user_json, 'username', 'otp', 'password'
-         )
-        if have_key is True:
-            dt = UserModel.find_by_username(username=user_json["username"])
-            if dt is None:
-                return {"message": "No Such User Exist"}, 404
-            dta = UserOTPModel.matchOTP(
-                user_id=dt.id,
-                user_otp=user_json["otp"]
-                )
-            if dta is None:
-                return {"message": "OTP is in Correct"}, 404
-            password = bytes(user_json["password"], 'utf-8')
-            salt = bcrypt.gensalt()
-            hashed = bcrypt.hashpw(password, salt)
-            dt.password = hashed.decode('utf-8')
-            dt.update_db()
-            return {"message": "OTP Matched"}, 200
-
-        have_keyN = have_keys(
-            user_json, 'username'
-         )
-        if have_keyN is True:
-            dt = UserModel.find_by_username(username=user_json["username"])
-            if dt is None:
-                return {"message": "No Such User Exist"}, 404
-            otp = generateOTP()
-            otp = "111111"
-            userOTP = UserOTPModel(
-                dt.id, otp, datetime.datetime.now()
-            )
-            userOTP.save_to_db()
-            return {"message": "OTP Sent to Email"}, 200
-        return {"message": "Invalid Request Parameters"}, 200
-
-
-class refreshAccessToken(Resource):
-    @classmethod
+    
     @require_refresh_token
-    def post(cls):
+    def refresh_access_token(self):
         user_json = request.get_json()
         have_key = have_keys(
             user_json, 'username'
@@ -157,7 +115,45 @@ class refreshAccessToken(Resource):
                 "message": "Token Generated Successfully",
                 "id_token": encoded_accessToken
                 }, 200
+    
+    def reset_user_password(self):
+        user_json = request.get_json()
+        have_key = have_keys(
+            user_json, 'username', 'otp', 'password'
+         )
+        if have_key is True:
+            dt = UserRegister.find_by_username(username=user_json["username"])
+            if dt is None:
+                return {"message": "No Such User Exist"}, 404
+            dta = UserOTPModel.matchOTP(
+                user_id=dt.id,
+                user_otp=user_json["otp"]
+                )
+            if dta is None:
+                return {"message": "OTP is in Correct"}, 404
+            dt.password = user_json["password"]
+            password = bytes(user_json["password"], 'utf-8')
+            salt = bcrypt.gensalt()
+            hashed = bcrypt.hashpw(password, salt)
+            dt.password = hashed.decode('utf-8')
+            dt.update_db()
+            return {"message": "OTP Matched"}, 200
 
+        have_keyN = have_keys(
+            user_json, 'username'
+         )
+        if have_keyN is True:
+            dt = UserRegister.find_by_username(username=user_json["username"])
+            if dt is None:
+                return {"message": "No Such User Exist"}, 404
+            otp = generateOTP()
+            otp = "111111"
+            userOTP = UserOTPModel(
+                dt.id, otp, datetime.datetime.now()
+            )
+            userOTP.save_to_db()
+            return {"message": "OTP Sent to Email"}, 200
+        return {"message": "Invalid Request Parameters"}, 200
 
 # 200 -> Successful
 # 404 -> User doesn't exist

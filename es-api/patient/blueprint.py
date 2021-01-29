@@ -12,4 +12,5 @@ class PatientBluePrint(Blueprint):
         self.add_url_rule('/patients/<id>', 'get patient', self.patientObj.create_patient, methods=['GET'])
         self.add_url_rule('/patients/<id>', 'update patient', self.patientObj.create_patient, methods=['PUT'])
         self.add_url_rule('/patients/<id>', 'delete patient', self.patientObj.create_patient, methods=['DELETE'])
-        self.add_url_rule('/patients/device/get', 'patient device list', self.patientObj.patient_device_list, methods=['GET'])
+        self.add_url_rule('/patients/<id>/add_device', 'assign device to patient', self.patientObj.assign_device, methods=['POST'])
+        self.add_url_rule('/patient/device/get', 'patient device list', self.patientObj.patient_device_list, methods=['GET'])

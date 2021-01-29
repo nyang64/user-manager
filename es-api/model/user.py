@@ -8,9 +8,10 @@ def generate_uuid():
     return str(uuid.uuid4())
 
 class User(db.Model):
-    __tablename__ = "user"
+    __tablename__ = "users"
     __table_args__ = ({"schema": "ES"})
     id = db.Column(Integer, primary_key=True)
+    registration_id = db.Column('registration_id', Integer, ForeignKey('ES.user_registration.id'))
     first_name = db.Column('first_name', String(30), nullable=False)
     last_name = db.Column('last_name', String(30), nullable=False)
     phone_number = db.Column('phone_number', String(12), nullable=False)

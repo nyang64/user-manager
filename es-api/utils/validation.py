@@ -10,11 +10,11 @@ def validate_request():
         raise BadRequest('Invalid JSON request payload.')  
     return request_data
 
-def get_param(name, error_msg, request_data):
+def get_param(name, request_data):
     if name in request_data:
         return request_data.get(name)
     else:
-        raise BadRequest(error_msg)
+        raise BadRequest(f"'{name}' parameter is missing.")
     
 def validate_number(phone_number):
     if phone_number is None:

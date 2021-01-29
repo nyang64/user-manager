@@ -6,5 +6,5 @@ marshmallow_sqlalchemy==0.24.1
 psycopg2-binary==2.8.6
 flask_migrate==2.5.3
 pyjwt==2.0.1
-bcrypt==3.2.0
+flask-bcrypt==0.7.1
 boto3==1.16.61

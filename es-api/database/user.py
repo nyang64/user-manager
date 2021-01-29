@@ -1,4 +1,4 @@
-from model.user_model import UserModel
+from model.user_registration import UserRegister
 from model.user_scope import UserScope
 from model.user_type import UserType
 from model.user_status import UserStatus
@@ -28,6 +28,6 @@ class UserScope(ModelSchema):
 
 class UserSchema(ModelSchema):
     class Meta:
-        model = UserModel
+        model = UserRegister
         dump_only = ("id",)
         include_fk = True

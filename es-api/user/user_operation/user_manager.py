@@ -41,15 +41,16 @@ class UserManager():
             'scope':'User',
             'status':'Active',
             'type':'Patient',
+            'uuid':'1f4ea346-25ce-4e35-a19c-22da1385997b'
         }
         return jsonify(resp), http.client.OK
     
 
     def __read_user_input(self, request_data):
-        first_name = get_param('first_name', 'missing parameter first_name is required', request_data)
-        last_name = get_param('last_name', 'missing parameter last_name is required', request_data)
-        phone_number = get_param('phone_number', 'missing parameter phone_number is required', request_data)
-        email = get_param('email', 'missing parameter email is required', request_data) 
+        first_name = get_param('first_name', request_data)
+        last_name = get_param('last_name', request_data)
+        phone_number = get_param('phone_number', request_data)
+        email = get_param('email', request_data) 
         
         validate_number(phone_number)
         if first_name is None or first_name == '':

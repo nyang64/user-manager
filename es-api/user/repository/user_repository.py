@@ -12,7 +12,7 @@ class UserRepository():
             print('user created')
         except SQLAlchemyError as error:
             db.session.rollback()
-            raise InternalServerError(error)
+            raise InternalServerError(str(error))
     
     def update_user_byid(self, id, first_name, last_name, phone_number, email):
         try:

@@ -2,6 +2,7 @@ from typing import Dict
 from flask import Flask, jsonify, Response
 from werkzeug.exceptions import BadRequest, HTTPException, Unauthorized, NotFound, Conflict, InternalServerError, MethodNotAllowed
 
+
 class Appplication(Flask):
     def __init__(self, import_name, url_prefix):
         super().__init__(import_name)

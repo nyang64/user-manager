@@ -9,19 +9,21 @@ class Patient(db.Model):
     __table_args__ = ({"schema": "ES"})
     id = db.Column(Integer, primary_key=True)
     user_id = db.Column('user_id', Integer, ForeignKey('ES.users.id'))
-    provider_id = db.Column('provider_id', Integer, ForeignKey('ES.providers.id'))    
+    provider_id = db.Column('provider_id', Integer,
+                            ForeignKey('ES.providers.id'))
     emergenct_contact_name = db.Column(
-        'emergenct_contact_name', String(30), nullable=False)
+        'emergency_contact_name', String(30), nullable=False)
     emergenct_contact_number = db.Column(
-        'emergenct_contact_phone', String(12), nullable=False)
+        'emergency_contact_phone', String(12), nullable=False)
     date_of_birth = db.Column('date_of_birth', String(30))
     enrolled_date = db.Column('enrolled_at', DateTime)
-    created_at = db.Column('created_at', DateTime, default = datetime.now(), nullable=False)
+    created_at = db.Column('created_at', DateTime,
+                           default=datetime.now(),
+                           nullable=False)
     user = db.relationship(
         "User", backref=backref("user_patient", uselist=False)
     )
-    
+
     def save_patient(self) -> None:
         db.session.add(self)
         db.session.commit()
-    

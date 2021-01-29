@@ -115,7 +115,10 @@ class ResetUserPassword(Resource):
                 )
             if dta is None:
                 return {"message": "OTP is in Correct"}, 404
-            dt.password = user_json["password"]
+            password = bytes(user_json["password"], 'utf-8')
+            salt = bcrypt.gensalt()
+            hashed = bcrypt.hashpw(password, salt)
+            dt.password = hashed.decode('utf-8')
             dt.update_db()
             return {"message": "OTP Matched"}, 200
 

@@ -1,5 +1,7 @@
 import json
 import datetime
+import math
+import random
 
 
 def is_json(myjson):
@@ -50,3 +52,12 @@ def tokenTime(isrefreshToken: bool):
     # hours,now.minute).timestamp()
     # # print('datedelta',str(hours_added))
     # return hours_added
+
+
+def generateOTP():
+    digits = "0123456789"
+    OTP = ""
+    for i in range(6):
+        OTP += digits[math.floor(random.random() * 10)]
+    return OTP
+

@@ -9,7 +9,7 @@ def require_user_token(func):
         if pep is None:
             return {"Message": "Unauthorized Access"}, 401
         try:
-            jwt.decode(
+            dec = jwt.decode(
                     pep, "C718D5FDDEC279567385BE3E52894", algorithms=["HS256"]
                 )
             # print(dec["exp"])
@@ -21,7 +21,7 @@ def require_user_token(func):
         except Exception as e:
             print(e)
             return {"Message": "Unauthorized Access"}, 401
-        return func(jsonT)
+        return func(jsonT, dec)
     return inner
 
 

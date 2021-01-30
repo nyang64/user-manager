@@ -1,5 +1,5 @@
 from db import db
-from sqlalchemy import Integer, String, DateTime
+from sqlalchemy import Integer, String, DateTime, desc
 
 
 class UserOTPModel(db.Model):
@@ -9,18 +9,26 @@ class UserOTPModel(db.Model):
     user_id = db.Column('user_id', Integer, nullable=False)
     otp = db.Column('otp', String(255), nullable=False)
     created_at = db.Column('created_at', DateTime)
+    temp_password = db.Column('temp_password', String(255))
 
-    def __init__(self, user_id, otp, created_at):
+    def __init__(self, user_id, otp, created_at, temp_password):
         self.user_id = user_id
         self.otp = otp
         self.created_at = created_at
+        self.temp_password = temp_password
 
     @classmethod
     def matchOTP(cls, user_id: str, user_otp: str) -> "UserOTPModel":
         return cls.query.filter_by(
             user_id=user_id,
             otp=user_otp
-            ).first()
+            ).order_by(desc(cls.created_at)).limit(1).first()
+
+    @classmethod
+    def find_by_user_id(cls, user_id: str) -> "UserOTPModel":
+        return cls.query.filter_by(
+            user_id=user_id
+            ).order_by(desc(cls.created_at)).limit(1).first()
 
     def save_to_db(self) -> None:
         db.session.add(self)

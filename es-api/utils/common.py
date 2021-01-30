@@ -2,6 +2,8 @@ import json
 import datetime
 import math
 import random
+from json import JSONEncoder
+import bcrypt
 
 
 def is_json(myjson):
@@ -61,3 +63,28 @@ def generateOTP():
         OTP += digits[math.floor(random.random() * 10)]
     return OTP
 
+
+def timeDiff(first_time: datetime, second_time: datetime):
+    difference = second_time - first_time
+    print(difference)
+
+
+def encPass(passW: str):
+    password = bytes(passW, 'utf-8')
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password, salt)
+    return hashed.decode('utf-8')
+
+
+def checkPass(passW: str, dbPassW: str):
+    db_pass = bytes(dbPassW, 'utf-8')
+    inp_pass = bytes(passW, 'utf-8')
+    return bcrypt.checkpw(
+        inp_pass,
+        db_pass.decode().encode('utf-8')
+        )
+
+
+class MyEncoder(JSONEncoder):
+    def default(self, o):
+        return o.__dict__

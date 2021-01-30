@@ -11,10 +11,12 @@ from config import get_connection_url
 from authentication.blueprint import AuthenticationBlueprint
 from user.blueprint import UserBluePrint
 from patient.blueprint import PatientBluePrint
+from provider.blueprint import ProviderBlueprint
 from application import Appplication
 
 app = Appplication(__name__, '/v1')
 app.config["SQLALCHEMY_DATABASE_URI"] = get_connection_url()
+print(get_connection_url())
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 app.config["PROPAGATE_EXCEPTIONS"] = True
 api = Api()
@@ -41,6 +43,9 @@ app.register_blueprint(auth_blueprint)
 
 user_blueprint = UserBluePrint()
 app.register_blueprint(user_blueprint)
+
+provider_blueprint = ProviderBlueprint()
+app.register_blueprint(provider_blueprint)
 
 patient_blueprint = PatientBluePrint()
 app.register_blueprint(patient_blueprint)

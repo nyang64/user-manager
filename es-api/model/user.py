@@ -19,12 +19,17 @@ class User(db.Model):
     created_at = db.Column('created_at', DateTime, default = datetime.now(), nullable=False)
     uuid = db.Column('uuid', String(50), default = generate_uuid(), unique = True, nullable = False)
     
-    def __init__(self, first_name, last_name, phone_number, email):
+    def __init__(self, first_name, last_name, phone_number, email, registration_id):
         self.first_name = first_name
         self.last_name = last_name
         self.phone_number = phone_number
         self.email = email
+        self.registration_id = registration_id
         
     def save_user(self) -> None:
         db.session.add(self)
         db.session.commit()
+
+    @classmethod
+    def find_by_email(cls, email: str) -> "User":
+        return cls.query.filter_by(email=email).first()

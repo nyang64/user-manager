@@ -97,15 +97,19 @@ class AuthenticationManager():
         return {"message": "Invalid Credentials"}, 401
 
     @require_user_token
-    def update_user_password(self):
+    def update_user_password(self, decryp):
         user_json = request.get_json()
         have_key = have_keys(
-            user_json, 'username',
+            user_json,
             'newpassword'
          )
         if have_key is False:
             return {"message": "Invalid Request Parameters"}, 400
-        dt = UserRegister.find_by_username(username=user_json["username"])
+        print("dec", decryp)
+        have_Auth = have_keys(decryp, 'username')
+        if have_Auth is False:
+            return {"Message": "Unauthorized Access"}, 401
+        dt = UserRegister.find_by_username(decryp["username"])
         if dt is None:
             return {"message": "No Such User Exist"}, 404
         # db_pass = bytes(dt.password, 'utf-8')

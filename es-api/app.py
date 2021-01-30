@@ -1,4 +1,3 @@
-from flask import Flask, Blueprint
 from flask_restful import Api
 from db import db
 from ma import ma
@@ -21,10 +20,6 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 app.config["PROPAGATE_EXCEPTIONS"] = True
 api = Api()
 
-
-@app.before_first_request
-def create_tables():
-    db.create_all()
 
 migrate = Migrate()
 db.init_app(app)

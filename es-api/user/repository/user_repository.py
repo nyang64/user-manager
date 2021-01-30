@@ -3,6 +3,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import InternalServerError, NotFound
 from db import db
 
+
 class UserRepository():
     def save_user(self, first_name, last_name, phone_number, email):
         try:
@@ -10,6 +11,7 @@ class UserRepository():
             print('create_user')
             User.save_user(user_data)
             print('user created')
+            return user_data.id
         except SQLAlchemyError as error:
             db.session.rollback()
             raise InternalServerError(str(error))

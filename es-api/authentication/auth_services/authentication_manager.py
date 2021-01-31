@@ -25,7 +25,7 @@ class AuthenticationManager():
     def register_user(self):
         user_json = request.get_json()
         if have_keys(user_json, 'username', 'password') is False:
-            return {"message": "Invalid Request Parameters"}, 200
+            return {"message": "Invalid Request Parameters"}, 400
         if UserRegister.find_by_username(
             username=user_json["username"]
                 ) is not None:

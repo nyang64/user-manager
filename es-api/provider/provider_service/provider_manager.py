@@ -34,7 +34,7 @@ class provider_manager():
             'facility_id', 'phone_number',
             'username', 'password'
                 ) is False:
-            return {"message": "Invalid Request Parameters"}, 200
+            return {"message": "Invalid Request Parameters"}, 400
         if (UserRegister.find_by_username(
             username=provider_json['username']
                 ) is not None):

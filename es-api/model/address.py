@@ -1,11 +1,13 @@
 from db import db
-from sqlalchemy import Integer, String, ForeignKey
+from sqlalchemy import String, ForeignKey, Integer
+from model.base_model import BaseModel
 
 
-class Address(db.Model):
+class Address(BaseModel):
     __tablename__ = "address"
     __table_args__ = ({"schema": "ES"})
-    id = db.Column(Integer, primary_key=True)
+    user_id = db.Column('user_id', Integer,
+                        ForeignKey('ES.users.id', ondelete="CASCADE"))
     street_address_1 = db.Column('street_address_1', String(100))
     street_address_2 = db.Column('street_address_2', String(100))
     city = db.Column('city', String(100))

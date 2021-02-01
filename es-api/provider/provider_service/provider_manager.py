@@ -1,13 +1,22 @@
 from flask_restful import Resource
 from flask import request
 from model.user_registration import UserRegister
-from model.user import User
+from model.users import Users
 from model.user_otp import UserOTPModel
-from model.es_users import ES_Users
 from model.address import Address
 from model.devices import Devices
 from model.patient import Patient
 from model.providers import Providers
+from model.authentication_token import AuthenticationToken
+from model.device_status_types import DeviceStatusType
+from model.device_statuses import DeviceStatUses
+from model.facilities import Facilities
+from model.roles import Roles
+from model.salvos import Salvos
+from model.therapy_reports import TherapyReport
+from model.user_roles import UserRoles
+from model.user_status_types import UserStatusType
+from model.user_statuses import UserStatUses
 from database.user import UserSchema
 from utils.common import(
     have_keys,
@@ -38,11 +47,11 @@ class provider_manager():
         if (UserRegister.find_by_username(
             username=provider_json['username']
                 ) is not None):
-            return {"message": "User Already Register"}, 400
-        if (User.find_by_email(
+            return {"message": "Users Already Register"}, 409
+        if (Users.find_by_email(
             email=provider_json['username']
                 ) is not None):
-            return {"message": "User Already Exist"}, 400
+            return {"message": "Users Already Exist"}, 409
         usrReg = UserRegister(
             username=provider_json['username'],
             password=encPass(provider_json['password']),
@@ -54,7 +63,7 @@ class provider_manager():
             )
         if usrRegDt is None:
             return {"message": "Server Error"}, 500
-        usr = User(
+        usr = Users(
             first_name=provider_json['first_name'],
             last_name=provider_json['last_name'],
             phone_number=provider_json['phone_number'],
@@ -84,6 +93,6 @@ class provider_manager():
         dta = udt.__dict__
         del dta['_sa_instance_state']
         return {
-            "message": "User Found",
+            "message": "Users Found",
             "Data": [dta]
             }, 200

@@ -1,15 +1,15 @@
-from model.user import User
+from model.users import Users
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import InternalServerError, NotFound
 from db import db
 
 
 class UserRepository():
-    def save_user(self, first_name, last_name, phone_number, email):
+    def save_user(self, first_name, last_name, phone_number, email, reg_id):
         try:
-            user_data = User(first_name, last_name, phone_number, email)
+            user_data = Users(first_name, last_name, phone_number, email, reg_id)
             print('create_user')
-            User.save_user(user_data)
+            Users.save_user(user_data)
             print('user created')
             return user_data.id
         except SQLAlchemyError as error:
@@ -18,7 +18,7 @@ class UserRepository():
     
     def update_user_byid(self, id, first_name, last_name, phone_number, email):
         try:
-            user_data = db.session.query(User).filter_by(id=id).first()
+            user_data = db.session.query(Users).filter_by(id=id).first()
             if user_data is None:
                 raise NotFound("user doesn't exist")
             print(user_data)
@@ -34,10 +34,10 @@ class UserRepository():
         
     def list_users(self):
         try:
-            users_list = db.session.query(User).all()
+            users_list = db.session.query(Users).all()
             print(users_list)
             print('update_user')
-            #User.save_user(user_data)
+            #Users.save_user(user_data)
             print('user created')
             users_data = [{'id': user.id, 
                            'first_name':user.first_name, 
@@ -50,7 +50,7 @@ class UserRepository():
         
     def delete_user_byid(self, id):
         try:
-            user = db.session.query(User).filter_by(id=id).first()
+            user = db.session.query(Users).filter_by(id=id).first()
             print(user)
             if user is None:
                 raise NotFound('user does not exist')

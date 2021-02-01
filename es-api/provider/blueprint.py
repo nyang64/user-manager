@@ -9,5 +9,8 @@ class ProviderBlueprint(Blueprint):
         self._add_routes()
         
     def _add_routes(self):
-        self.add_url_rule('/provider/register', 'Register Provider', self.provider_Obj.register_provider, methods=['POST'])
+        self.add_url_rule('/provider/register',
+                          'Register Provider',
+                          self.provider_Obj.register_provider,
+                          methods=['POST'])
         self.add_url_rule('/provider/get', 'Get Provider', self.provider_Obj.get_provider_by_id, methods=['GET'])

@@ -12,6 +12,7 @@ def validate_request():
 
 def get_param(name, request_data):
     if name in request_data:
+        print(request_data.get(name))
         return request_data.get(name)
     else:
         raise BadRequest(f"'{name}' parameter is missing.")

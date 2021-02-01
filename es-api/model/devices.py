@@ -1,12 +1,10 @@
 from db import db
-from sqlalchemy import Integer, String, ForeignKey, DateTime
+from sqlalchemy import String
+from model.base_model import BaseModel
 
 
-class Devices(db.Model):
+class Devices(BaseModel):
     __tablename__ = "devices"
     __table_args__ = ({"schema": "ES"})
-    id = db.Column(Integer, primary_key=True)
     serial_number = db.Column('serial_number', String(12))
     encryption_key = db.Column('encryption_key', String(50))
-    created_ts = db.Column('created_ts', DateTime)
-    status = db.Column('status', Integer)

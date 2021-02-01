@@ -3,7 +3,7 @@ from sqlalchemy import String
 from model.base_model import BaseModel
 
 
-class UserScope(BaseModel):
-    __tablename__ = "scope"
+class Roles(BaseModel):
+    __tablename__ = "roles"
     __table_args__ = ({"schema": "ES"})
-    scope = db.Column(String(30), nullable=False)
+    role_name = db.Column('role_name', String(30), nullable=False)

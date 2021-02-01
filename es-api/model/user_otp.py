@@ -1,14 +1,13 @@
 from db import db
-from sqlalchemy import Integer, String, DateTime, desc
+from sqlalchemy import Integer, String, desc
+from model.base_model import BaseModel
 
 
-class UserOTPModel(db.Model):
+class UserOTPModel(BaseModel):
     __tablename__ = "user_otp"
     __table_args__ = ({"schema": "ES"})
-    id = db.Column(Integer, primary_key=True)
     user_id = db.Column('user_id', Integer, nullable=False)
     otp = db.Column('otp', String(255), nullable=False)
-    created_at = db.Column('created_at', DateTime)
     temp_password = db.Column('temp_password', String(255))
 
     def __init__(self, user_id, otp, created_at, temp_password):

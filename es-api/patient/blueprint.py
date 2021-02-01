@@ -8,7 +8,7 @@ class PatientBluePrint(Blueprint):
         self._add_routes()
         
     def _add_routes(self):
-        self.add_url_rule('/patients/<id>',
+        self.add_url_rule('/patients',
                           'create patient',
                           self.patientObj.create_patient,
                           methods=['POST'])

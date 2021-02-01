@@ -1,20 +1,12 @@
 from model.user_registration import UserRegister
 from model.user_scope import UserScope
-from model.user_type import UserType
-from model.user_status import UserStatus
+from model.user_status_types import UserStatusType
 from marshmallow_sqlalchemy import ModelSchema
-
-
-class UserType(ModelSchema):
-    class Meta:
-        model = UserType
-        dump_only = ("id",)
-        include_fk = True
 
 
 class UserStatus(ModelSchema):
     class Meta:
-        model = UserStatus
+        model = UserStatusType
         dump_only = ("id",)
         include_fk = True
 

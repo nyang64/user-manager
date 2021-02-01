@@ -1,9 +1,7 @@
-from flask_restful import Resource
 from flask import request
 from model.user_registration import UserRegister
-from model.user import User
+from model.users import Users
 from model.user_otp import UserOTPModel
-from model.es_users import ES_Users
 from model.address import Address
 from model.devices import Devices
 from model.patient import Patient
@@ -13,7 +11,6 @@ from utils.common import have_keys, tokenTime, generateOTP, encPass, checkPass
 from utils.jwt import require_user_token, require_refresh_token
 import datetime
 import jwt
-import bcrypt
 
 user_schema = UserSchema()
 
@@ -29,7 +26,7 @@ class AuthenticationManager():
         if UserRegister.find_by_username(
             username=user_json["username"]
                 ) is not None:
-            return {"message": "User Already Exist"}, 400
+            return {"message": "User Already Exist"}, 409
         # password = bytes(user_json["password"], 'utf-8')
         # salt = bcrypt.gensalt()
         # hashed = bcrypt.hashpw(password, salt)

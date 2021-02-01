@@ -1,11 +1,6 @@
-from flask_restful import Api
 from db import db
 from ma import ma
 from flask_migrate import Migrate
-''' from resources.authentication.authentication import (
-    UserLogin, UserRegister, UpdateUserPassword,
-    refreshAccessToken, ResetUserPassword
-) '''
 from config import get_connection_url
 from authentication.blueprint import AuthenticationBlueprint
 from user.blueprint import UserBluePrint
@@ -15,23 +10,13 @@ from application import Appplication
 
 app = Appplication(__name__, '/v1')
 app.config["SQLALCHEMY_DATABASE_URI"] = get_connection_url()
-print(get_connection_url())
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 app.config["PROPAGATE_EXCEPTIONS"] = True
-api = Api()
-
 
 migrate = Migrate()
 db.init_app(app)
 ma.init_app(app)
 migrate.init_app(app, db)
-
-
-''' api.add_resource(UserRegister, "/register")
-api.add_resource(UserLogin, "/auth/token")
-api.add_resource(UpdateUserPassword, "/updatepassword")
-api.add_resource(refreshAccessToken, "/refresh")
-api.add_resource(ResetUserPassword, "/resetpassword") '''
 
 auth_blueprint = AuthenticationBlueprint()
 app.register_blueprint(auth_blueprint)

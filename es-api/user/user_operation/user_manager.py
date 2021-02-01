@@ -16,7 +16,8 @@ class UserManager():
         print('request_data', request_data)
         register, user = self.__read_user_input(
                                                         request_data)
-        user_data = UserRegister(register[0], register[1], datetime.now())
+        user_data = UserRegister(email=register[0],
+                                 password=register[1])
         exist_user = UserRegister.find_by_username(register[0])
         if exist_user is not None:
             raise Conflict('user already exist')

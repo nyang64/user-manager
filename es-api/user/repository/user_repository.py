@@ -7,7 +7,11 @@ from db import db
 class UserRepository():
     def save_user(self, first_name, last_name, phone_number, email, reg_id):
         try:
-            user_data = Users(first_name, last_name, phone_number, email, reg_id)
+            user_data = Users(first_name=first_name,
+                              last_name=last_name,
+                              phone_number=phone_number,
+                              email=email,
+                              registration_id=reg_id)
             print('create_user')
             Users.save_user(user_data)
             print('user created')

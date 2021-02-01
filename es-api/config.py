@@ -1,6 +1,7 @@
 import os
 from werkzeug.exceptions import BadHost
 
+
 def get_connection_url():
     host = os.environ.get('POSTGRES_DB_HOST')
     port = str(os.environ.get('POSTGRES_DB_PORT'))

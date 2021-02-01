@@ -134,7 +134,7 @@ class AuthenticationManager():
             otp = generateOTP()
             otp = "111111"
             user_otp = UserOTPModel(
-                user_data.id, otp, datetime.datetime.now(), ""
+                user_id=user_data.id, otp=otp, temp_password=""
             )
             user_otp.save_to_db()
             return {"message": "OTP Sent to Email"}, 200

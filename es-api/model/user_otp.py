@@ -10,12 +10,6 @@ class UserOTPModel(BaseModel):
     otp = db.Column('otp', String(255), nullable=False)
     temp_password = db.Column('temp_password', String(255))
 
-    def __init__(self, user_id, otp, created_at, temp_password):
-        self.user_id = user_id
-        self.otp = otp
-        self.created_at = created_at
-        self.temp_password = temp_password
-
     @classmethod
     def matchOTP(cls, user_id: str, user_otp: str) -> "UserOTPModel":
         return cls.query.filter_by(

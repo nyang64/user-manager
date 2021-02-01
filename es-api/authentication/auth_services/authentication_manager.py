@@ -8,7 +8,7 @@ from model.patient import Patient
 from model.providers import Providers
 from database.user import UserSchema
 from utils.common import have_keys, tokenTime, generateOTP, encPass, checkPass
-from utils.jwt import require_user_token, require_refresh_token
+from utils.jwt import require_user_token, require_refresh_token, encoded_Token
 import datetime
 import jwt
 
@@ -21,71 +21,44 @@ class AuthenticationManager():
 
     def register_user(self):
         user_json = request.get_json()
-        if have_keys(user_json, 'username', 'password') is False:
+        if have_keys(user_json, 'email', 'password') is False:
             return {"message": "Invalid Request Parameters"}, 400
         if UserRegister.find_by_username(
-            username=user_json["username"]
+            email=user_json["email"]
                 ) is not None:
             return {"message": "User Already Exist"}, 409
-        # password = bytes(user_json["password"], 'utf-8')
-        # salt = bcrypt.gensalt()
-        # hashed = bcrypt.hashpw(password, salt)
         user = UserRegister(
-            user_json["username"],
-            encPass(user_json["password"]),
-            datetime.datetime.now()
+            email=user_json["email"],
+            password=encPass(user_json["password"])
             )
         user.save_to_db()
         return {"message": "User Created"}, 201
 
     def login_user(self):
         user_json = request.get_json()
-        if have_keys(user_json, 'username', 'password') is False:
+        if have_keys(user_json, 'email', 'password') is False:
             return {"message": "Invalid Request Parameters"}, 400
-        udt = UserRegister.find_by_username(user_json["username"])
-        if udt is None:
+        user_data = UserRegister.find_by_username(user_json["email"])
+        if user_data is None:
             return {"message": "No Such User Exist"}, 404
-        # db_pass = bytes(udt.password, 'utf-8')
-        # inp_pass = bytes(user_json["password"], 'utf-8')
-        # if bcrypt.checkpw(
-        #         inp_pass,
-        #         db_pass.decode().encode('utf-8')
-        #         ):
-        if checkPass(user_json["password"], udt.password):
-            encoded_accessToken = jwt.encode({
-                "username": user_json["username"],
-                "exp": (tokenTime(False))
-                }, "C718D5FDDEC279567385BE3E52894")
-            encoded_refreshToken = jwt.encode({
-                "username": user_json["username"],
-                "exp": (tokenTime(True))
-                 }, "9EA72AD96C39A87A1AFF153983592")
+        if checkPass(user_json["password"], user_data.password):
+            encoded_accessToken = encoded_Token(False, user_json["email"])
+            encoded_refreshToken = encoded_Token(True, user_json["email"])
 
             return {
                 "message": "Successfully Login",
                 "id_token": encoded_accessToken,
                 "refresh_token": encoded_refreshToken
                 }, 200
-        otpDT = UserOTPModel.find_by_user_id(user_id=udt.id)
+        otp_data = UserOTPModel.find_by_user_id(user_id=user_data.id)
         if (
-            otpDT is not None and
-            otpDT.temp_password is not None and
-            otpDT.temp_password != ""
+            otp_data is not None and
+            otp_data.temp_password is not None and
+            otp_data.temp_password != ""
                 ):
-            # db_pass = bytes(otpDT.temp_password, 'utf-8')
-            # if bcrypt.checkpw(
-            #         inp_pass,
-            #         db_pass.decode().encode('utf-8')
-            #         ):
-            if checkPass(user_json["password"], otpDT.temp_password):
-                encoded_accessToken = jwt.encode({
-                    "username": user_json["username"],
-                    "exp": (tokenTime(False))
-                }, "C718D5FDDEC279567385BE3E52894")
-                encoded_refreshToken = jwt.encode({
-                    "username": user_json["username"],
-                    "exp": (tokenTime(True))
-                }, "9EA72AD96C39A87A1AFF153983592")
+            if checkPass(user_json["password"], otp_data.temp_password):
+                encoded_accessToken = encoded_Token(False, user_json["email"])
+                encoded_refreshToken = encoded_Token(False, user_json["email"])
                 return {
                     "message": "Successfully Login",
                     "id_token": encoded_accessToken,
@@ -94,7 +67,7 @@ class AuthenticationManager():
         return {"message": "Invalid Credentials"}, 401
 
     @require_user_token
-    def update_user_password(self, decryp):
+    def update_user_password(self, decrypt):
         user_json = request.get_json()
         have_key = have_keys(
             user_json,
@@ -102,42 +75,29 @@ class AuthenticationManager():
          )
         if have_key is False:
             return {"message": "Invalid Request Parameters"}, 400
-        print("dec", decryp)
-        have_Auth = have_keys(decryp, 'username')
+        have_Auth = have_keys(decrypt, 'user_email')
         if have_Auth is False:
             return {"Message": "Unauthorized Access"}, 401
-        dt = UserRegister.find_by_username(decryp["username"])
-        if dt is None:
+        user_data = UserRegister.find_by_username(decrypt["user_email"])
+        if user_data is None:
             return {"message": "No Such User Exist"}, 404
-        # db_pass = bytes(dt.password, 'utf-8')
-        # inp_pass = bytes(user_json["oldpassword"], 'utf-8')
-        # if bcrypt.checkpw(
-        #         inp_pass,
-        #         db_pass.decode().encode('utf-8')
-        #         ) is False:
-        
-        # if checkPass(user_json["oldpassword"], dt.password):
-            # return {"message": "Incorrect Password"}, 200
         if user_json["newpassword"] is None or user_json["newpassword"] == "":
             return {
                 "message": "New password does not meet minimum criteria"
                 }, 200
-        dt.password = encPass(user_json["newpassword"])
-        dt.update_db()
+        user_data.password = encPass(user_json["newpassword"])
+        user_data.update_db()
         return {"message": "Password Updated"}, 200
 
     @require_refresh_token
     def refresh_access_token(self):
         user_json = request.get_json()
         have_key = have_keys(
-            user_json, 'username'
+            user_json, 'email'
          )
         if have_key is False:
             return {"message": "Invalid Request Parameters"}, 400
-        encoded_accessToken = jwt.encode({
-            "username": user_json["username"],
-            "exp": (tokenTime(False))
-            }, "C718D5FDDEC279567385BE3E52894")
+        encoded_accessToken = encoded_Token(False, user_json["email"])
         return {
                 "message": "Token Generated Successfully",
                 "id_token": encoded_accessToken
@@ -146,41 +106,36 @@ class AuthenticationManager():
     def reset_user_password(self):
         user_json = request.get_json()
         have_key = have_keys(
-            user_json, 'username', 'otp', 'password'
+            user_json, 'email', 'otp', 'password'
          )
         if have_key is True:
-            dt = UserRegister.find_by_username(username=user_json["username"])
-            if dt is None:
+            user_data = UserRegister.find_by_username(
+                email=user_json["email"])
+            if user_data is None:
                 return {"message": "No Such User Exist"}, 404
-            dta = UserOTPModel.matchOTP(
-                user_id=dt.id,
+            otp_data = UserOTPModel.matchOTP(
+                user_id=user_data.id,
                 user_otp=user_json["otp"]
                 )
-            if dta is None:
-                return {"message": "OTP is in Correct"}, 404
-            # password = bytes(user_json["password"], 'utf-8')
-            # salt = bcrypt.gensalt()
-            # hashed = bcrypt.hashpw(password, salt)
-            dta.temp_password = encPass(user_json["password"])
-            dta.update_db()
+            if otp_data is None:
+                return {"message": "OTP is Incorrect"}, 404
+            otp_data.temp_password = encPass(user_json["password"])
+            otp_data.update_db()
             return {"message": "OTP Matched"}, 200
 
         have_keyN = have_keys(
-            user_json, 'username'
+            user_json, 'email'
          )
         if have_keyN is True:
-            dt = UserRegister.find_by_username(username=user_json["username"])
-            if dt is None:
+            user_data = UserRegister.find_by_username(
+                email=user_json["email"])
+            if user_data is None:
                 return {"message": "No Such User Exist"}, 404
             otp = generateOTP()
             otp = "111111"
-            userOTP = UserOTPModel(
-                dt.id, otp, datetime.datetime.now(), ""
+            user_otp = UserOTPModel(
+                user_data.id, otp, datetime.datetime.now(), ""
             )
-            userOTP.save_to_db()
+            user_otp.save_to_db()
             return {"message": "OTP Sent to Email"}, 200
         return {"message": "Invalid Request Parameters"}, 400
-
-# 200 -> Successful
-# 404 -> User doesn't exist
-# 401 -> Unauthorized

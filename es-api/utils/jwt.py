@@ -1,47 +1,50 @@
 from flask import request
 import jwt
-# import datetime
+import os
+from utils.common import tokenTime
+
+
+def encoded_Token(isrefreshToken: bool, user_email: str):
+    if isrefreshToken:
+        secret = os.environ["refresh_token_key"]
+    else:
+        secret = os.environ["access_token_key"]
+    return jwt.encode({
+                "user_email": user_email,
+                "exp": (tokenTime(isrefreshToken))
+                }, secret)
 
 
 def require_user_token(func):
     def inner(jsonT):
-        pep = (request.headers.get('Authorization'))
-        if pep is None:
+        token = (request.headers.get('Authorization'))
+        if token is None:
             return {"Message": "Unauthorized Access"}, 401
         try:
-            dec = jwt.decode(
-                    pep, "C718D5FDDEC279567385BE3E52894", algorithms=["HS256"]
+            deccrypted = jwt.decode(
+                    token, os.environ["access_token_key"],
+                    algorithms=["HS256"]
                 )
-            # print(dec["exp"])
-            # print("uTT",int(dec["exp"]))
-            # print("uTN",datetime.datetime.now().timestamp())
-            # if int(dec["exp"]) < datetime.datetime.now().timestamp():
-            #     return {"Message": "Token Expired"}, 401
-            # return func(jsonT)
+        except jwt.ExpiredSignatureError:
+            return {"Message": "Token is Expired"}
+
         except Exception as e:
-            print(e)
             return {"Message": "Unauthorized Access"}, 401
-        return func(jsonT, dec)
+        return func(jsonT, deccrypted)
     return inner
 
 
 def require_refresh_token(func):
     def inner(jsonT):
-        pep = (request.headers.get('Authorization'))
-        if pep is None:
+        token = (request.headers.get('Authorization'))
+        if token is None:
             return {"Message": "Unauthorized Access"}, 401
         try:
             jwt.decode(
-                    pep, "9EA72AD96C39A87A1AFF153983592", algorithms=["HS256"]
+                    token, os.environ["refresh_token_key"],
+                    algorithms=["HS256"]
                 )
-            # print(dec["exp"])
-            # print("uTT",int(dec["exp"]))
-            # print("uTN",datetime.datetime.now().timestamp())
-            # if int(dec["exp"]) < datetime.datetime.now().timestamp():
-            #     return {"Message": "Token Expired"}, 401
-            # return func(jsonT)
-        except Exception as e:
-            print(e)
+        except Exception:
             return {"Message": "Unauthorized Access"}, 401
         return func(jsonT)
     return inner

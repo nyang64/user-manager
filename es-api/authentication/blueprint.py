@@ -1,5 +1,7 @@
 from flask import Blueprint
-from authentication.auth_services.authentication_manager import AuthenticationManager
+from authentication.auth_services.authentication_manager import (
+    AuthenticationManager
+)
 
 
 class AuthenticationBlueprint(Blueprint):
@@ -7,7 +9,7 @@ class AuthenticationBlueprint(Blueprint):
         super().__init__(__class__.__name__, __name__)
         self.authObj = AuthenticationManager()
         self._add_routes()
-         
+
     def _add_routes(self):
         self.add_url_rule('/register', 'Register User',
                           self.authObj.register_user,
@@ -24,4 +26,3 @@ class AuthenticationBlueprint(Blueprint):
         self.add_url_rule('/resetpassword', 'Reset Password',
                           self.authObj.reset_user_password,
                           methods=['PUT'])
-        

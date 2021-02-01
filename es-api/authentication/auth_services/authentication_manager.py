@@ -8,7 +8,10 @@ from model.patient import Patient
 from model.providers import Providers
 from database.user import UserSchema
 from utils.common import have_keys, tokenTime, generateOTP, encPass, checkPass
-from utils.jwt import require_user_token, require_refresh_token, encoded_Token
+from utils.jwt import (
+        require_user_token,
+        require_refresh_token,
+        encoded_Token)
 import datetime
 import jwt
 
@@ -48,7 +51,8 @@ class AuthenticationManager():
             return {
                 "message": "Successfully Login",
                 "id_token": encoded_accessToken,
-                "refresh_token": encoded_refreshToken
+                "refresh_token": encoded_refreshToken,
+                "isFirst": user_data.isFirst
                 }, 200
         otp_data = UserOTPModel.find_by_user_id(user_id=user_data.id)
         if (
@@ -66,7 +70,7 @@ class AuthenticationManager():
                 }, 200
         return {"message": "Invalid Credentials"}, 401
 
-    @require_user_token
+    @require_user_token("Admin", "Patient")
     def update_user_password(self, decrypt):
         user_json = request.get_json()
         have_key = have_keys(
@@ -86,6 +90,7 @@ class AuthenticationManager():
                 "message": "New password does not meet minimum criteria"
                 }, 200
         user_data.password = encPass(user_json["newpassword"])
+        user_data.isFirst = 1
         user_data.update_db()
         return {"message": "Password Updated"}, 200
 

@@ -1,5 +1,5 @@
 from db import db
-from sqlalchemy import String
+from sqlalchemy import String, Integer
 from model.base_model import BaseModel
 
 
@@ -8,6 +8,7 @@ class UserRegister(BaseModel):
     __table_args__ = ({"schema": "ES"})
     email = db.Column('email', String(50), nullable=False, unique=True)
     password = db.Column('password', String(255), nullable=False)
+    isFirst = db.Column('isFirst', Integer, default=0)
 
     @classmethod
     def find_by_username(cls, email: str) -> "UserRegister":

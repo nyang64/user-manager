@@ -16,8 +16,6 @@ class Users(BaseModel):
                           nullable=False)
     phone_number = db.Column('phone_number', String(12),
                              nullable=False)
-    email = db.Column('email', String(100),
-                      nullable=False)
     uuid = db.Column('uuid', String(50), default=str(uuid.uuid4()),
                      unique=True, nullable=False)
 

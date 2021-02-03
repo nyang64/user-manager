@@ -1,6 +1,8 @@
 from db import db
 from sqlalchemy import Integer, String, desc
 from model.base_model import BaseModel
+from sqlalchemy.exc import SQLAlchemyError
+from werkzeug.exceptions import InternalServerError, NotFound, Conflict
 
 
 class UserOTPModel(BaseModel):
@@ -12,20 +14,38 @@ class UserOTPModel(BaseModel):
 
     @classmethod
     def matchOTP(cls, user_id: str, user_otp: str) -> "UserOTPModel":
-        return cls.query.filter_by(
-            user_id=user_id,
-            otp=user_otp
-            ).order_by(desc(cls.created_at)).limit(1).first()
+        try:
+            user_otp = cls.query.filter_by(
+                user_id=user_id,
+                otp=user_otp
+                ).order_by(desc(cls.created_at)).limit(1).first()
+        except SQLAlchemyError as error:
+            db.session.rollback()
+            raise InternalServerError(str(error))
+        return user_otp
 
     @classmethod
     def find_by_user_id(cls, user_id: str) -> "UserOTPModel":
-        return cls.query.filter_by(
-            user_id=user_id
-            ).order_by(desc(cls.created_at)).limit(1).first()
+        try:
+            user_otp = cls.query.filter_by(
+                user_id=user_id
+                ).order_by(desc(cls.created_at)).limit(1).first()
+        except SQLAlchemyError as error:
+            db.session.rollback()
+            raise InternalServerError(str(error))
+        return user_otp
 
     def save_to_db(self) -> None:
-        db.session.add(self)
-        db.session.commit()
+        try:
+            db.session.add(self)
+            db.session.commit()
+        except SQLAlchemyError as error:
+            db.session.rollback()
+            raise InternalServerError(str(error))
 
     def update_db(self) -> None:
-        db.session.commit()
+        try:
+            db.session.commit()
+        except SQLAlchemyError as error:
+            db.session.rollback()
+            raise InternalServerError(str(error))

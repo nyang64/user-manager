@@ -5,6 +5,7 @@ import http.client
 from user.repository.user_repository import UserRepository
 from model.user_registration import UserRegister
 from utils.validation import validate_request, get_param, validate_number
+from utils.jwt import require_user_token
 
 
 class UserManager():
@@ -61,7 +62,8 @@ class UserManager():
             'uuid': '1f4ea346-25ce-4e35-a19c-22da1385997b'
         }
         return jsonify(resp), http.client.OK
-    
+
+    @require_user_token('Patient')
     def __read_update_input(self, request_data):
         first_name = get_param('first_name', request_data)
         last_name = get_param('last_name', request_data)

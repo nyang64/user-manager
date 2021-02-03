@@ -1,4 +1,4 @@
-from flask_restful import Resource
+# from flask_restful import Resource
 from flask import request
 from model.user_registration import UserRegister
 from model.users import Users

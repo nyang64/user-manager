@@ -14,3 +14,11 @@ class Address(BaseModel):
     state = db.Column('state', String(50))
     country = db.Column('country', String(20))
     postal_code = db.Column('postal_code', String(10))
+
+    @classmethod
+    def find_by_id(cls, id: str) -> "Address":
+        return cls.query.filter_by(id=id).first()
+
+    def save_to_db(self) -> None:
+        db.session.add(self)
+        db.session.commit()

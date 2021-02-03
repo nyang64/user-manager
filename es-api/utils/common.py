@@ -10,7 +10,7 @@ from werkzeug.exceptions import BadRequest
 def is_json(myjson):
     try:
         if myjson is None:
-            return False
+            raise BadRequest('Invalid request. Excepted JSON')
         json.dumps(myjson)
         json.loads(json.dumps(myjson))
     except Exception:
@@ -19,13 +19,25 @@ def is_json(myjson):
     return True
 
 
+def have_keys_NotForce(myjson, *args):
+    if is_json(myjson) is False:
+        return False
+    for arg in args:
+        if arg not in myjson:
+            # raise BadRequest(f'Invalid request Parameter.{arg} is missing.')
+            return False
+    return True
+
+
 def have_keys(myjson, *args):
     if is_json(myjson) is False:
         return False
     for arg in args:
         if arg not in myjson:
+            raise BadRequest(f'Invalid request Parameter.{arg} is missing.')
             return False
     return True
+
 
 
 def tokenTime(isrefreshToken: bool):

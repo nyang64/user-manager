@@ -10,3 +10,11 @@ class Facilities(BaseModel):
                            ForeignKey('ES.address.id', ondelete="CASCADE"),
                            nullable=False)
     name = db.Column('name', String(100))
+
+    @classmethod
+    def find_by_id(cls, id: str) -> "Facilities":
+        return cls.query.filter_by(id=id).first()
+
+    def save_to_db(self) -> None:
+        db.session.add(self)
+        db.session.commit()

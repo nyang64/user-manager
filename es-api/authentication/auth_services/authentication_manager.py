@@ -7,7 +7,9 @@ from model.devices import Devices
 from model.patient import Patient
 from model.providers import Providers
 from database.user import UserSchema
-from utils.common import have_keys, tokenTime, generateOTP, encPass, checkPass
+from utils.common import (
+        have_keys, tokenTime,
+        generateOTP, encPass, checkPass, have_keys_NotForce)
 from utils.jwt import (
         require_user_token,
         require_refresh_token,
@@ -110,7 +112,7 @@ class AuthenticationManager():
 
     def reset_user_password(self):
         user_json = request.get_json()
-        have_key = have_keys(
+        have_key = have_keys_NotForce(
             user_json, 'email', 'otp', 'password'
          )
         if have_key is True:

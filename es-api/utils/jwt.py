@@ -3,6 +3,7 @@ import jwt
 import os
 from utils.common import tokenTime
 import datetime
+from werkzeug.exceptions import Unauthorized, Forbidden
 
 
 def encoded_Token(
@@ -33,14 +34,13 @@ def require_user_token(*args):
                         algorithms=["HS256"]
                     )
             except jwt.ExpiredSignatureError:
-                return {"Message": "Token is Expired"}
+                raise Unauthorized(f'Token is Expired')
 
             except Exception as e:
-                return {"Message": "Unauthorized Access"}, 401
+                raise Unauthorized(f'Invalid Token')
 
             if decrypted["user_role"] not in args:
-                return {"Message": "Unauthorized For This Resource"}, 401
-
+                raise Forbidden(f'Not Permitted to this Resource')
             return func(jsonT, decrypted)
         return inner
     return require_user_token_validator

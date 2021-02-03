@@ -6,6 +6,7 @@ from patient.repository.patient_repository import PatientRepository
 from user.repository.user_repository import UserRepository
 from model.user_registration import UserRegister
 from utils.validation import validate_request, get_param, validate_number
+from utils.jwt import require_user_token
 
 
 class PatientManager():
@@ -54,7 +55,8 @@ class PatientManager():
         device_list = self.patientObj.patient_device_list()
         resp = {'devices': device_list}
         return jsonify(resp), http.client.OK
-    
+
+    @require_user_token('Patient')
     def mock_patient_device_list(self):
         devices = [['1212', '12EE', True],
                    ['1213', '13EE', True],

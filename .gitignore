@@ -1,0 +1,8 @@
+__pycache__/
+node_modules/
+.zip
+*.zip
+env/
+.*/
+migrations_1/
+migrations/

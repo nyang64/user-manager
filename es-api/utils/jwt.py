@@ -11,9 +11,9 @@ def encoded_Token(
         user_email: str,
         user_role: str = "Patient"):
     if isrefreshToken:
-        secret = os.environ["refresh_token_key"]
+        secret = os.environ["REFRESH_TOKEN_KEY"]
     else:
-        secret = os.environ["access_token_key"]
+        secret = os.environ["ACCESS_TOKEN_KEY"]
     return jwt.encode({
                 "user_email": user_email,
                 "user_role": user_role,
@@ -30,7 +30,7 @@ def require_user_token(*args):
                 return {"Message": "Unauthorized Access"}, 401
             try:
                 decrypted = jwt.decode(
-                        token, os.environ["access_token_key"],
+                        token, os.environ["ACCESS_TOKEN_KEY"],
                         algorithms=["HS256"]
                     )
             except jwt.ExpiredSignatureError:
@@ -53,7 +53,7 @@ def require_refresh_token(func):
             return {"Message": "Unauthorized Access"}, 401
         try:
             jwt.decode(
-                    token, os.environ["refresh_token_key"],
+                    token, os.environ["REFRESH_TOKEN_KEY"],
                     algorithms=["HS256"]
                 )
         except Exception:

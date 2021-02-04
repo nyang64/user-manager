@@ -1,6 +1,9 @@
 from db import db
 from sqlalchemy import String, Integer
 from model.base_model import BaseModel
+from model.roles import Roles
+from model.user_roles import UserRoles
+from model.users import Users
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import InternalServerError, NotFound, Conflict
 
@@ -34,4 +37,23 @@ class UserRegister(BaseModel):
             db.session.commit()
         except SQLAlchemyError as error:
             db.session.rollback()
+            raise InternalServerError(str(error))
+
+    @classmethod
+    def get_role_by_id(cls, user_reg_id: str) -> "UserRoles":
+        try:
+            users_data = Users().find_by_registration_id(
+                    registration_id=user_reg_id)
+            if users_data is None:
+                return False
+            user_role_data = UserRoles().find_by_user_id(
+                user_id=users_data.id)
+            if user_role_data is None:
+                return False
+            role_name_data = Roles().find_by_role_id(
+                role_id=user_role_data.role_id)
+            if role_name_data is None:
+                return False
+            return role_name_data
+        except Exception as error:
             raise InternalServerError(str(error))

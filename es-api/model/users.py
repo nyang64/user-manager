@@ -26,3 +26,7 @@ class Users(BaseModel):
     @classmethod
     def find_by_email(cls, email: str) -> "Users":
         return cls.query.filter_by(email=email).first()
+
+    @classmethod
+    def find_by_registration_id(cls, registration_id: str) -> "Users":
+        return cls.query.filter_by(registration_id=registration_id).first()

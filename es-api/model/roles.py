@@ -16,3 +16,12 @@ class Roles(BaseModel):
             db.session.commit()
         except SQLAlchemyError:
             db.session.rollback()
+
+    @classmethod
+    def find_by_role_id(cls, role_id: str) -> "Roles":
+        try:
+            roles = cls.query.filter_by(id=role_id).first()
+        except SQLAlchemyError as error:
+            db.session.rollback()
+            raise InternalServerError(str(error))
+        return roles

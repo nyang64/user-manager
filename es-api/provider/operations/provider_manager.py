@@ -99,11 +99,10 @@ def insert_ref(provider_json):
             first_name=provider_json['first_name'],
             last_name=provider_json['last_name'],
             phone_number=provider_json['phone_number'],
-            email=provider_json['email'],
             registration_id=user_registration_data.id
             )
         user.save_user()
-        user_data = user.find_by_email(provider_json['email'])
+        user_data = user.find_by_registration_id(user_registration_data.id)
         if user_data is None:
             return {"message": "Server Error"}, 500
         userRole = UserRoles(role_id=3, user_id=user_data.id)

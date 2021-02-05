@@ -2,34 +2,12 @@
 from flask import request
 from model.user_registration import UserRegister
 from model.users import Users
-from model.user_otp import UserOTPModel
-from model.address import Address
-from model.devices import Devices
-from model.patient import Patient
 from model.providers import Providers
-from model.authentication_token import AuthenticationToken
-from model.device_status_types import DeviceStatusType
-from model.device_statuses import DeviceStatUses
-from model.facilities import Facilities
-from model.roles import Roles
-from model.salvos import Salvos
-from model.therapy_reports import TherapyReport
-from model.user_roles import UserRoles
-from model.user_status_types import UserStatusType
-from model.user_statuses import UserStatUses
-from database.user import UserSchema
 from utils.common import (
     have_keys,
-    tokenTime,
-    generateOTP,
-    MyEncoder,
     encPass)
-from utils.jwt import require_user_token, require_refresh_token
-import datetime
-import jwt
-import bcrypt
 from sqlalchemy.exc import SQLAlchemyError
-from werkzeug.exceptions import InternalServerError, NotFound, Conflict
+from werkzeug.exceptions import InternalServerError, Conflict
 
 
 class provider_manager():

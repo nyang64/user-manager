@@ -82,8 +82,8 @@ def checkPass(passW: str, dbPassW: str):
     db_pass = bytes(dbPassW, 'utf-8')
     inp_pass = bytes(passW, 'utf-8')
     return bcrypt.checkpw(
-        inp_pass,
-        db_pass.decode().encode('utf-8')
+        db_pass.decode().encode('utf-8'),
+        inp_pass
         )
 
 

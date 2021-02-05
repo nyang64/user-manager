@@ -52,11 +52,12 @@ def require_refresh_token(func):
         if token is None:
             return {"Message": "Unauthorized Access"}, 401
         try:
-            jwt.decode(
+            decrypt = jwt.decode(
                     token, os.environ["REFRESH_TOKEN_KEY"],
                     algorithms=["HS256"]
                 )
         except Exception:
             return {"Message": "Unauthorized Access"}, 401
-        return func(jsonT)
+        print(decrypt)
+        return func(jsonT, decrypt)
     return inner

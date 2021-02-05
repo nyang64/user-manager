@@ -10,6 +10,14 @@ class DeviceRepo():
     def __init__(self):
         pass
 
+    def get_all_devices(self):
+        try:
+            devices = db.session.query(Devices).all()
+            #print('asad', devices)
+            return devices
+        except SQLAlchemyError as error:
+            raise InternalServerError(str(error))
+
     def save_device_key(self, serial_no, encryption_key):
         import http
         try:

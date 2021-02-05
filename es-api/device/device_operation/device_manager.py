@@ -1,11 +1,10 @@
 from utils.validation import validate_request
-from device.schema.device_key_schema import deviceSchemaObj
+from device.schema.device_key_schema import device_schema, devices_schema
 from device.schema.device_status_schema import device_status_schema
 from device.repository.device_repo import DeviceRepo
 from utils.constants import ENCRYPTION_KEY_LENGTH
 from utils.jwt import require_user_token
 import uuid
-from flask import request
 import http
 from utils.constants import ADMIN, ESUser
 
@@ -15,9 +14,9 @@ class DeviceManager():
         self.deviceObj = DeviceRepo()
 
     @require_user_token(ADMIN, ESUser)
-    def generate_key(self, decrypted):
-        request_data = request.args
-        valid = deviceSchemaObj.load(request_data)
+    def generate_key(self):
+        request_data = validate_request()
+        valid = device_schema.load(request_data)
         serial_number = valid.get('serial_number')
         key = self.__generate_key(serial_number)
         device_data, msg, code = self.deviceObj.save_device_key(serial_number,
@@ -28,6 +27,13 @@ class DeviceManager():
             "message": msg,
             "status_code": code
         }, code
+
+    def devices_list(self):
+        devices = self.deviceObj.get_all_devices()
+        device_json = devices_schema.dump(devices)
+        return {"message": "Success",
+                "data": device_json,
+                "status_code": "200"}, http.client.OK
 
     def add_device_type(self):
         request_data = validate_request()

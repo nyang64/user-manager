@@ -12,6 +12,10 @@ class DeviceBlueprint(Blueprint):
         self.add_url_rule('/device/key',
                           'Generate Key',
                           self.deviceObj.generate_key,
+                          methods=['POST'])
+        self.add_url_rule('/devices',
+                          'List Devices',
+                          self.deviceObj.devices_list,
                           methods=['GET'])
         self.add_url_rule('/add/device/status',
                           'Add Device Status',

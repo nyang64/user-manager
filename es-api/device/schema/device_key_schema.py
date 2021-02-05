@@ -22,5 +22,5 @@ class DeviceKeySchema(BaseSchema):
                                    })
 
 
-deviceSchemaObj = DeviceKeySchema()
-deviceSchemaManyObj = DeviceKeySchema(many=True)
+device_schema = DeviceKeySchema()
+devices_schema = DeviceKeySchema(many=True)

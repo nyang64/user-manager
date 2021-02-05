@@ -11,10 +11,10 @@ class Patient(BaseModel):
                         ForeignKey('ES.users.id', ondelete="CASCADE"))
     provider_id = db.Column('provider_id', Integer,
                             ForeignKey('ES.providers.id', ondelete="CASCADE"))
-    emergenct_contact_name = db.Column('emergency_contact_name',
+    emergency_contact_name = db.Column('emergency_contact_name',
                                        String(30),
                                        nullable=False)
-    emergenct_contact_number = db.Column('emergency_contact_phone',
+    emergency_contact_number = db.Column('emergency_contact_phone',
                                          String(12),
                                          nullable=False)
     date_of_birth = db.Column('date_of_birth',

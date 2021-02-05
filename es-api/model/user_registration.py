@@ -5,7 +5,7 @@ from model.roles import Roles
 from model.user_roles import UserRoles
 from model.users import Users
 from sqlalchemy.exc import SQLAlchemyError
-from werkzeug.exceptions import InternalServerError, NotFound, Conflict
+from werkzeug.exceptions import InternalServerError
 
 
 class UserRegister(BaseModel):
@@ -38,7 +38,7 @@ class UserRegister(BaseModel):
         except SQLAlchemyError as error:
             db.session.rollback()
             raise InternalServerError(str(error))
-
+        
     @classmethod
     def get_role_by_id(cls, user_reg_id: str) -> "UserRoles":
         try:

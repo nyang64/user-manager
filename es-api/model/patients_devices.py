@@ -19,7 +19,3 @@ class PatientsDevices(BaseModel):
     device = db.relationship(
         "Devices", backref=backref("devices_list", uselist=False)
     )
-
-    def save_patients_device(self) -> None:
-        db.session.add(self)
-        db.session.commit()

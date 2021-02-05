@@ -1,46 +1,58 @@
 from flask import jsonify
 from werkzeug.exceptions import BadRequest, Conflict
-from datetime import datetime
 import http
 from patient.repository.patient_repository import PatientRepository
+from common.common_repo import CommonRepo
 from user.repository.user_repository import UserRepository
 from model.user_registration import UserRegister
 from utils.validation import validate_request, get_param, validate_number
 from utils.jwt import require_user_token
+from utils.common import encPass
+from patient.schema.update_patient_schema import update_patient_schema
+from utils.constants import ADMIN, PROVIDER
 
 
 class PatientManager():
     def __init__(self):
         self.patientObj = PatientRepository()
         self.userObj = UserRepository()
+        self.commonObj = CommonRepo()
 
+    @require_user_token(ADMIN, PROVIDER)
     def create_patient(self):
         request_data = validate_request()
         register, user, patient = self.__read_patient_input(request_data)
+        self.commonObj.is_email_registered(register[0])
         user_data = UserRegister(email=register[0],
-                                 password=register[1])
-        exist_user = UserRegister.find_by_username(register[0])
-        if exist_user is not None:
-            raise Conflict('user already exist')
+                                 password=encPass(register[1]))
         UserRegister.save_to_db(user_data)
-        user_id = self.userObj.save_user(user[0], user[1],
-                                         user[2], user_data.id)
-        patient_id = self.patientObj.save_patient(user_id,
-                                                  patient[0],
-                                                  patient[1],
-                                                  patient[2])
-        return {'message': 'patient created',
-                'data': patient_id}, http.client.CREATED
+        user_id, user_uuid = self.userObj.save_user(user[0], user[1],
+                                                    user[2], user_data.id)
+        patient_id = self.patientObj.save_patient(user_id, patient[0],
+                                                  patient[1], patient[2])
+        self.patientObj.assign_patient_role(user_id)
+        return {'message': 'Patient created',
+                'data': user_uuid}, http.client.CREATED
 
-    def get_patient(self, id):
-        return {"message": "Working on this"}, http.client.CREATED
-
+    @require_user_token(ADMIN, PROVIDER)
     def update_patient(self, id):
-        return {"message": "Working on this"}, http.client.CREATED
+        request_data = validate_request()
+        data = update_patient_schema.load(request_data)
+        emer_contact_name = data['emergency_contact_name']
+        emer_contact_no = data['emergency_contact_number']
+        dob = data['date_of_birth']
+        self.patientObj.update_patient_data(id, emer_contact_name,
+                                            emer_contact_no, dob)
+        return {"message": "Sucessfully updated"}, http.client.OK
 
+    @require_user_token(ADMIN, PROVIDER)
     def delete_patient(self, id):
-        return {}, http.client.CREATED
+        if id is None:
+            raise BadRequest('param id cannot be None')
+        self.patientObj.delete_patient_data(id)
+        return {"message": "Patient deleted"}, http.client.OK
 
+    @require_user_token(ADMIN, PROVIDER)
     def assign_device(self, id):
         if id is None:
             raise BadRequest('id is None')

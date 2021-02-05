@@ -3,18 +3,22 @@ from werkzeug.exceptions import InternalServerError
 from model.patient import Patient
 from model.patients_devices import PatientsDevices
 from model.devices import Devices
-from patient.schema.device_list_schema import DeviceListSchema
+from model.user_roles import UserRoles
+from common.common_repo import CommonRepo
 from db import db
 
 
 class PatientRepository():
-    def save_patient(self, user_id, emergency_contact_name,
-                     emergency_contact_number, date_of_birth):
+    def __init__(self):
+        self.commonObj = CommonRepo()
+        
+    def save_patient(self, user_id, emer_contact_name,
+                     emer_contact_no, date_of_birth):
         try:
-            self.check_user_exist(user_id)
+            self.commonObj.check_user_exist(user_id)
             patient_data = Patient(user_id=user_id,
-                                   emergenct_contact_name=emergency_contact_name,
-                                   emergenct_contact_number=emergency_contact_number,
+                                   emergency_contact_name=emer_contact_name,
+                                   emergency_contact_number=emer_contact_no,
                                    date_of_birth=date_of_birth)
             Patient.save_patient(patient_data)
             print(patient_data.id)
@@ -24,14 +28,14 @@ class PatientRepository():
         except SQLAlchemyError as error:
             db.session.rollback()
             raise InternalServerError(str(error))
-    
+
     def assign_device_to_patient(self, patient_id, device_id):
         try:
-            self.check_patient_exist(patient_id)
-            self.check_device_exist(device_id)
+            self.commonObj.check_patient_exist(patient_id)
+            self.commonObj.check_device_exist(device_id)
             patient_device_data = PatientsDevices(patient_id=patient_id,
                                                   device_id=device_id)
-            PatientsDevices.save_patients_device(patient_device_data)
+            PatientsDevices.save_db(patient_device_data)
         except SQLAlchemyError as error:
             db.session.rollback()
             raise InternalServerError(str(error))
@@ -39,7 +43,8 @@ class PatientRepository():
     def patient_device_list(self):
         device_list = db.session.query(Devices).join(PatientsDevices). \
             filter(Devices.id == PatientsDevices.device_id). \
-            join(Patient).filter(Patient.id == PatientsDevices.patient_id).all()
+            join(Patient).filter(
+                Patient.id == PatientsDevices.patient_id).all()
         json_device = [{'serial_number': d.serial_number,
                         'key': d.encryption_key,
                         'status': d.status}
@@ -47,18 +52,24 @@ class PatientRepository():
         print(json_device)
         return json_device
 
-    def check_patient_exist(self, patient_id):
+    def update_patient_data(self, id, emer_contact_name,
+                            emer_contact_no, dob):
+        exist_patient = self.commonObj.check_patient_exist(id)
+        exist_patient.emergency_contact_name = emer_contact_name
+        exist_patient.emergency_contact_number = emer_contact_no
+        exist_patient.date_of_birth = dob
+        Patient.update_db(exist_patient)
+
+    def delete_patient_data(self, id):
+        exist_patient = self.commonObj.check_patient_exist(id)
+        Patient.delete_obj(exist_patient)
+        
+    def assign_patient_role(self, user_id):
         try:
-            patient = db.session.query(Patient.id). \
-                        filter_by(id=patient_id).first()
-            print("patient", patient)
+            self.commonObj.check_user_exist(user_id)
+            user_role = UserRoles(role_id=3, user_id=user_id)
+            UserRoles.save_db(user_role)
+            if user_role.id is None:
+                raise SQLAlchemyError('Roles not updated')
         except SQLAlchemyError as error:
             raise InternalServerError(str(error))
-
-    def check_device_exist(self, device_id):
-        print("device_id", device_id)
-        device = db.session.query(Devices.id).filter_by(id=device_id).first()
-        print(device)
-        
-    def check_user_exist(self, user_id):
-        pass

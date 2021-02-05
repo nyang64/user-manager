@@ -12,10 +12,6 @@ class PatientBluePrint(Blueprint):
                           'create patient',
                           self.patientObj.create_patient,
                           methods=['POST'])
-        self.add_url_rule('/patients/<id>',
-                          'get patient',
-                          self.patientObj.get_patient,
-                          methods=['GET'])
         self.add_url_rule('/patients/<id>', 'update patient',
                           self.patientObj.update_patient,
                           methods=['PUT'])

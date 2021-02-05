@@ -7,7 +7,10 @@ from utils.common import (
     have_keys,
     encPass)
 from sqlalchemy.exc import SQLAlchemyError
+from utils.jwt import require_user_token
 from werkzeug.exceptions import InternalServerError, Conflict
+from model.user_roles import UserRoles
+from db import db
 
 
 class provider_manager():
@@ -15,8 +18,8 @@ class provider_manager():
         pass
     
     
-    @require_user_token("Admin")
-    def register_provider(self, decrypt):
+    #@require_user_token("Admin")
+    def register_provider(self):
         provider_json = request.get_json()
         if have_keys(
             provider_json,
@@ -61,7 +64,7 @@ def user_exists(provider_json):
             )
     if user_reg_data is not None:
         if (Users.find_by_registration_id(
-            registration_id=user_reg_data.registration_id
+            registration_id=user_reg_data.id
                 ) is not None):
             raise Conflict(f'Users Already Register')
 

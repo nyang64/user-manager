@@ -38,8 +38,8 @@ def require_user_token(*args):
 
             except Exception as e:
                 raise Unauthorized(f'Invalid Token')
-
-            if decrypted["user_role"] not in args:
+            print(decrypted["user_role"].upper(), args)
+            if decrypted["user_role"].upper() not in args:
                 raise Unauthorized(f'Not Permitted to this Resource')
             return func(jsonT, decrypted)
         return inner

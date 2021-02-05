@@ -19,7 +19,7 @@ class PatientManager():
         self.commonObj = CommonRepo()
 
     @require_user_token(ADMIN, PROVIDER)
-    def create_patient(self):
+    def create_patient(self, decrypt):
         request_data = validate_request()
         register, user, patient = self.__read_patient_input(request_data)
         self.commonObj.is_email_registered(register[0])

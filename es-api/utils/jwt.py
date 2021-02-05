@@ -3,7 +3,7 @@ import jwt
 import os
 from utils.common import tokenTime
 import datetime
-from werkzeug.exceptions import Unauthorized, Forbidden
+from werkzeug.exceptions import Unauthorized
 
 
 def encoded_Token(
@@ -40,7 +40,7 @@ def require_user_token(*args):
                 raise Unauthorized(f'Invalid Token')
 
             if decrypted["user_role"] not in args:
-                raise Forbidden(f'Not Permitted to this Resource')
+                raise Unauthorized(f'Not Permitted to this Resource')
             return func(jsonT, decrypted)
         return inner
     return require_user_token_validator

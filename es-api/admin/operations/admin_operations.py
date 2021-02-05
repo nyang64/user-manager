@@ -2,57 +2,53 @@
 from flask import request
 from model.user_registration import UserRegister
 from model.users import Users
+from model.user_otp import UserOTPModel
+from model.address import Address
+from model.devices import Devices
+from model.patient import Patient
 from model.providers import Providers
+from model.authentication_token import AuthenticationToken
+from model.device_status_types import DeviceStatusType
+from model.device_statuses import DeviceStatUses
+from model.facilities import Facilities
+from model.roles import Roles
+from model.salvos import Salvos
+from model.therapy_reports import TherapyReport
+from model.user_roles import UserRoles
+from model.user_status_types import UserStatusType
+from model.user_statuses import UserStatUses
+from database.user import UserSchema
 from utils.common import (
     have_keys,
+    tokenTime,
+    generateOTP,
+    MyEncoder,
     encPass)
+from utils.jwt import require_user_token, require_refresh_token
+import datetime
+import jwt
+import bcrypt
 from sqlalchemy.exc import SQLAlchemyError
-from werkzeug.exceptions import InternalServerError, Conflict
+from werkzeug.exceptions import InternalServerError, NotFound, Conflict
 
 
-class provider_manager():
+class admin_manager():
     def __init__(self):
         pass
-    
-    
-    @require_user_token("Admin")
-    def register_provider(self, decrypt):
-        provider_json = request.get_json()
+
+    def register_admin(self):
+        admin_json = request.get_json()
         if have_keys(
-            provider_json,
+            admin_json,
             'first_name', 'last_name',
-            'facility_id', 'phone_number',
+            'phone_number',
             'email', 'password'
                 ) is False:
             return {"message": "Invalid Request Parameters"}, 400
-        user_exists(provider_json)
-        user_id = insert_ref(provider_json)
-        provider = Providers(
-            user_id=user_id,
-            facility_id=provider_json["facility_id"]
-            )
-        try:
-            provider.save_to_db()
-        except SQLAlchemyError as error:
-            db.session.rollback()
-            raise InternalServerError(str(error)) 
-        return {"message": "Provider Created"}, 201
-
-
-    @require_user_token("Admin","Provider")
-    def get_provider_by_id(self):
-        provider_json = request.get_json()
-        if have_keys(provider_json, 'provider_id') is False:
-            return {"message": "Invalid Request Parameters"}, 400
-        provider_data = Providers.find_by_id(provider_json["provider_id"])
-        if provider_data is None:
-            return {"message": "No Such Provider Exist"}, 404
-        provider_data_json = provider_data.__dict__
-        del provider_data_json['_sa_instance_state']
-        return {
-            "message": "Users Found",
-            "Data": [provider_data_json]
-            }, 200
+        user_exists(admin_json)
+        user_id = insert_ref(admin_json)
+       
+        return {"message": "Admin Created"}, 201
 
 
 def user_exists(provider_json):
@@ -91,7 +87,7 @@ def insert_ref(provider_json):
         user_data = user.find_by_registration_id(user_registration_data.id)
         if user_data is None:
             return {"message": "Server Error"}, 500
-        userRole = UserRoles(role_id=3, user_id=user_data.id)
+        userRole = UserRoles(role_id=1, user_id=user_data.id)
         userRole.save_to_db()
     except SQLAlchemyError as error:
         db.session.rollback()

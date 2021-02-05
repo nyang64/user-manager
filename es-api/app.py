@@ -6,6 +6,7 @@ from authentication.blueprint import AuthenticationBlueprint
 from user.blueprint import UserBluePrint
 from patient.blueprint import PatientBluePrint
 from provider.blueprint import ProviderBlueprint
+from admin.blueprint import AdminBlueprint
 from application import Appplication
 from device.blueprint import DeviceBlueprint
 
@@ -27,6 +28,9 @@ app.register_blueprint(user_blueprint)
 
 provider_blueprint = ProviderBlueprint()
 app.register_blueprint(provider_blueprint)
+
+admin_blueprint = AdminBlueprint()
+app.register_blueprint(admin_blueprint)
 
 patient_blueprint = PatientBluePrint()
 app.register_blueprint(patient_blueprint)

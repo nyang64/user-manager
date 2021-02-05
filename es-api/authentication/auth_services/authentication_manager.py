@@ -6,6 +6,8 @@ from model.address import Address
 from model.devices import Devices
 from model.patient import Patient
 from model.providers import Providers
+from model.user_roles import UserRoles
+from model.roles import Roles
 from database.user import UserSchema
 from utils.common import (
         have_keys, tokenTime,
@@ -29,11 +31,11 @@ class AuthenticationManager():
         if have_keys(user_json, 'email', 'password') is False:
             return {"message": "Invalid Request Parameters"}, 400
         if UserRegister.find_by_username(
-            email=user_json["email"]
+            email=str(user_json["email"]).lower()
                 ) is not None:
             return {"message": "User Already Exist"}, 409
         user = UserRegister(
-            email=user_json["email"],
+            email=str(user_json["email"]).lower(),
             password=encPass(user_json["password"])
             )
         user.save_to_db()
@@ -43,12 +45,19 @@ class AuthenticationManager():
         user_json = request.get_json()
         if have_keys(user_json, 'email', 'password') is False:
             return {"message": "Invalid Request Parameters"}, 400
-        user_data = UserRegister.find_by_username(user_json["email"])
+        user_data = UserRegister.find_by_username(
+            str(user_json["email"]).lower())
         if user_data is None:
             return {"message": "No Such User Exist"}, 404
         if checkPass(user_json["password"], user_data.password):
-            encoded_accessToken = encoded_Token(False, user_json["email"])
-            encoded_refreshToken = encoded_Token(True, user_json["email"])
+            role_name_data = UserRegister.get_role_by_id(
+                user_reg_id=user_data.id)
+            encoded_accessToken = encoded_Token(
+                False, str(user_json["email"]).lower(),
+                role_name_data.role_name)
+            encoded_refreshToken = encoded_Token(
+                True, str(user_json["email"]).lower(),
+                role_name_data.role_name)
 
             return {
                 "message": "Successfully Login",
@@ -63,8 +72,10 @@ class AuthenticationManager():
             otp_data.temp_password != ""
                 ):
             if checkPass(user_json["password"], otp_data.temp_password):
-                encoded_accessToken = encoded_Token(False, user_json["email"])
-                encoded_refreshToken = encoded_Token(False, user_json["email"])
+                encoded_accessToken = encoded_Token(
+                    False, str(user_json["email"]).lower())
+                encoded_refreshToken = encoded_Token(
+                    False, str(user_json["email"]).lower())
                 return {
                     "message": "Successfully Login",
                     "id_token": encoded_accessToken,
@@ -97,14 +108,8 @@ class AuthenticationManager():
         return {"message": "Password Updated"}, 200
 
     @require_refresh_token
-    def refresh_access_token(self):
-        user_json = request.get_json()
-        have_key = have_keys(
-            user_json, 'email'
-         )
-        if have_key is False:
-            return {"message": "Invalid Request Parameters"}, 400
-        encoded_accessToken = encoded_Token(False, user_json["email"])
+    def refresh_access_token(self, decrypt):
+        encoded_accessToken = encoded_Token(False, decrypt["user_email"])
         return {
                 "message": "Token Generated Successfully",
                 "id_token": encoded_accessToken
@@ -117,7 +122,8 @@ class AuthenticationManager():
          )
         if have_key is True:
             user_data = UserRegister.find_by_username(
-                email=user_json["email"])
+                email=str(user_json["email"]).lower()
+                )
             if user_data is None:
                 return {"message": "No Such User Exist"}, 404
             otp_data = UserOTPModel.matchOTP(
@@ -135,7 +141,7 @@ class AuthenticationManager():
          )
         if have_keyN is True:
             user_data = UserRegister.find_by_username(
-                email=user_json["email"])
+                email=str(user_json["email"]).lower())
             if user_data is None:
                 return {"message": "No Such User Exist"}, 404
             otp = generateOTP()

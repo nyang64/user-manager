@@ -17,7 +17,7 @@ class UserManager():
         self.commonObj = CommonRepo()
     
     @require_user_token(ADMIN)
-    def create_user(self):
+    def create_user(self, decrypt):
         request_data = validate_request()
         register, user = self.__read_user_input(request_data)
         self.commonObj.is_email_registered(register[0])
@@ -54,7 +54,7 @@ class UserManager():
         user_id = request.args.get('id')
         if user_id is None:
             raise BadRequest("parameter id is missing")
-        self.userObj.delete_user_byid(id)
+        self.userObj.delete_user_byid(user_id)
         return {'message': 'user deleted',
                 'statusCode': '202'}, http.client.ACCEPTED
 

@@ -5,21 +5,21 @@ from model.users import Users
 from model.providers import Providers
 from utils.common import (
     have_keys,
-    encPass)
+    encPass, generate_uuid)
 from sqlalchemy.exc import SQLAlchemyError
 from utils.jwt import require_user_token
 from werkzeug.exceptions import InternalServerError, Conflict
 from model.user_roles import UserRoles
 from db import db
+from utils.constants import ADMIN, PROVIDER
 
 
 class provider_manager():
     def __init__(self):
         pass
     
-    
-    #@require_user_token("Admin")
-    def register_provider(self):
+    @require_user_token(ADMIN)
+    def register_provider(self, decrypt):
         provider_json = request.get_json()
         if have_keys(
             provider_json,
@@ -42,8 +42,8 @@ class provider_manager():
         return {"message": "Provider Created"}, 201
 
 
-    @require_user_token("Admin","Provider")
-    def get_provider_by_id(self):
+    @require_user_token(ADMIN, PROVIDER)
+    def get_provider_by_id(self, decrypt):
         provider_json = request.get_json()
         if have_keys(provider_json, 'provider_id') is False:
             return {"message": "Invalid Request Parameters"}, 400
@@ -88,13 +88,14 @@ def insert_ref(provider_json):
             first_name=provider_json['first_name'],
             last_name=provider_json['last_name'],
             phone_number=provider_json['phone_number'],
-            registration_id=user_registration_data.id
+            registration_id=user_registration_data.id,
+            uuid=generate_uuid()
             )
         user.save_user()
         user_data = user.find_by_registration_id(user_registration_data.id)
         if user_data is None:
             return {"message": "Server Error"}, 500
-        userRole = UserRoles(role_id=3, user_id=user_data.id)
+        userRole = UserRoles(role_id=2, user_id=user_data.id)
         userRole.save_to_db()
     except SQLAlchemyError as error:
         db.session.rollback()

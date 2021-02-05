@@ -14,7 +14,7 @@ class DeviceManager():
         self.deviceObj = DeviceRepo()
 
     @require_user_token(ADMIN, ESUser)
-    def generate_key(self):
+    def generate_key(self, decrypt):
         request_data = validate_request()
         valid = device_schema.load(request_data)
         serial_number = valid.get('serial_number')
@@ -28,14 +28,16 @@ class DeviceManager():
             "status_code": code
         }, code
 
-    def devices_list(self):
+    @require_user_token(ADMIN, ESUser)
+    def devices_list(self, decrypt):
         devices = self.deviceObj.get_all_devices()
         device_json = devices_schema.dump(devices)
         return {"message": "Success",
                 "data": device_json,
                 "status_code": "200"}, http.client.OK
 
-    def add_device_type(self):
+    @require_user_token(ADMIN, ESUser)
+    def add_device_type(self, decrypt):
         request_data = validate_request()
         request_data = device_status_schema.load(request_data)
         self.deviceObj.add_device_status(request_data['name'])

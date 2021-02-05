@@ -9,7 +9,7 @@ from utils.validation import validate_request, get_param, validate_number
 from utils.jwt import require_user_token
 from utils.common import encPass
 from patient.schema.update_patient_schema import update_patient_schema
-from utils.constants import ADMIN, PROVIDER
+from utils.constants import ADMIN, PROVIDER, PATIENT
 from flask import request
 
 
@@ -58,12 +58,10 @@ class PatientManager():
         return {"message": "Patient deleted"}, http.client.OK
 
     @require_user_token(ADMIN, PROVIDER)
-    def assign_device(self, id):
-        if id is None:
-            raise BadRequest('id is None')
+    def assign_device(self, decrypt):
         request_data = validate_request()
-        device_id = self.__read_device_input(request_data)
-        self.patientObj.assign_device_to_patient(id, device_id)
+        patient_id, device_id = self.__read_device_input(request_data)
+        self.patientObj.assign_device_to_patient(patient_id, device_id)
         print("id", id)
         return {'message': 'Device assigned',
                 'statusCode': '201'}, http.client.CREATED
@@ -73,7 +71,7 @@ class PatientManager():
         resp = {'devices': device_list}
         return jsonify(resp), http.client.OK
 
-    @require_user_token('Patient')
+    @require_user_token(PATIENT)
     def mock_patient_device_list(self):
         devices = [['1212', '12EE', True],
                    ['1213', '13EE', True],
@@ -87,8 +85,9 @@ class PatientManager():
         return jsonify(resp), http.client.OK
 
     def __read_device_input(self, request_data):
+        patient_id = int(get_param('patient_id', request_data))
         device_id = int(get_param('device_id', request_data))
-        return device_id
+        return patient_id, device_id
 
     def __read_patient_input(self, request_data):
         email = get_param('email', request_data)

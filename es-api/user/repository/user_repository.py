@@ -3,8 +3,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from model.user_roles import UserRoles
 from werkzeug.exceptions import InternalServerError, NotFound
 from db import db
+from utils.common import generate_uuid
 from common.common_repo import CommonRepo
-
 
 
 class UserRepository():
@@ -16,7 +16,8 @@ class UserRepository():
             user_data = Users(first_name=first_name,
                               last_name=last_name,
                               phone_number=phone_number,
-                              registration_id=reg_id)
+                              registration_id=reg_id,
+                              uuid=generate_uuid())
             Users.save_db(user_data)
             if user_data.id is None:
                 raise SQLAlchemyError('User data not inserted')
@@ -47,9 +48,10 @@ class UserRepository():
             db.session.rollback()
             raise InternalServerError(error)
 
-    def delete_user_byid(self, id):
+    def delete_user_byid(self, user_id):
+        self.commonObj.check_user_exist(user_id)
         try:
-            user = db.session.query(Users).filter_by(id=id).first()
+            user = db.session.query(Users).filter_by(id=user_id).first()
             if user is None:
                 raise NotFound('user does not exist')
             Users.delete_obj(user)

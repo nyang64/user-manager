@@ -13,7 +13,7 @@ class UserBluePrint(Blueprint):
                           self.userObj.create_user,
                           methods=['POST'])
         self.add_url_rule('/user',
-                          'update users',
+                          'Update users',
                           self.userObj.update_user,
                           methods=['PUT'])
         self.add_url_rule('/users',

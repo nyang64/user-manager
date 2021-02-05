@@ -5,6 +5,7 @@ import random
 from json import JSONEncoder
 import bcrypt
 from werkzeug.exceptions import BadRequest
+import uuid
 
 
 def is_json(myjson):
@@ -64,6 +65,10 @@ def generateOTP():
     for i in range(6):
         one_time_password += digits[math.floor(random.random() * 10)]
     return one_time_password
+
+
+def generate_uuid():
+    return str(uuid.uuid4())
 
 
 def timeDiff(first_time: datetime, second_time: datetime):

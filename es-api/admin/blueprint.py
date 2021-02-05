@@ -9,7 +9,8 @@ class AdminBlueprint(Blueprint):
         self._add_routes()
 
     def _add_routes(self):
-        self.add_url_rule('/admin/register',
-                          'Register Admin',
-                          self.admin_obj.register_admin,
-                          methods=['POST'])
+        self.add_url_rule('/seed/db',
+                          'seed db',
+                          self.admin_obj.seed_db,
+                          methods=['POST']
+                          )

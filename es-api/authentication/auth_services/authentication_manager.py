@@ -16,8 +16,7 @@ from utils.jwt import (
         require_user_token,
         require_refresh_token,
         encoded_Token)
-import datetime
-import jwt
+from utils.constants import ADMIN, PROVIDER, PATIENT, ESUser
 
 user_schema = UserSchema()
 
@@ -83,7 +82,7 @@ class AuthenticationManager():
                 }, 200
         return {"message": "Invalid Credentials"}, 401
 
-    @require_user_token("Admin", "Patient")
+    @require_user_token(ADMIN, PROVIDER, PATIENT, ESUser)
     def update_user_password(self, decrypt):
         user_json = request.get_json()
         have_key = have_keys(

@@ -1,7 +1,11 @@
-# from flask_restful import Resource
-from flask import request
 from model.user_registration import UserRegister
 from model.users import Users
+from model.roles import Roles
+from model.user_roles import UserRoles
+from utils.common import encPass
+from sqlalchemy.exc import SQLAlchemyError
+from werkzeug.exceptions import InternalServerError, Conflict
+from db import db
 from model.user_otp import UserOTPModel
 from model.address import Address
 from model.devices import Devices
@@ -17,39 +21,75 @@ from model.therapy_reports import TherapyReport
 from model.user_roles import UserRoles
 from model.user_status_types import UserStatusType
 from model.user_statuses import UserStatUses
-from database.user import UserSchema
-from utils.common import (
-    have_keys,
-    tokenTime,
-    generateOTP,
-    MyEncoder,
-    encPass)
-from utils.jwt import require_user_token, require_refresh_token
-import datetime
-import jwt
-import bcrypt
-from sqlalchemy.exc import SQLAlchemyError
-from werkzeug.exceptions import InternalServerError, NotFound, Conflict
+from facility.operations.facilities_operations import FacilitiesRepository
+from role.operations.user_role import RoleRepository
 
 
 class admin_manager():
     def __init__(self):
         pass
+       
+    def seed_db(self):
+        role_msg = self.seed_roles()
+        admin_msg = self.register_admin()
+        address_msg, address_id = self.seed_address()
+        facility_msg = self.seed_facility(address_id=address_id,
+                                          name='facilitytest')
+        return {'message': [role_msg, admin_msg,
+                            address_msg, facility_msg]}, 201
 
     def register_admin(self):
-        admin_json = request.get_json()
-        if have_keys(
-            admin_json,
-            'first_name', 'last_name',
-            'phone_number',
-            'email', 'password'
-                ) is False:
-            return {"message": "Invalid Request Parameters"}, 400
-        user_exists(admin_json)
-        user_id = insert_ref(admin_json)
-       
-        return {"message": "Admin Created"}, 201
+        admin_json = {
+            'first_name':'admin',
+            'last_name':'admin',
+            'phone_number':'8097810754',
+            'uuid':'1212121212',
+            'email':'admin@elementsci.com',
+            'password':'admin123'
+        }
+        if admin_json is False:
+            return {"message": " Not created"}, 400
+        exist = user_exists(admin_json)
+        if exist is False:
+            return 'Admin already created'
+        insert_ref(admin_json)
+        return 'Admin Created'
+    
+    def seed_roles(self):
+        role_list = ['ADMIN', 'PROVIDER', 'PATIENT', 'USER']
+        roles = [Roles(role_name=role) for role in role_list]
+        db.session.add_all(roles)
+        db.session.commit()
+        return 'Role Created'
+    
+    def seed_address(self):
+        address_id = save_address(None, None, None, None,
+                                  None, None, None)
+        return 'Address Added', address_id
 
+    def seed_facility(self, address_id, name):
+        facility = FacilitiesRepository()
+        facility.save_facility(address_id, name)
+        return 'Facility Added'
+    
+
+def save_address(user_id, street_address_1,
+                 street_address_2, city, state, country, postal_code):
+    try:
+        address_data = Address(
+            user_id=user_id,
+            street_address_1=street_address_1,
+            street_address_2=street_address_2,
+            city=city,
+            state=state,
+            country=country,
+            postal_code=postal_code
+            )
+        address_data.save_to_db()
+        return address_data.id
+    except SQLAlchemyError as error:
+        db.session.rollback()
+        raise InternalServerError(str(error))
 
 def user_exists(provider_json):
     user_reg_data = UserRegister.find_by_username(
@@ -57,12 +97,11 @@ def user_exists(provider_json):
             )
     if user_reg_data is not None:
         if (Users.find_by_registration_id(
-            registration_id=user_reg_data.registration_id
+            registration_id=user_reg_data.id
                 ) is not None):
-            raise Conflict(f'Users Already Register')
-
+            return False
     if user_reg_data is not None:
-        raise Conflict(f'Users Already Register')
+        return False
 
 
 def insert_ref(provider_json):

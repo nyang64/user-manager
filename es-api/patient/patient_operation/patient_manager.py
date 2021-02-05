@@ -10,6 +10,7 @@ from utils.jwt import require_user_token
 from utils.common import encPass
 from patient.schema.update_patient_schema import update_patient_schema
 from utils.constants import ADMIN, PROVIDER
+from flask import request
 
 
 class PatientManager():
@@ -28,28 +29,32 @@ class PatientManager():
         UserRegister.save_to_db(user_data)
         user_id, user_uuid = self.userObj.save_user(user[0], user[1],
                                                     user[2], user_data.id)
-        patient_id = self.patientObj.save_patient(user_id, patient[0],
-                                                  patient[1], patient[2])
+        self.patientObj.save_patient(user_id, patient[0],
+                                     patient[1], patient[2])
         self.patientObj.assign_patient_role(user_id)
         return {'message': 'Patient created',
                 'data': user_uuid}, http.client.CREATED
 
     @require_user_token(ADMIN, PROVIDER)
-    def update_patient(self, id):
+    def update_patient(self, decrypt):
+        patient_id = request.args.get('id')
+        if patient_id is None:
+            raise BadRequest("parameter id is missing")
         request_data = validate_request()
         data = update_patient_schema.load(request_data)
         emer_contact_name = data['emergency_contact_name']
         emer_contact_no = data['emergency_contact_number']
         dob = data['date_of_birth']
-        self.patientObj.update_patient_data(id, emer_contact_name,
+        self.patientObj.update_patient_data(patient_id, emer_contact_name,
                                             emer_contact_no, dob)
         return {"message": "Sucessfully updated"}, http.client.OK
 
     @require_user_token(ADMIN, PROVIDER)
-    def delete_patient(self, id):
-        if id is None:
-            raise BadRequest('param id cannot be None')
-        self.patientObj.delete_patient_data(id)
+    def delete_patient(self, decrypt):
+        patient_id = request.args.get('id')
+        if patient_id is None:
+            raise BadRequest("parameter id is missing")
+        self.patientObj.delete_patient_data(patient_id)
         return {"message": "Patient deleted"}, http.client.OK
 
     @require_user_token(ADMIN, PROVIDER)

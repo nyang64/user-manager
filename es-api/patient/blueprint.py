@@ -12,10 +12,10 @@ class PatientBluePrint(Blueprint):
                           'create patient',
                           self.patientObj.create_patient,
                           methods=['POST'])
-        self.add_url_rule('/patients/<id>', 'update patient',
+        self.add_url_rule('/patients', 'update patient',
                           self.patientObj.update_patient,
                           methods=['PUT'])
-        self.add_url_rule('/patients/<id>',
+        self.add_url_rule('/patients',
                           'delete patient',
                           self.patientObj.delete_patient,
                           methods=['DELETE'])

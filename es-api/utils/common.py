@@ -79,11 +79,9 @@ def encPass(passW: str):
 
 
 def checkPass(passW: str, dbPassW: str):
-    db_pass = bytes(dbPassW, 'utf-8')
-    inp_pass = bytes(passW, 'utf-8')
     return bcrypt.checkpw(
-        db_pass.decode().encode('utf-8'),
-        inp_pass
+        passW.encode('utf-8'),
+        dbPassW.encode('utf-8')
         )
 
 

@@ -12,7 +12,7 @@ class UserBluePrint(Blueprint):
                           'create users',
                           self.userObj.create_user,
                           methods=['POST'])
-        self.add_url_rule('/users/<id>',
+        self.add_url_rule('/user',
                           'update users',
                           self.userObj.update_user,
                           methods=['PUT'])
@@ -20,7 +20,7 @@ class UserBluePrint(Blueprint):
                           'List users',
                           self.userObj.get_users,
                           methods=['GET'])
-        self.add_url_rule('/user/<id>',
+        self.add_url_rule('/user',
                           'Delete users',
                           self.userObj.delete_user,
                           methods=['DELETE'])

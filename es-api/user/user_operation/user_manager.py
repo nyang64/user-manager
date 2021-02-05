@@ -8,6 +8,7 @@ from common.common_repo import CommonRepo
 from utils.common import encPass
 from utils.jwt import require_user_token
 from utils.constants import ADMIN
+from flask import request
 
 
 class UserManager():
@@ -31,13 +32,14 @@ class UserManager():
                 'statusCode': '201'}, http.client.CREATED
     
     @require_user_token(ADMIN)
-    def update_user(self, id):
-        if id is None:
+    def update_user(self, decrypt):
+        user_id = request.args.get('id')
+        if user_id is None:
             raise BadRequest("parameter id is missing")
         request_data = validate_request()
         first_name, last_name, phone_number = self.__read_update_input(
                                                         request_data)
-        self.userObj.update_user_byid(id, first_name, last_name,
+        self.userObj.update_user_byid(user_id, first_name, last_name,
                                       phone_number)
         return {'message': 'user updated',
                 'statusCode': '200'}, http.client.OK
@@ -48,9 +50,10 @@ class UserManager():
                 'statusCode': '200'}, http.client.OK
 
     @require_user_token(ADMIN)
-    def delete_user(self, id):
-        if id is None:
-            raise BadRequest('')
+    def delete_user(self, decrypt):
+        user_id = request.args.get('id')
+        if user_id is None:
+            raise BadRequest("parameter id is missing")
         self.userObj.delete_user_byid(id)
         return {'message': 'user deleted',
                 'statusCode': '202'}, http.client.ACCEPTED

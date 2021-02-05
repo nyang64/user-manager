@@ -6,8 +6,10 @@ from authentication.blueprint import AuthenticationBlueprint
 from user.blueprint import UserBluePrint
 from patient.blueprint import PatientBluePrint
 from provider.blueprint import ProviderBlueprint
+from admin.blueprint import AdminBlueprint
 from application import Appplication
 from utils.init_db import initializeDB
+import os
 
 app = Appplication(__name__, '/v1')
 app.config["SQLALCHEMY_DATABASE_URI"] = get_connection_url()
@@ -20,10 +22,12 @@ ma.init_app(app)
 migrate.init_app(app, db)
 
 
-# @app.before_first_request
-# def create_tables():
-#     db.create_all()
-#     initDB = initializeDB()
+
+@app.before_first_request
+def create_tables():
+    # db.create_all()
+    initDB = initializeDB()
+
 
 
 
@@ -36,6 +40,9 @@ app.register_blueprint(user_blueprint)
 
 provider_blueprint = ProviderBlueprint()
 app.register_blueprint(provider_blueprint)
+
+admin_blueprint = AdminBlueprint()
+app.register_blueprint(admin_blueprint)
 
 patient_blueprint = PatientBluePrint()
 app.register_blueprint(patient_blueprint)

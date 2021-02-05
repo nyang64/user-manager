@@ -122,7 +122,8 @@ class AuthenticationManager():
          )
         if have_key is True:
             user_data = UserRegister.find_by_username(
-                email=str(user_json["email"]).lower())
+                email=str(user_json["email"]).lower()
+                )
             if user_data is None:
                 return {"message": "No Such User Exist"}, 404
             otp_data = UserOTPModel.matchOTP(
@@ -140,7 +141,7 @@ class AuthenticationManager():
          )
         if have_keyN is True:
             user_data = UserRegister.find_by_username(
-                email=str(user_json["email"]).lower)
+                email=str(user_json["email"]).lower())
             if user_data is None:
                 return {"message": "No Such User Exist"}, 404
             otp = generateOTP()

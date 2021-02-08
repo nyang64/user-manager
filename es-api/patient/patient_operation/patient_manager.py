@@ -72,7 +72,7 @@ class PatientManager():
         return jsonify(resp), http.client.OK
 
     @require_user_token(PATIENT)
-    def mock_patient_device_list(self):
+    def mock_patient_device_list(self,decrypt):
         devices = [['1212', '12EE', True],
                    ['1213', '13EE', True],
                    ['1512', '12TE', False]]

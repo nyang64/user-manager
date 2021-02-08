@@ -60,7 +60,7 @@ class provider_manager():
 
 def user_exists(provider_json):
     user_reg_data = UserRegister.find_by_username(
-        email=provider_json['email']
+        email=str(provider_json['email']).lower()
             )
     if user_reg_data is not None:
         if (Users.find_by_registration_id(
@@ -75,12 +75,12 @@ def user_exists(provider_json):
 def insert_ref(provider_json):
     try:
         user_registration = UserRegister(
-            email=provider_json['email'],
+            email=str(provider_json['email']).lower(),
             password=encPass(provider_json['password']),
             )
         user_registration.save_to_db()
         user_registration_data = UserRegister.find_by_username(
-            email=provider_json['email']
+            email=str(provider_json['email']).lower()
             )
         if user_registration_data is None:
             return {"message": "Server Error"}, 500

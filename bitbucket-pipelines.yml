@@ -1,12 +1,14 @@
-image: python:3.8
-pipelines:
-  branches:
-    feature/EC-608-implement-service-to-create-update-provider:
-      - step:
-          name: Git Checkout
-          script:
-		    - git clone https://Dhruv_Rana@bitbucket.org/elementsci/user-manager.git
-       - step:
-          name: Python Dependencies Installation.
-          script:
-		    - pip install -r requirements.txt
+image: "python:3.8"
+pipelines: 
+  branches: 
+    feature/EC-608-implement-service-to-create-update-provider: 
+      - 
+        step: 
+          name: "Git Checkout"
+          script: 
+            - "git clone https://Dhruv_Rana@bitbucket.org/elementsci/user-manager.git"
+      - 
+        step: 
+          name: "Python Dependencies Installation."
+          script: 
+            - "pip install -r requirements.txt"

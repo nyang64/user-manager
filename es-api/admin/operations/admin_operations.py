@@ -2,33 +2,18 @@ from model.user_registration import UserRegister
 from model.users import Users
 from model.roles import Roles
 from model.user_roles import UserRoles
+from model.address import Address
 from utils.common import encPass
 from sqlalchemy.exc import SQLAlchemyError
-from werkzeug.exceptions import InternalServerError, Conflict
+from werkzeug.exceptions import InternalServerError
 from db import db
-from model.user_otp import UserOTPModel
-from model.address import Address
-from model.devices import Devices
-from model.patient import Patient
-from model.providers import Providers
-from model.authentication_token import AuthenticationToken
-from model.device_status_types import DeviceStatusType
-from model.device_statuses import DeviceStatUses
 from model.facilities import Facilities
-from model.roles import Roles
-from model.salvos import Salvos
-from model.therapy_reports import TherapyReport
-from model.user_roles import UserRoles
-from model.user_status_types import UserStatusType
-from model.user_statuses import UserStatUses
-from facility.operations.facilities_operations import FacilitiesRepository
-from role.operations.user_role import RoleRepository
 
 
 class admin_manager():
     def __init__(self):
         pass
-       
+
     def seed_db(self):
         role_msg = self.seed_roles()
         admin_msg = self.register_admin()
@@ -54,24 +39,33 @@ class admin_manager():
             return 'Admin already created'
         insert_ref(admin_json)
         return 'Admin Created'
-    
+
     def seed_roles(self):
         role_list = ['ADMIN', 'PROVIDER', 'PATIENT', 'USER']
         roles = [Roles(role_name=role) for role in role_list]
         db.session.add_all(roles)
         db.session.commit()
         return 'Role Created'
-    
+
     def seed_address(self):
         address_id = save_address(None, None, None, None,
                                   None, None, None)
         return 'Address Added', address_id
 
     def seed_facility(self, address_id, name):
-        facility = FacilitiesRepository()
-        facility.save_facility(address_id, name)
+        save_facility(address_id, name)
         return 'Facility Added'
-    
+
+
+def save_facility(self, address_id, name):
+    try:
+        facility_data = Facilities(address_id=address_id, name=name)
+        facility_data.save_to_db()
+        return facility_data.id
+    except SQLAlchemyError as error:
+        db.session.rollback()
+        raise InternalServerError(str(error))
+
 
 def save_address(user_id, street_address_1,
                  street_address_2, city, state, country, postal_code):
@@ -90,6 +84,7 @@ def save_address(user_id, street_address_1,
     except SQLAlchemyError as error:
         db.session.rollback()
         raise InternalServerError(str(error))
+
 
 def user_exists(provider_json):
     user_reg_data = UserRegister.find_by_username(

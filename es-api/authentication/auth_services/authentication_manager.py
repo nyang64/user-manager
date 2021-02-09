@@ -1,15 +1,8 @@
 from flask import request
 from model.user_registration import UserRegister
-from model.users import Users
 from model.user_otp import UserOTPModel
-from model.address import Address
-from model.devices import Devices
-from model.patient import Patient
-from model.providers import Providers
-from model.user_roles import UserRoles
-from model.roles import Roles
 from utils.common import (
-        have_keys, tokenTime,
+        have_keys,
         generateOTP, encPass, checkPass, have_keys_NotForce)
 from utils.jwt import (
         require_user_token,
@@ -145,7 +138,7 @@ class AuthenticationManager():
                 return {"message": "No Such User Exist"}, 404
             otp = generateOTP()
             otp = "111111"
-            send_otp("", user_data.email,"ONE TIME PASSWORD of Element Science App", otp)
+            send_otp("", user_data.email, "ONE TIME PASSWORD of Element Science App", otp)
             user_otp = UserOTPModel(
                 user_id=user_data.id, otp=otp, temp_password=""
             )

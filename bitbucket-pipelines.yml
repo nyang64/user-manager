@@ -6,7 +6,7 @@ pipelines:
         step: 
           name: "Git Checkout"
           script: 
-            - "git clone https://Dhruv_Rana@bitbucket.org/elementsci/user-manager.git"
+            - "git clone git@bitbucket.org:elementsci/user-manager.git"
       - 
         step: 
           name: "Python Dependencies Installation."

@@ -1,5 +1,5 @@
 from db import db
-from sqlalchemy import String, Integer
+from sqlalchemy import String, Integer, Boolean
 from model.base_model import BaseModel
 from model.roles import Roles
 from model.user_roles import UserRoles
@@ -7,13 +7,12 @@ from model.users import Users
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import InternalServerError
 
-
 class UserRegister(BaseModel):
     __tablename__ = "user_registration"
     __table_args__ = ({"schema": "ES"})
     email = db.Column('email', String(50), nullable=False, unique=True)
     password = db.Column('password', String(255), nullable=False)
-    isFirst = db.Column('isFirst', Integer, default=0)
+    isFirst = db.Column('isFirst', Boolean, default=True)
 
     @classmethod
     def find_by_username(cls, email: str) -> "UserRegister":

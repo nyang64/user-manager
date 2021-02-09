@@ -100,8 +100,9 @@ class AuthenticationManager():
                 "message": "New password does not meet minimum criteria"
                 }, 200
         user_data.password = encPass(user_json["newpassword"])
-        user_data.isFirst = 1
+        user_data.isFirst = False
         user_data.update_db()
+        UserOTPModel.deleteAll_OTP(user_id=user_data.id)
         return {"message": "Password Updated"}, 200
 
     @require_refresh_token

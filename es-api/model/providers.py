@@ -20,6 +20,10 @@ class Providers(BaseModel):
         return cls.query.filter_by(id=id).first()
 
     @classmethod
+    def find_providers(cls) -> "Providers":
+        return cls.query.all()
+
+    @classmethod
     def find_all(cls, id: str) -> "Providers":
         return cls.query.all()
 
@@ -28,8 +32,4 @@ class Providers(BaseModel):
         db.session.commit()
 
     def update_db(self) -> None:
-        db.session.commit()
-
-    def delete(self) -> None:
-        db.session.delete(self)
         db.session.commit()

@@ -13,7 +13,9 @@ from model.user_status_types import UserStatusType
 from utils.validation import validate_request, get_param, validate_number
 from utils.jwt import require_user_token
 from utils.common import encPass
-from patient.schema.patient_schema import create_patient_schema, update_patient_schema
+from patient.schema.patient_schema import (create_patient_schema,
+                                           update_patient_schema,
+                                           assign_device_schema)
 from utils.constants import ADMIN, PROVIDER, PATIENT
 from flask import request
 
@@ -62,7 +64,7 @@ class PatientManager():
     @require_user_token(ADMIN, PROVIDER)
     def assign_device(self, decrypt):
         request_data = validate_request()
-        patient_id, device_id = self.__read_device_input(request_data)
+        patient_id, device_id = assign_device_schema.load(request_data)
         self.patientObj.assign_device_to_patient(patient_id, device_id)
         print("id", id)
         return {'message': 'Device assigned',
@@ -85,28 +87,3 @@ class PatientManager():
              } for d in devices]
         resp = {'devices': device_list}
         return jsonify(resp), http.client.OK
-
-    def __read_device_input(self, request_data):
-        patient_id = int(get_param('patient_id', request_data))
-        device_id = int(get_param('device_id', request_data))
-        return patient_id, device_id
-
-    def __read_patient_input(self, request_data):
-        email = get_param('email', request_data)
-        password = get_param('password', request_data)
-        first_name = get_param('first_name', request_data)
-        last_name = get_param('last_name', request_data)
-        phone_number = get_param('phone_number', request_data)
-        emergency_contact_name = get_param('emergency_contact_name',
-                                           request_data)
-        emergency_contact_number = get_param('emergency_contact_number',
-                                             request_data)
-        date_of_birth = get_param('date_of_birth',
-                                  request_data)
-        validate_number(phone_number)
-        validate_number(emergency_contact_number)
-        register = (email, password)
-        user = (first_name, last_name, phone_number)
-        patient = (emergency_contact_name,
-                   emergency_contact_number, date_of_birth)
-        return register, user, patient

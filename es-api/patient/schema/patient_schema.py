@@ -64,3 +64,19 @@ class UpdatePatientSchema(BaseSchema):
 
 update_patient_schema = UpdatePatientSchema()
 update_patients_schema = UpdatePatientSchema(many=True)
+
+
+class AssignDeviceSchema(BaseSchema):
+    patient_id = fields.Int(required=True,
+                            validate=must_not_blank)
+    device_id = fields.Int(required=True,
+                           validate=must_not_blank)
+
+    @post_load
+    def post_load_object(self, data, **kwargs):
+        patient_id = data.get('patient_id')
+        device_id = data.get('device_id')
+        return patient_id, device_id
+
+
+assign_device_schema = AssignDeviceSchema()

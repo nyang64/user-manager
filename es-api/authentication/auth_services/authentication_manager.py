@@ -16,7 +16,7 @@ from utils.jwt import (
         require_refresh_token,
         encoded_Token)
 from utils.constants import ADMIN, PROVIDER, PATIENT, ESUser
-
+from utils.send_mail import send_otp
 
 
 class AuthenticationManager():
@@ -76,7 +76,8 @@ class AuthenticationManager():
                 return {
                     "message": "Successfully Login",
                     "id_token": encoded_accessToken,
-                    "refresh_token": encoded_refreshToken
+                    "refresh_token": encoded_refreshToken,
+                    "isFirst": user_data.isFirst
                 }, 200
         return {"message": "Invalid Credentials"}, 401
 
@@ -144,6 +145,7 @@ class AuthenticationManager():
                 return {"message": "No Such User Exist"}, 404
             otp = generateOTP()
             otp = "111111"
+            send_otp("", user_data.email,"ONE TIME PASSWORD of Element Science App", otp)
             user_otp = UserOTPModel(
                 user_id=user_data.id, otp=otp, temp_password=""
             )

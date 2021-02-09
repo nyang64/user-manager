@@ -12,5 +12,5 @@ pipelines:
         step: 
           name: "Python Dependencies Installation."
           script: 
-            - "pip install -r requirements.txt"
+            - "pip install -r es-api/requirements.txt"
             - echo "Python requirement packages installed successfully."

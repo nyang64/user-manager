@@ -30,3 +30,7 @@ class Users(BaseModel):
     @classmethod
     def find_by_registration_id(cls, registration_id: str) -> "Users":
         return cls.query.filter_by(registration_id=registration_id).first()
+
+    @classmethod
+    def find_by_user_id(cls, user_id: str) -> "Users":
+        return cls.query.filter_by(id=user_id).first()

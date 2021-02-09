@@ -2,7 +2,7 @@ from db import db
 from sqlalchemy import Integer, String, desc
 from model.base_model import BaseModel
 from sqlalchemy.exc import SQLAlchemyError
-from werkzeug.exceptions import InternalServerError, NotFound, Conflict
+from werkzeug.exceptions import InternalServerError
 
 
 class UserOTPModel(BaseModel):
@@ -58,13 +58,11 @@ class UserOTPModel(BaseModel):
             db.session.rollback()
             raise InternalServerError(str(error))
 
-
     @classmethod
     def deleteAll_OTP(cls, user_id):
         try:
-            user_otp_data = cls.query.filter_by(user_id=user_id).all()
-            cls.query.filter(user_id==user_id).\
-            delete(synchronize_session=False)
+            cls.query.filter(user_id == user_id).\
+                delete(synchronize_session=False)
             db.session.commit()
         except SQLAlchemyError as error:
             raise InternalServerError(str(error))

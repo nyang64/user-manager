@@ -1,11 +1,12 @@
 from db import db
-from sqlalchemy import String, Integer, Boolean
+from sqlalchemy import String, Boolean
 from model.base_model import BaseModel
 from model.roles import Roles
 from model.user_roles import UserRoles
 from model.users import Users
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import InternalServerError
+
 
 class UserRegister(BaseModel):
     __tablename__ = "user_registration"
@@ -37,7 +38,15 @@ class UserRegister(BaseModel):
         except SQLAlchemyError as error:
             db.session.rollback()
             raise InternalServerError(str(error))
-        
+
+    def delete_db(self) -> None:
+        try:
+            db.session.delete(self)
+            db.session.commit()
+        except SQLAlchemyError as error:
+            db.session.rollback()
+            raise InternalServerError(str(error))
+
     @classmethod
     def get_role_by_id(cls, user_reg_id: str) -> "UserRoles":
         try:
@@ -55,4 +64,16 @@ class UserRegister(BaseModel):
                 return False
             return role_name_data
         except Exception as error:
+            raise InternalServerError(str(error))
+
+    @classmethod
+    def delete_user_by_Userid(cls, user_id) -> None:
+        try:
+            users_data = Users.find_by_user_id(user_id=user_id)
+            if users_data is not None:
+                user_registration_data = cls.query.filter_by(
+                        id=users_data.registration_id
+                    ).first()
+                user_registration_data.delete_db()
+        except SQLAlchemyError as error:
             raise InternalServerError(str(error))

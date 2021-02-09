@@ -34,13 +34,12 @@ def require_user_token(*args):
                         algorithms=["HS256"]
                     )
             except jwt.ExpiredSignatureError:
-                raise Unauthorized(f'Token is Expired')
+                raise Unauthorized('Token is Expired')
 
-            except Exception as e:
-                raise Unauthorized(f'Invalid Token')
-            print(decrypted["user_role"].upper(), args)
+            except Exception:
+                raise Unauthorized('Invalid Token.')
             if decrypted["user_role"].upper() not in args:
-                raise Unauthorized(f'Not Permitted to this Resource')
+                raise Unauthorized('Not Permitted to this Resource')
             return func(jsonT, decrypted)
         return inner
     return require_user_token_validator
@@ -58,6 +57,5 @@ def require_refresh_token(func):
                 )
         except Exception:
             return {"Message": "Unauthorized Access"}, 401
-        print(decrypt)
         return func(jsonT, decrypt)
     return inner

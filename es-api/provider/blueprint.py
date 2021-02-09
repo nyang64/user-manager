@@ -17,3 +17,15 @@ class ProviderBlueprint(Blueprint):
             '/provider/get',
             'Get Provider',
             self.provider_Obj.get_provider_by_id, methods=['GET'])
+        self.add_url_rule(
+            '/provider/delete',
+            'Delete the Provider',
+            self.provider_Obj.delete_provider, methods=['DELETE'])
+        self.add_url_rule(
+            '/provider/update',
+            'Update the Provider',
+            self.provider_Obj.update_provider, methods=['PUT'])
+        self.add_url_rule(
+            '/providers',
+            'Get List of Providers',
+            self.provider_Obj.get_providers, methods=['GET'])

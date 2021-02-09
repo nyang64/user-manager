@@ -40,7 +40,6 @@ def have_keys(myjson, *args):
     return True
 
 
-
 def tokenTime(isrefreshToken: bool):
     time_expire = 15
     now = datetime.datetime.now()

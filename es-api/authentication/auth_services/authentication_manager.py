@@ -42,6 +42,8 @@ class AuthenticationManager():
         if checkPass(user_json["password"], user_data.password):
             role_name_data = UserRegister.get_role_by_id(
                 user_reg_id=user_data.id)
+            if role_name_data is None:
+                return {"message": "No Such User Allowed"}, 401
             encoded_accessToken = encoded_Token(
                 False, str(user_json["email"]).lower(),
                 role_name_data.role_name)
@@ -138,7 +140,11 @@ class AuthenticationManager():
                 return {"message": "No Such User Exist"}, 404
             otp = generateOTP()
             otp = "111111"
-            send_otp("", user_data.email, "ONE TIME PASSWORD of Element Science App", otp)
+            send_otp(
+                "",
+                user_data.email,
+                "ONE TIME PASSWORD of Element Science App",
+                otp)
             user_otp = UserOTPModel(
                 user_id=user_data.id, otp=otp, temp_password=""
             )

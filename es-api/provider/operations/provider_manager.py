@@ -12,13 +12,15 @@ from werkzeug.exceptions import InternalServerError, Conflict
 from model.user_roles import UserRoles
 from db import db
 from utils.constants import ADMIN, PROVIDER
+from user.repository.user_repository import UserRepository
 
 
 class provider_manager():
     def __init__(self):
+        self.userObj = UserRepository()
         pass
-    
-    @require_user_token(ADMIN)
+
+    @require_user_token(ADMIN, PROVIDER)
     def register_provider(self, decrypt):
         provider_json = request.get_json()
         if have_keys(
@@ -41,7 +43,6 @@ class provider_manager():
             raise InternalServerError(str(error)) 
         return {"message": "Provider Created"}, 201
 
-
     @require_user_token(ADMIN, PROVIDER)
     def get_provider_by_id(self, decrypt):
         provider_json = request.get_json()
@@ -57,6 +58,55 @@ class provider_manager():
             "Data": [provider_data_json]
             }, 200
 
+    @require_user_token(ADMIN)
+    def get_providers(self, decrypt):
+        provider_data = Providers.find_providers()
+        if provider_data is None or provider_data == []:
+            return {"message": "No Providers Found"}, 404
+        providers_data = [
+            {
+                'id': user.id,
+                'user_id': user.user_id,
+                'facility_id': user.facility_id
+            }for user in provider_data]
+
+        return {
+            "message": "Users Found",
+            "Data": providers_data
+            }, 200
+
+    @require_user_token(ADMIN)
+    def delete_provider(self, decrypt):
+        provider_json = request.get_json()
+        if have_keys(provider_json, 'provider_id') is False:
+            return {"message": "Invalid Request Parameters"}, 400
+        provider_data = Providers.find_by_id(id=provider_json["provider_id"])
+        if provider_data is None:
+            return {"message": "Unable To Delete, No Such Provider Exist"}, 404
+        UserRegister.delete_user_by_Userid(user_id=provider_data.user_id)
+        return {"message": "Provider Deleted"}, 200
+
+    @require_user_token(ADMIN, PROVIDER)
+    def update_provider(self, decrypt):
+        provider_json = request.get_json()
+        if have_keys(
+                provider_json,
+                'provider_id',
+                'first_name',
+                'last_name',
+                'phone_number') is False:
+            return {"message": "Invalid Request Parameters"}, 400
+        provider_data = Providers.find_by_id(id=provider_json["provider_id"])
+        if provider_data is None:
+            return {"message": "No Such Provider Exist"}, 404
+        self.userObj.update_user_byid(
+            provider_data.user_id,
+            provider_json["first_name"],
+            provider_json["last_name"],
+            provider_json["phone_number"]
+        )
+        return {"message": "Provider Updated"}, 200
+
 
 def user_exists(provider_json):
     user_reg_data = UserRegister.find_by_username(
@@ -66,10 +116,10 @@ def user_exists(provider_json):
         if (Users.find_by_registration_id(
             registration_id=user_reg_data.id
                 ) is not None):
-            raise Conflict(f'Users Already Register')
+            raise Conflict('Users Already Register')
 
     if user_reg_data is not None:
-        raise Conflict(f'Users Already Register')
+        raise Conflict('Users Already Register')
 
 
 def insert_ref(provider_json):

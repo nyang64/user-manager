@@ -2,7 +2,7 @@ from sqlalchemy import Integer, ForeignKey
 from db import db
 from model.base_model import BaseModel
 from sqlalchemy.exc import SQLAlchemyError
-from werkzeug.exceptions import InternalServerError, NotFound, Conflict
+from werkzeug.exceptions import InternalServerError
 
 
 class UserRoles(BaseModel):

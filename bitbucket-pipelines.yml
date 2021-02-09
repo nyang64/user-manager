@@ -7,8 +7,10 @@ pipelines:
           name: "Git Checkout"
           script: 
             - "git clone git@bitbucket.org:elementsci/user-manager.git"
+            - echo "Git repo cloned on the runner instance."
       - 
         step: 
           name: "Python Dependencies Installation."
           script: 
             - "pip install -r requirements.txt"
+            - echo "Python requirement packages installed successfully."

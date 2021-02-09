@@ -4,6 +4,7 @@ from model.patient import Patient
 from model.patients_devices import PatientsDevices
 from model.devices import Devices
 from model.user_roles import UserRoles
+from patient.schema.device_list_schema import devices_list_schema
 from common.common_repo import CommonRepo
 from db import db
 
@@ -63,7 +64,7 @@ class PatientRepository():
     def delete_patient_data(self, id):
         exist_patient = self.commonObj.check_patient_exist(id)
         Patient.delete_obj(exist_patient)
-        
+
     def assign_patient_role(self, user_id):
         try:
             self.commonObj.check_user_exist(user_id)

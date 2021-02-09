@@ -8,7 +8,7 @@ from model.user_registration import UserRegister
 from utils.validation import validate_request, get_param, validate_number
 from utils.jwt import require_user_token
 from utils.common import encPass
-from patient.schema.update_patient_schema import update_patient_schema
+from patient.schema.patient_schema import update_patient_schema
 from utils.constants import ADMIN, PROVIDER, PATIENT
 from flask import request
 
@@ -71,8 +71,8 @@ class PatientManager():
         resp = {'devices': device_list}
         return jsonify(resp), http.client.OK
 
-    @require_user_token(PATIENT)
-    def mock_patient_device_list(self,decrypt):
+    @require_user_token(PATIENT, ADMIN, PROVIDER)
+    def mock_patient_device_list(self, decrypt):
         devices = [['1212', '12EE', True],
                    ['1213', '13EE', True],
                    ['1512', '12TE', False]]

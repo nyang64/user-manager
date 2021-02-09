@@ -8,7 +8,6 @@ from model.patient import Patient
 from model.providers import Providers
 from model.user_roles import UserRoles
 from model.roles import Roles
-from database.user import UserSchema
 from utils.common import (
         have_keys, tokenTime,
         generateOTP, encPass, checkPass, have_keys_NotForce)
@@ -18,7 +17,6 @@ from utils.jwt import (
         encoded_Token)
 from utils.constants import ADMIN, PROVIDER, PATIENT, ESUser
 
-user_schema = UserSchema()
 
 
 class AuthenticationManager():

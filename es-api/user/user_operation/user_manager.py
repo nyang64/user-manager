@@ -7,7 +7,7 @@ from utils.validation import validate_request, get_param, validate_number
 from common.common_repo import CommonRepo
 from utils.common import encPass
 from utils.jwt import require_user_token
-from utils.constants import ADMIN
+from utils.constants import ADMIN, PROVIDER, PATIENT, ESUser
 from flask import request
 
 
@@ -58,7 +58,7 @@ class UserManager():
         return {'message': 'user deleted',
                 'statusCode': '202'}, http.client.ACCEPTED
 
-    def get_detail_bytoken(self):
+    def mock_get_detail_bytoken(self):
         resp = {
             'email': 'mehul.sojitra@infostretch.com',
             'id': '122',
@@ -68,6 +68,13 @@ class UserManager():
             'uuid': '1f4ea346-25ce-4e35-a19c-22da1385997b'
         }
         return jsonify(resp), http.client.OK
+
+    @require_user_token(ADMIN, PROVIDER, PATIENT, ESUser)
+    def get_detail_bytoken(self, decrypt):
+        print(decrypt)
+        email = decrypt.get('user_email')
+        self.commonObj.get_detail_by_email(email)
+        return jsonify({}), http.client.OK
 
     def __read_update_input(self, request_data):
         first_name = get_param('first_name', request_data)

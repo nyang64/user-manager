@@ -49,3 +49,7 @@ class CommonRepo():
             return exist_registration
         except SQLAlchemyError as error:
             raise InternalServerError(str(error))
+    
+    def get_detail_by_email(self, email):
+        ''' Get the detail of logged in user by email id'''
+        pass

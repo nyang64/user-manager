@@ -14,8 +14,8 @@ class PatientsDevices(BaseModel):
                           ForeignKey('ES.devices.id', ondelete="CASCADE"),
                           nullable=False)
     patient = db.relationship(
-        "Patient", backref=backref("patient_list", uselist=False)
+        "Patient", backref=backref("patient_list")
     )
     device = db.relationship(
-        "Devices", backref=backref("devices_list", uselist=False)
+        "Devices", backref=backref("devices_list")
     )

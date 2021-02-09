@@ -3,6 +3,7 @@ from flask import jsonify
 import http.client
 from user.repository.user_repository import UserRepository
 from model.user_registration import UserRegister
+from user.schema.user_schema import create_user_schema, update_user_schema
 from utils.validation import validate_request, get_param, validate_number
 from common.common_repo import CommonRepo
 from utils.common import encPass
@@ -19,7 +20,7 @@ class UserManager():
     @require_user_token(ADMIN)
     def create_user(self, decrypt):
         request_data = validate_request()
-        register, user = self.__read_user_input(request_data)
+        register, user = create_user_schema.load(request_data)
         self.commonObj.is_email_registered(register[0])
         user_data = UserRegister(email=register[0],
                                  password=encPass(register[1]))
@@ -30,17 +31,17 @@ class UserManager():
         return {'message': 'User created and assigned role',
                 'data': user_uuid,
                 'statusCode': '201'}, http.client.CREATED
-    
+
     @require_user_token(ADMIN)
     def update_user(self, decrypt):
         user_id = request.args.get('id')
         if user_id is None:
             raise BadRequest("parameter id is missing")
         request_data = validate_request()
-        first_name, last_name, phone_number = self.__read_update_input(
-                                                        request_data)
-        self.userObj.update_user_byid(user_id, first_name, last_name,
-                                      phone_number)
+        first_name, last_name, phone_number = update_user_schema.load(
+            request_data)
+        self.userObj.update_user_byid(user_id, first_name,
+                                      last_name, phone_number)
         return {'message': 'user updated',
                 'statusCode': '200'}, http.client.OK
 
@@ -75,31 +76,3 @@ class UserManager():
         email = decrypt.get('user_email')
         self.commonObj.get_detail_by_email(email)
         return jsonify({}), http.client.OK
-
-    def __read_update_input(self, request_data):
-        first_name = get_param('first_name', request_data)
-        last_name = get_param('last_name', request_data)
-        phone_number = get_param('phone_number', request_data)
-        validate_number(phone_number)
-        if first_name is None or first_name == '':
-            raise BadRequest('first_name cannot be None')
-        if last_name is None or last_name == '':
-            raise BadRequest('last_name cannot be None')
-        return first_name, last_name, phone_number
-
-    def __read_user_input(self, request_data):
-        email = get_param('email', request_data)
-        password = get_param('password', request_data)
-        first_name = get_param('first_name', request_data)
-        last_name = get_param('last_name', request_data)
-        phone_number = get_param('phone_number', request_data)
-        validate_number(phone_number)
-        if first_name is None or first_name == '':
-            raise BadRequest('first_name cannot be None')
-        if last_name is None or last_name == '':
-            raise BadRequest('last_name cannot be None')
-        if email is None or email == '':
-            raise BadRequest('email cannot be None')
-        register = (email, password)
-        user = (first_name, last_name, phone_number)
-        return register, user

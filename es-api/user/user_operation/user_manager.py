@@ -1,14 +1,12 @@
-from werkzeug.exceptions import BadRequest, Conflict
+from werkzeug.exceptions import BadRequest
 from flask import jsonify
 import http.client
 from user.repository.user_repository import UserRepository
-from model.user_registration import UserRegister
 from user.schema.user_schema import create_user_schema, update_user_schema
-from utils.validation import validate_request, get_param, validate_number
+from utils.validation import validate_request
 from common.common_repo import CommonRepo
-from utils.common import encPass
 from utils.jwt import require_user_token
-from utils.constants import ADMIN, PROVIDER, PATIENT, ESUser
+from utils.constants import ADMIN, PROVIDER, PATIENT, ESUSER
 from flask import request
 
 
@@ -68,10 +66,15 @@ class UserManager():
         }
         return jsonify(resp), http.client.OK
 
-    @require_user_token(ADMIN, PROVIDER, PATIENT, ESUser)
+    @require_user_token(ADMIN, PROVIDER, PATIENT, ESUSER)
     def get_detail_bytoken(self, decrypt):
         print(decrypt)
         email = decrypt.get('user_email')
-        print(email)
-        self.common_obj.get_detail_by_email(email)
-        return jsonify({}), http.client.OK
+        user = self.common_obj.get_detail_by_email(email)
+        resp = dict()
+        resp['email'] = email
+        resp['user_id'] = user[0]
+        resp['user_uuid'] = user[1]
+        resp['registration_id'] = user[2]
+        resp['type'] = decrypt.get('user_role')
+        return jsonify({'data':resp}), http.client.OK

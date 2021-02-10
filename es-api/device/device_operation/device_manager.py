@@ -6,14 +6,14 @@ from utils.constants import ENCRYPTION_KEY_LENGTH
 from utils.jwt import require_user_token
 import uuid
 import http
-from utils.constants import ADMIN, ESUser
+from utils.constants import ADMIN, ESUSER
 
 
 class DeviceManager():
     def __init__(self):
         self.deviceObj = DeviceRepo()
 
-    @require_user_token(ADMIN, ESUser)
+    @require_user_token(ADMIN, ESUSER)
     def generate_key(self, decrypt):
         request_data = validate_request()
         valid = device_schema.load(request_data)
@@ -28,7 +28,7 @@ class DeviceManager():
             "status_code": code
         }, code
 
-    @require_user_token(ADMIN, ESUser)
+    @require_user_token(ADMIN, ESUSER)
     def devices_list(self, decrypt):
         devices = self.deviceObj.get_all_devices()
         device_json = devices_schema.dump(devices)
@@ -36,7 +36,7 @@ class DeviceManager():
                 "data": device_json,
                 "status_code": "200"}, http.client.OK
 
-    @require_user_token(ADMIN, ESUser)
+    @require_user_token(ADMIN, ESUSER)
     def add_device_type(self, decrypt):
         request_data = validate_request()
         request_data = device_status_schema.load(request_data)

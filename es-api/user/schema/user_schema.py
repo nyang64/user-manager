@@ -18,16 +18,14 @@ class CreateUserSchema(RegisterSchema):
                               validate=validate_number)
     
     @post_load
-    def post_load_object(self, data, **kwargs):
-        email = data.get('email')
-        password = data.get('password')
+    def make_post_load_object(self, data, **kwargs):
+        register = super().make_post_load_object(data)
         first_name = data.get('first_name')
         last_name = data.get('last_name')
         phone_number = data.get('phone_number')
-        register = (email, password)
         user = (first_name, last_name, phone_number)
         return register, user
-    
+
 
 create_user_schema = CreateUserSchema()
 

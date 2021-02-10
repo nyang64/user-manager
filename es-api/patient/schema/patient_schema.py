@@ -14,6 +14,7 @@ def must_not_blank(data):
 
 
 class CreatePatientSchema(CreateUserSchema):
+    __model__='Patient'
     emergency_contact_name = fields.Str(required=True,
                                         validate=must_not_blank)
     emergency_contact_number = fields.Str(required=True,
@@ -22,18 +23,11 @@ class CreatePatientSchema(CreateUserSchema):
                                validate=must_not_blank)
 
     @post_load
-    def make_post_dump_object(self, data, **kwargs):
-        print(data)
-        email = data.get('email')
-        password = data.get('password')
-        first_name = data.get('first_name')
-        last_name = data.get('last_name')
-        phone_number = data.get('phone_number')
+    def make_post_load_object(self, data, **kwargs):
+        register, user = super().make_post_load_object(data)
         emergency_contact_name = data.get('emergency_contact_name')
         emergency_contact_number = data.get('emergency_contact_number')
-        date_of_birth = data.get('date_of_birth')
-        register = (email, password)
-        user = (first_name, last_name, phone_number)
+        date_of_birth = data.get('date_of_birth')  
         patient = (emergency_contact_name,
                    emergency_contact_number, date_of_birth)
         return register, user, patient

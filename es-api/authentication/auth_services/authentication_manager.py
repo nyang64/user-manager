@@ -55,7 +55,7 @@ class AuthenticationManager():
                 "message": "Successfully Login",
                 "id_token": encoded_accessToken,
                 "refresh_token": encoded_refreshToken,
-                "isFirst": user_data.isFirst
+                "isFirstTimeLogin": user_data.isFirst
                 }, 200
         otp_data = UserOTPModel.find_by_user_id(user_id=user_data.id)
         if (
@@ -72,7 +72,7 @@ class AuthenticationManager():
                     "message": "Successfully Login",
                     "id_token": encoded_accessToken,
                     "refresh_token": encoded_refreshToken,
-                    "isFirst": user_data.isFirst
+                    "isFirstTimeLogin": user_data.isFirst
                 }, 200
         return {"message": "Invalid Credentials"}, 401
 
@@ -143,7 +143,7 @@ class AuthenticationManager():
             send_otp(
                 "",
                 user_data.email,
-                "ONE TIME PASSWORD of Element Science App",
+                "Your One Time Password of Element Science App",
                 otp)
             user_otp = UserOTPModel(
                 user_id=user_data.id, otp=otp, temp_password=""

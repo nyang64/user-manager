@@ -52,4 +52,4 @@ class CommonRepo():
     
     def get_detail_by_email(self, email):
         ''' Get the detail of logged in user by email id'''
-        pass
+        self.is_email_registered(email)

@@ -1,5 +1,5 @@
 from model.schema.base_schema import BaseSchema
-from marshmallow import fields, validate, ValidationError
+from marshmallow import fields, validate, ValidationError, post_load
 
 
 def must_not_blank(data):
@@ -15,6 +15,13 @@ class RegisterSchema(BaseSchema):
     password = fields.Str(required=True,
                           validate=must_not_blank,
                           load_only=True)
+
+    @post_load
+    def make_post_load_object(self, data, **kwargs):
+        email = data.get('email')
+        password = data.get('password')
+        register = (email, password)
+        return register
 
 
 register_schema = RegisterSchema()

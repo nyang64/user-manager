@@ -8,7 +8,7 @@ from utils.jwt import (
         require_user_token,
         require_refresh_token,
         encoded_Token)
-from utils.constants import ADMIN, PROVIDER, PATIENT, ESUser
+from utils.constants import ADMIN, PROVIDER, PATIENT, ESUSER
 from utils.send_mail import send_otp
 
 
@@ -76,7 +76,7 @@ class AuthenticationManager():
                 }, 200
         return {"message": "Invalid Credentials"}, 401
 
-    @require_user_token(ADMIN, PROVIDER, PATIENT, ESUser)
+    @require_user_token(ADMIN, PROVIDER, PATIENT, ESUSER)
     def update_user_password(self, decrypt):
         user_json = request.get_json()
         have_key = have_keys(

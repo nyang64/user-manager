@@ -102,10 +102,10 @@ class toJson(JSONEncoder):
 class responseModel:
     def __init__(
             self,
-            statusCode: str = "200",
+            status_code: str = "200",
             data: [dict] = [],
             message: str = ""):
-        self.statusCode = statusCode
+        self.status_code = status_code
         self.data = data
         self.message = message
 

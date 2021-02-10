@@ -49,7 +49,18 @@ class CommonRepo():
             return exist_registration
         except SQLAlchemyError as error:
             raise InternalServerError(str(error))
-    
+
     def get_detail_by_email(self, email):
         ''' Get the detail of logged in user by email id'''
-        pass
+        try:
+            exist_registration = UserRegister.find_by_username(email)
+            if exist_registration is None:
+                raise NotFound(f'{email} not found')
+            user = db.session.query(Users.id, Users.uuid, UserRegister.id)\
+                .filter(UserRegister.id == Users.registration_id)\
+                .filter(UserRegister.email == email).first()
+            if user is None:
+                raise NotFound('user detail not found')
+            return user
+        except SQLAlchemyError as error:
+            raise InternalServerError(str(error))

@@ -7,22 +7,22 @@ from authentication.auth_services.authentication_manager import (
 class AuthenticationBlueprint(Blueprint):
     def __init__(self):
         super().__init__(__class__.__name__, __name__)
-        self.authObj = AuthenticationManager()
+        self.auth_obj = AuthenticationManager()
         self._add_routes()
 
     def _add_routes(self):
         self.add_url_rule('/register', 'Register User',
-                          self.authObj.register_user,
+                          self.auth_obj.register_user,
                           methods=['POST'])
         self.add_url_rule('/auth/token', 'Get Token',
-                          self.authObj.login_user,
+                          self.auth_obj.login_user,
                           methods=['POST'])
         self.add_url_rule('/updatepassword', 'Update user password',
-                          self.authObj.update_user_password,
+                          self.auth_obj.update_user_password,
                           methods=['PUT'])
         self.add_url_rule('/refresh', 'Refresh Token',
-                          self.authObj.refresh_access_token,
+                          self.auth_obj.refresh_access_token,
                           methods=['POST'])
         self.add_url_rule('/resetpassword', 'Reset Password',
-                          self.authObj.reset_user_password,
+                          self.auth_obj.reset_user_password,
                           methods=['PUT'])

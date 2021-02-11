@@ -20,9 +20,7 @@ pipelines:
             - pip
           name: "AWS CLI Installation."
           script: 
-            - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            - unzip awscliv2.zip
-            - sudo ./aws/install
+            - pip install awscli
             - echo "AWS CLI installed successfully."
       - 
         step: 

@@ -29,7 +29,7 @@ pipelines:
             - echo "Docker image build successfull."
             - aws configure set aws_access_key_id "${AWS_KEY}"
             - aws configure set aws_secret_access_key "${AWS_SECRET}"
-            - eval $(aws ecr get-login-password --region us-west-1 | sed 's;https://;;g')
+            - aws ecr get-login-password --region us-west-1 | docker login --username AWS --password-stdin 488323030461.dkr.ecr.us-west-1.amazonaws.com
             - docker tag $BITBUCKET_COMMIT 488323030461.dkr.ecr.us-west-1.amazonaws.com/test-es-ecr:$BITBUCKET_COMMIT
             - docker push 488323030461.dkr.ecr.us-west-1.amazonaws.com/test-es-ecr:$BITBUCKET_COMMIT
             - echo "Docker image pushed to ECR successfully."

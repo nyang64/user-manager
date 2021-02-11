@@ -30,7 +30,8 @@ pipelines:
           script: 
             - IMAGE="488323030461.dkr.ecr.us-west-1.amazonaws.com/test-es-ecr"
             - TAG=${BITBUCKET_BRANCH:-$BITBUCKET_TAG}
-            - docker build -t $IMAGE:$TAG .
+            - cd es-api
+            - docker build -t $BITBUCKET_COMMIT .
             - echo "Docker image build successfull."
             - aws configure set aws_access_key_id "${AWS_KEY}"
             - aws configure set aws_secret_access_key "${AWS_SECRET}"

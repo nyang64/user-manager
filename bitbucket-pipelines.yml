@@ -24,13 +24,11 @@ pipelines:
           script: 
             - pip install awscli
             - echo "AWS CLI installed successfully."
-            - IMAGE="488323030461.dkr.ecr.us-west-1.amazonaws.com/test-es-ecr"
-            - TAG=${BITBUCKET_BRANCH:-$BITBUCKET_TAG}
             - cd es-api
             - docker build -t $BITBUCKET_COMMIT .
             - echo "Docker image build successfull."
             - aws configure set aws_access_key_id "${AWS_KEY}"
             - aws configure set aws_secret_access_key "${AWS_SECRET}"
-            - eval $(aws ecr get-login-password --region us-west-1 | docker login --username AWS --password-stdin 488323030461.dkr.ecr.us-west-1.amazonaws.com)
-            - docker push $IMAGE:$TAG
+            - eval $(aws ecr get-login-password --region us-west-1 | sed 's;https://;;g')
+            - docker push $BITBUCKET_COMMIT
             - echo "Docker image pushed to ECR successfully."

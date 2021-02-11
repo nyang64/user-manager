@@ -14,3 +14,26 @@ pipelines:
           script: 
             - "pip install -r es-api/requirements.txt"
             - echo "Python requirement packages installed successfully."
+      - 
+        step: 
+          caches: 
+            - pip
+          name: "AWS CLI Installation."
+          script: 
+            - pip3 install awscli
+            - echo "AWS CLI installed successfully."
+      - 
+        step: 
+          services: 
+            - docker
+          name: "Building docker image and pushing it to ECR."
+          script: 
+            - IMAGE="488323030461.dkr.ecr.us-west-1.amazonaws.com/test-es-ecr"
+            - TAG=${BITBUCKET_BRANCH:-$BITBUCKET_TAG}
+            - docker build -t $IMAGE:$TAG .
+            - echo "Docker image build successfull."
+            - aws configure set aws_access_key_id "${AWS_KEY}"
+            - aws configure set aws_secret_access_key "${AWS_SECRET}"
+            - eval $(aws ecr get-login-password --region us-west-1 | docker login --username AWS --password-stdin 488323030461.dkr.ecr.us-west-1.amazonaws.com)
+            - docker push $IMAGE:$TAG
+            - echo "Docker image pushed to ECR successfully."

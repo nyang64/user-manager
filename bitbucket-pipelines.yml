@@ -16,18 +16,14 @@ pipelines:
             - echo "Python requirement packages installed successfully."
       - 
         step: 
+          services: 
+            - docker
           caches: 
             - pip
-          name: "AWS CLI Installation."
+          name: "Building docker image and pushing it to ECR."
           script: 
             - pip install awscli
             - echo "AWS CLI installed successfully."
-      - 
-        step: 
-          services: 
-            - docker
-          name: "Building docker image and pushing it to ECR."
-          script: 
             - IMAGE="488323030461.dkr.ecr.us-west-1.amazonaws.com/test-es-ecr"
             - TAG=${BITBUCKET_BRANCH:-$BITBUCKET_TAG}
             - cd es-api

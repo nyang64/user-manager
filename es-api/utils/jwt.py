@@ -27,7 +27,7 @@ def require_user_token(*args):
         def inner(jsonT):
             token = (request.headers.get('Authorization'))
             if token is None:
-                return {"Message": "Unauthorized Access"}, 401
+                raise Unauthorized('Token is Expired')
             try:
                 decrypted = jwt.decode(
                         token, os.environ["ACCESS_TOKEN_KEY"],
@@ -49,13 +49,13 @@ def require_refresh_token(func):
     def inner(jsonT):
         token = (request.headers.get('Authorization'))
         if token is None:
-            return {"Message": "Unauthorized Access"}, 401
+            raise Unauthorized('Unauthorized Access')
         try:
             decrypt = jwt.decode(
                     token, os.environ["REFRESH_TOKEN_KEY"],
                     algorithms=["HS256"]
                 )
         except Exception:
-            return {"Message": "Unauthorized Access"}, 401
+            raise Unauthorized('Unauthorized Access')
         return func(jsonT, decrypt)
     return inner

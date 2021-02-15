@@ -1,8 +1,8 @@
-import sys
 import smtplib
 import os
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from werkzeug.exceptions import InternalServerError
 
 
 def send_otp(
@@ -18,7 +18,7 @@ def send_otp(
 
 
 
-    Hello, {0}.
+    Hello {0},
 
 
 
@@ -36,7 +36,9 @@ def send_otp(
     """.format(name, otp)
     msg.attach(MIMEText(body, 'plain'))
     try:
-        server = smtplib.SMTP(os.environ["SMTP_SERVER"], os.environ["SMTP_PORT"])
+        server = smtplib.SMTP(
+            os.environ["SMTP_SERVER"],
+            os.environ["SMTP_PORT"])
         server.starttls()
         server.login(os.environ["SMTP_USERNAME"], os.environ["SMTP_PASSWORD"])
         text = msg.as_string()
@@ -44,3 +46,5 @@ def send_otp(
         server.quit()
     except Exception as e:
         print("Something went wrong. {0}".format(e))
+        raise InternalServerError("Something went wrong. {0}".format(e))
+        return False

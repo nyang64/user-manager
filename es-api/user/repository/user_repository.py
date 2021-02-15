@@ -79,3 +79,14 @@ class UserRepository():
                 raise SQLAlchemyError('Roles not updated')
         except SQLAlchemyError as error:
             raise InternalServerError(str(error))
+
+    @classmethod
+    def getUserById(self, user_reg_id) -> "Users":
+        try:
+            user_data = Users.find_by_registration_id(
+                registration_id=user_reg_id)
+            if user_data is None:
+                raise NotFound("User Details Not Found")
+            return user_data
+        except Exception:
+            raise InternalServerError("Something Went Wrong")

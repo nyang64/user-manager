@@ -111,3 +111,19 @@ class responseModel:
 
     def toJsonObj(obj):
         return json.dumps(obj, default=lambda o: o.__dict__)
+
+
+class auth_response_model:
+    def __init__(
+            self,
+            message: str,
+            id_token: str,
+            refresh_token: str = "",
+            isFirstTimeLogin: bool = False):
+        self.message = message
+        self.id_token = id_token
+        self.refresh_token = refresh_token
+        self.isFirstTimeLogin = isFirstTimeLogin
+
+    def toJsonObj(obj):
+        return json.loads(json.dumps(obj, default=lambda o: o.__dict__))

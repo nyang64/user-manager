@@ -1,0 +1,35 @@
+image: "python:3.8"
+pipelines: 
+  branches: 
+    feature/EC-608-implement-service-to-create-update-provider: 
+      - 
+        step: 
+          name: "Git Checkout"
+          script: 
+            - "git clone git@bitbucket.org:elementsci/user-manager.git"
+            - echo "Git repo cloned on the runner instance."
+      - 
+        step: 
+          name: "Python Dependencies Installation."
+          script: 
+            - "pip install -r es-api/requirements.txt"
+            - echo "Python requirement packages installed successfully."
+      - 
+        step: 
+          services: 
+            - docker
+          caches: 
+            - pip
+          name: "Building docker image and pushing it to ECR."
+          script: 
+            - pip install awscli
+            - echo "AWS CLI installed successfully."
+            - cd es-api
+            - docker build -t $BITBUCKET_COMMIT .
+            - echo "Docker image build successfull."
+            - aws configure set aws_access_key_id "${AWS_KEY}"
+            - aws configure set aws_secret_access_key "${AWS_SECRET}"
+            - aws ecr get-login-password --region us-west-1 | docker login --username AWS --password-stdin $AWS_ACCOUNT_URL
+            - docker tag $BITBUCKET_COMMIT $AWS_ACCOUNT_URL/$ECR_REPO_NAME:$BITBUCKET_COMMIT
+            - docker push $AWS_ACCOUNT_URL/$ECR_REPO_NAME:$BITBUCKET_COMMIT
+            - echo "Docker image pushed to ECR successfully."

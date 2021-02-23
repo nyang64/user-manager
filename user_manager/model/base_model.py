@@ -1,6 +1,4 @@
 from db import db
-from sqlalchemy import exc
-from werkzeug.exceptions import InternalServerError
 
 
 class BaseModel(db.Model):

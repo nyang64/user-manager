@@ -21,11 +21,10 @@ class UserRegister(BaseModel):
     @classmethod
     def find_by_email(cls, email: str) -> "UserRegister":
         return cls.query.filter_by(email=email).first()
-    
+
     @classmethod
     def find_by_id(cls, reg_id):
         return cls.query.filter_by(id=reg_id).first()
-    
 
     @classmethod
     def get_role_by_id(cls, user_reg_id: str) -> "UserRoles":

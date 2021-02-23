@@ -17,7 +17,7 @@ auth_obj = AuthServices()
 user_obj = UserServices()
 
 
-class admin_manager():
+class AdminManager():
     def __init__(self):
         pass
 
@@ -27,20 +27,18 @@ class admin_manager():
         address_msg, address_id = self.seed_address()
         facility_msg = self.seed_facility(address_id=address_id,
                                           name='facilitytest')
-        return {'message': [role_msg, admin_msg,
-                            address_msg, facility_msg]}, 201
+        return [role_msg, admin_msg, address_msg, facility_msg]
 
     def register_admin(self):
+        import os
         admin_json = {
-            'first_name':'admin',
-            'last_name':'admin',
-            'phone_number':'8097810754',
-            'uuid':'1212121212',
-            'email':'admin@elementsci.com',
-            'password':'admin123'
+            'first_name': 'admin',
+            'last_name': 'admin',
+            'phone_number': '8097810754',
+            'uuid': '1212121212',
+            'email': os.environ.get('ADMIN_USERNAME'),
+            'password': os.environ.get('ADMIN_PASSWORD')
         }
-        if admin_json is False:
-            return {"message": " Not created"}, 400
         exist = user_exists(admin_json)
         if exist is False:
             return 'Admin already created'
@@ -109,14 +107,16 @@ def user_exists(provider_json):
         return False
 
 
-
 def insert_ref(provider_json):
     try:
-        register = (str(provider_json['email']).lower(), encPass(provider_json['password']))
-        user = (provider_json['first_name'], provider_json['last_name'],
+        register = (str(provider_json['email']).lower(),
+                    encPass(provider_json['password']))
+        user = (provider_json['first_name'],
+                provider_json['last_name'],
                 provider_json['phone_number'])
         reg_id = auth_obj.register_new_user(register)
-        user_id, uuid = user_obj.save_user(user[0], user[1], user[2], reg_id)
+        user_id, uuid = user_obj.save_user(user[0], user[1],
+                                           user[2], reg_id)
         user_obj.assign_role(user_id, ADMIN)
         db_obj.commit_db()
     except SQLAlchemyError as error:

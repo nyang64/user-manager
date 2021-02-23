@@ -81,12 +81,6 @@ def send_registration_email(
                 username: {}
                 password: {}
     </ul></p>
-
-
-
-    Thanks & Regards,</br>
-    Element Science
-    
     """.format(first_name, os.environ.get('APP_LINK'), username, password)
     msg.attach(MIMEText(body, 'html'))
     try:

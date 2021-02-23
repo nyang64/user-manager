@@ -24,6 +24,7 @@ class Patient(BaseModel):
     users = db.relationship("Users",
                             backref=backref("users_patient", uselist=False))
 
-    def save_patient(self) -> None:
-        db.session.add(self)
-        db.session.commit()
+    @classmethod
+    def check_patient_exist(cls, patient_id):
+        return db.session.query(cls).filter_by(
+            id=patient_id).first()

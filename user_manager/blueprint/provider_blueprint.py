@@ -29,3 +29,19 @@ class ProviderBlueprint(Blueprint):
             '/providers',
             'Get List of Providers',
             self.provider_Obj.get_providers, methods=['GET'])
+        self.add_url_rule('/patients/list',
+                          'Get all patient list',
+                          self.provider_Obj.get_patient_list,
+                          methods=['POST'])
+        self.add_url_rule('/patient/detail',
+                          'Get patient detail',
+                          self.provider_Obj.get_patient_detail_byid,
+                          methods=['GET'])
+        self.add_url_rule('/patient/report',
+                          'Get report link',
+                          self.provider_Obj.get_report_signed_link,
+                          methods=['GET'])
+        self.add_url_rule('/report/update',
+                          'Update uploaded ts',
+                          self.provider_Obj.update_uploaded_ts,
+                          methods=['POST'])

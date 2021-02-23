@@ -14,6 +14,8 @@ def encoded_Token(
         secret = os.environ["REFRESH_TOKEN_KEY"]
     else:
         secret = os.environ["ACCESS_TOKEN_KEY"]
+    print('-----------secret------------')
+    print(secret, '=-----secret value----')
     return jwt.encode({
                 "user_email": user_email,
                 "user_role": user_role,

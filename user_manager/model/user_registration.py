@@ -1,11 +1,14 @@
-from db import db
-from sqlalchemy import String, Boolean
-from model.base_model import BaseModel
-from model.roles import Roles
-from model.user_roles import UserRoles
-from model.users import Users
+from werkzeug.exceptions import InternalServerError, NotFound, Unauthorized
 from sqlalchemy.exc import SQLAlchemyError
-from werkzeug.exceptions import InternalServerError
+from sqlalchemy import String, Boolean
+from utils.common import encPass, checkPass, auth_response_model
+from utils.jwt import encoded_Token
+from model.user_otp import UserOTPModel
+from model.base_model import BaseModel
+from model.user_roles import UserRoles
+from model.roles import Roles
+from model.users import Users
+from db import db
 
 
 class UserRegister(BaseModel):
@@ -16,36 +19,12 @@ class UserRegister(BaseModel):
     isFirst = db.Column('isFirst', Boolean, default=True)
 
     @classmethod
-    def find_by_username(cls, email: str) -> "UserRegister":
-        try:
-            user_registration_data = cls.query.filter_by(email=email).first()
-        except SQLAlchemyError as error:
-            db.session.rollback()
-            raise InternalServerError(str(error))
-        return user_registration_data
+    def find_by_email(cls, email: str) -> "UserRegister":
+        return cls.query.filter_by(email=email).first()
 
-    def save_to_db(self) -> None:
-        try:
-            db.session.add(self)
-            db.session.commit()
-        except SQLAlchemyError as error:
-            db.session.rollback()
-            raise InternalServerError(str(error))
-
-    def update_db(self) -> None:
-        try:
-            db.session.commit()
-        except SQLAlchemyError as error:
-            db.session.rollback()
-            raise InternalServerError(str(error))
-
-    def delete_db(self) -> None:
-        try:
-            db.session.delete(self)
-            db.session.commit()
-        except SQLAlchemyError as error:
-            db.session.rollback()
-            raise InternalServerError(str(error))
+    @classmethod
+    def find_by_id(cls, reg_id):
+        return cls.query.filter_by(id=reg_id).first()
 
     @classmethod
     def get_role_by_id(cls, user_reg_id: str) -> "UserRoles":
@@ -74,6 +53,6 @@ class UserRegister(BaseModel):
                 user_registration_data = cls.query.filter_by(
                         id=users_data.registration_id
                     ).first()
-                user_registration_data.delete_db()
+                cls.delete_obj(user_registration_data)
         except SQLAlchemyError as error:
             raise InternalServerError(str(error))

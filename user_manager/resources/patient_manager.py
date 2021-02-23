@@ -1,29 +1,30 @@
-from flask import jsonify
+from flask import jsonify, request
 from werkzeug.exceptions import BadRequest
 import http
-from services.patient_repository import PatientRepository
-from common.common_repo import CommonRepo
+from services.patient_services import PatientServices
 from utils.validation import validate_request
 from utils.jwt import require_user_token
 from schema.patient_schema import (create_patient_schema,
-                                           update_patient_schema,
-                                           assign_device_schema)
+                                   update_patient_schema,
+                                   assign_device_schema,)
 from utils.constants import ADMIN, PROVIDER, PATIENT
-from flask import request
 
 
 class PatientManager():
     def __init__(self):
-        self.patientObj = PatientRepository()
-        self.common_obj = CommonRepo()
+        self.patient_obj = PatientServices()
 
     @require_user_token(ADMIN, PROVIDER)
     def create_patient(self, decrypt):
+        from utils.send_mail import send_registration_email
         request_data = validate_request()
         register, user, patient = create_patient_schema.load(request_data)
-        self.common_obj.is_email_registered(register[0])
-        user_id, user_uuid = self.patientObj.add_patient(register, 
-                                                         user, patient)
+        user_id, user_uuid = self.patient_obj.register_patient(register,
+                                                               user, patient)
+        if user_id is not None and user_uuid is not None:
+            send_registration_email(user[0], register[0],
+                                    'Welcome to Element Science',
+                                    register[0], register[1])
         return {'message': 'Patient created',
                 'data': {
                     'patient_uuid': user_uuid,
@@ -38,8 +39,8 @@ class PatientManager():
             raise BadRequest("parameter id is missing")
         request_data = validate_request()
         patient = update_patient_schema.load(request_data)
-        self.patientObj.update_patient_data(patient_id, patient[0],
-                                            patient[1], patient[2])
+        self.patient_obj.update_patient_data(patient_id, patient[0],
+                                             patient[1], patient[2])
         return {"message": "Sucessfully updated"}, http.client.OK
 
     @require_user_token(ADMIN, PROVIDER)
@@ -47,20 +48,20 @@ class PatientManager():
         patient_id = request.args.get('id')
         if patient_id is None:
             raise BadRequest("parameter id is missing")
-        self.patientObj.delete_patient_data(patient_id)
+        self.patient_obj.delete_patient_data(patient_id)
         return {"message": "Patient deleted"}, http.client.OK
 
     @require_user_token(ADMIN, PROVIDER)
     def assign_device(self, decrypt):
         request_data = validate_request()
         patient_id, device_id = assign_device_schema.load(request_data)
-        self.patientObj.assign_device_to_patient(patient_id, device_id)
+        self.patient_obj.assign_device_to_patient(patient_id, device_id)
         print("id", id)
         return {'message': 'Device assigned',
                 'status_code': '201'}, http.client.CREATED
 
     def patient_device_list(self):
-        device_list = self.patientObj.patient_device_list()
+        device_list = self.patient_obj.patient_device_list()
         resp = {'devices': device_list}
         return jsonify(resp), http.client.OK
 

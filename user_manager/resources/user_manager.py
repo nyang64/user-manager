@@ -1,10 +1,9 @@
 from werkzeug.exceptions import BadRequest
 from flask import jsonify
 import http.client
-from services.user_repository import UserRepository
+from services.user_services import UserServices
 from schema.user_schema import create_user_schema, update_user_schema
 from utils.validation import validate_request
-from common.common_repo import CommonRepo
 from utils.jwt import require_user_token
 from utils.constants import ADMIN, PROVIDER, PATIENT, ESUSER
 from flask import request
@@ -12,15 +11,13 @@ from flask import request
 
 class UserManager():
     def __init__(self):
-        self.user_obj = UserRepository()
-        self.common_obj = CommonRepo()
+        self.user_obj = UserServices()
 
     @require_user_token(ADMIN)
     def create_user(self, decrypt):
         request_data = validate_request()
         register, user = create_user_schema.load(request_data)
-        self.common_obj.is_email_registered(register[0])
-        user_id, user_uuid = self.user_obj.add_user(register, user)
+        user_id, user_uuid = self.user_obj.register_user(register, user)
         return {'message': 'User created and assigned role',
                 'data': {
                     'user_uuid': user_uuid,
@@ -70,11 +67,12 @@ class UserManager():
     def get_detail_bytoken(self, decrypt):
         print(decrypt)
         email = decrypt.get('user_email')
-        user = self.common_obj.get_detail_by_email(email)
+        user = self.user_obj.get_detail_by_email(email)
         resp = dict()
         resp['email'] = email
         resp['user_id'] = user[0]
         resp['user_uuid'] = user[1]
         resp['registration_id'] = user[2]
         resp['type'] = decrypt.get('user_role')
-        return jsonify({'data':resp}), http.client.OK
+        return jsonify({'data': resp}), http.client.OK
+

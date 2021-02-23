@@ -1,24 +1,28 @@
 # from flask_restful import Resource
-from flask import request
+from flask import request, jsonify
 from model.user_registration import UserRegister
 from model.users import Users
 from model.providers import Providers
 from utils.common import (
     have_keys,
-    encPass, generate_uuid)
-from sqlalchemy.exc import SQLAlchemyError
+    encPass)
 from utils.jwt import require_user_token
-from werkzeug.exceptions import InternalServerError, Conflict
-from model.user_roles import UserRoles
-from db import db
+from werkzeug.exceptions import Conflict
+from schema.patient_schema import (filter_patient_schema, patient_id_schema)
 from utils.constants import ADMIN, PROVIDER
-from services.user_repository import UserRepository
+from services.user_services import UserServices
+from services.provider_services import ProviderService
+from utils.validation import validate_request
+from schema.report_schema import report_id_schema
+from schema.patient_schema import patient_detail_schema
+from schema.report_schema import patient_reports_schema
+import http
 
 
 class provider_manager():
     def __init__(self):
-        self.userObj = UserRepository()
-        pass
+        self.userObj = UserServices()
+        self.provider_obj = ProviderService()
 
     @require_user_token(ADMIN, PROVIDER)
     def register_provider(self, decrypt):
@@ -30,17 +34,13 @@ class provider_manager():
             'email', 'password'
                 ) is False:
             return {"message": "Invalid Request Parameters"}, 400
-        user_exists(provider_json)
-        user_id = insert_ref(provider_json)
-        provider = Providers(
-            user_id=user_id,
-            facility_id=provider_json["facility_id"]
-            )
-        try:
-            provider.save_to_db()
-        except SQLAlchemyError as error:
-            db.session.rollback()
-            raise InternalServerError(str(error)) 
+        register = (str(provider_json['email']).lower(),
+                    provider_json['password'])
+        print(register)
+        user = (provider_json['first_name'], provider_json['last_name'],
+                provider_json['phone_number'])
+        facility_id = provider_json["facility_id"]
+        self.provider_obj.register_provider(register, user, facility_id)
         return {"message": "Provider Created"}, 201
 
     @require_user_token(ADMIN, PROVIDER)
@@ -69,7 +69,6 @@ class provider_manager():
                 'user_id': user.user_id,
                 'facility_id': user.facility_id
             }for user in provider_data]
-
         return {
             "message": "Users Found",
             "Data": providers_data
@@ -106,48 +105,61 @@ class provider_manager():
             provider_json["phone_number"]
         )
         return {"message": "Provider Updated"}, 200
+    
+    @require_user_token(PROVIDER)
+    def get_patient_list(self, token):
+        '''
+        :param :- page_number, record_per_page, first_name,
+                  last_name, date_of_birth, report_id
+        :return filtered patient list
+        '''
+        request_data = validate_request()
+        filter_input = filter_patient_schema.load(request_data)
+        patients_list, total = self.provider_obj.patients_list(*filter_input)
+        return {"total": total,
+                "page_number": filter_input[0],
+                "record_per_page": filter_input[1],
+                "data": patients_list,
+                "status_code": http.client.OK}, http.client.OK
+        
+    @require_user_token(PROVIDER)
+    def get_patient_detail_byid(self, token):
+        '''
+        Fetch the patient detail by their patientid
+        param: patientID
+        return: patient detail in dict format
+        '''
+        request_data = request.args
+        patient_id = patient_id_schema.load(request_data).get('patientID')
+        patient_data, reports = self.provider_obj.patient_detail_byid(
+            patient_id)
+        patient_data = patient_detail_schema.dump(patient_data)
+        patient_data['report'] = patient_reports_schema.dump(reports)
+        return jsonify(patient_data), http.client.OK
 
+    @require_user_token(PROVIDER)
+    def get_report_signed_link(self, token):
+        '''
+        Fetch the key by reportid from Salvos Table and get the signed url
+        param: reportId
+        return: Report Signed URL
+        '''
+        request_data = request.args
+        report_id = report_id_schema.load(request_data).get('reportId')
+        signed_url, code = self.provider_obj.report_signed_link(report_id)
+        return {"message": signed_url}, code
 
-def user_exists(provider_json):
-    user_reg_data = UserRegister.find_by_username(
-        email=str(provider_json['email']).lower()
-            )
-    if user_reg_data is not None:
-        if (Users.find_by_registration_id(
-            registration_id=user_reg_data.id
-                ) is not None):
-            raise Conflict('Users Already Register')
-
-    if user_reg_data is not None:
-        raise Conflict('Users Already Register')
-
-
-def insert_ref(provider_json):
-    try:
-        user_registration = UserRegister(
-            email=str(provider_json['email']).lower(),
-            password=encPass(provider_json['password']),
-            )
-        user_registration.save_to_db()
-        user_registration_data = UserRegister.find_by_username(
-            email=str(provider_json['email']).lower()
-            )
-        if user_registration_data is None:
-            return {"message": "Server Error"}, 500
-        user = Users(
-            first_name=provider_json['first_name'],
-            last_name=provider_json['last_name'],
-            phone_number=provider_json['phone_number'],
-            registration_id=user_registration_data.id,
-            uuid=generate_uuid()
-            )
-        user.save_user()
-        user_data = user.find_by_registration_id(user_registration_data.id)
-        if user_data is None:
-            return {"message": "Server Error"}, 500
-        userRole = UserRoles(role_id=2, user_id=user_data.id)
-        userRole.save_to_db()
-    except SQLAlchemyError as error:
-        db.session.rollback()
-        raise InternalServerError(str(error))
-    return user_data.id
+    @require_user_token(PROVIDER)
+    def update_uploaded_ts(self, token):
+        '''
+        Fetch the data by reportid from Salvos Table and update \
+            the clinician_verified_at column
+        param: reportId
+        return: uploaded message
+        '''
+        request_data = validate_request()
+        report_id = report_id_schema.load(request_data).get('reportId')
+        print(report_id)
+        msg, code = self.provider_obj.update_uploaded_ts(report_id)
+        return {"message": msg,
+                "status_code": code}, code

@@ -1,25 +1,24 @@
-from model.users import Users
 from sqlalchemy.exc import SQLAlchemyError
+from model.users import Users
 from model.user_roles import UserRoles
 from werkzeug.exceptions import InternalServerError, NotFound
-from services.auth_repo import AuthRepository
+from services.auth_services import AuthServices
 from db import db
 from utils.common import generate_uuid
-from common.common_repo import CommonRepo
+from services.repository.db_repositories import DbRepository
 
 
-class UserRepository():
+class UserServices(DbRepository):
     def __init__(self):
-        self.common_obj = CommonRepo()
-        self.auth_obj = AuthRepository()
+        self.auth_obj = AuthServices()
 
-    def add_user(self, register, user):
-        reg_id = self.auth_obj.register_user(register[0],
-                                             register[1])
+    def register_user(self, register, user):
+        reg_id = self.auth_obj.register_new_user(
+            register[0], register[1])
         user_id, user_uuid = self.save_user(user[0], user[1],
                                             user[2], reg_id)
-        self.assign_user_role(user_id)
-        Users.commit_db(self)
+        self.assign_role(user_id)
+        self.commit_db()
         return user_id, user_uuid
 
     def save_user(self, first_name, last_name, phone_number, reg_id):
@@ -29,21 +28,22 @@ class UserRepository():
                               phone_number=phone_number,
                               registration_id=reg_id,
                               uuid=generate_uuid())
-            Users.flush_db(user_data)
+            self.flush_db(user_data)
             if user_data.id is None:
                 raise SQLAlchemyError('User data not inserted')
             return user_data.id, user_data.uuid
         except SQLAlchemyError as error:
-            db.session.rollback()
             raise InternalServerError(str(error))
 
-    def update_user_byid(self, id, first_name, last_name, phone_number):
+    def update_user_byid(self, user_id, first_name, last_name, phone_number):
         try:
-            exist_user = self.common_obj.check_user_exist(id)
+            exist_user = Users.check_user_exist(user_id)
+            if bool(exist_user) is False:
+                raise NotFound('user does not exist')
             exist_user.first_name = first_name
             exist_user.last_name = last_name
             exist_user.phone_number = phone_number
-            Users.update_db(exist_user)
+            self.update_db(exist_user)
         except (TypeError, AttributeError) as error:
             raise InternalServerError(str(error))
 
@@ -56,27 +56,41 @@ class UserRepository():
                           for user in users_list]
             return users_data
         except SQLAlchemyError as error:
-            db.session.rollback()
             raise InternalServerError(error)
 
     def delete_user_byid(self, user_id):
-        self.common_obj.check_user_exist(user_id)
-        try:
-            user = db.session.query(Users).filter_by(id=user_id).first()
-            if user is None:
-                raise NotFound('user does not exist')
-            Users.delete_obj(user)
-        except SQLAlchemyError as error:
-            db.session.rollback()
-            raise InternalServerError(error)
+        exist_user = Users.check_user_exist(user_id)
+        if bool(exist_user) is False:
+            raise NotFound('user does not exist')
+        self.auth_obj.delete_regtration(exist_user.registration_id)
 
-    def assign_user_role(self, user_id):
+    def assign_role(self, user_id, role_name):
+        from model.roles import Roles
+        exist_user = Users.check_user_exist(user_id)
+        if bool(exist_user) is False:
+            raise NotFound('user does not exist')
+        role_id = Roles.get_roleid(role_name)
         try:
-            self.common_obj.check_user_exist(user_id)
-            user_role = UserRoles(role_id=4, user_id=user_id)
-            UserRoles.save_db(user_role)
+            user_role = UserRoles(role_id=role_id, user_id=user_id)
+            self.flush_db(user_role)
             if user_role.id is None:
                 raise SQLAlchemyError('Roles not updated')
+        except SQLAlchemyError as error:
+            raise InternalServerError(str(error))
+        
+    def get_detail_by_email(self, email):
+        ''' Get the detail of logged in user by email id'''
+        from model.user_registration import UserRegister
+        try:
+            exist_registration = UserRegister.find_by_email(email)
+            if exist_registration is None:
+                raise NotFound(f'{email} not found')
+            user = db.session.query(Users.id, Users.uuid, UserRegister.id)\
+                .filter(UserRegister.id == Users.registration_id)\
+                .filter(UserRegister.email == email).first()
+            if user is None:
+                raise NotFound('user detail not found')
+            return user
         except SQLAlchemyError as error:
             raise InternalServerError(str(error))
 

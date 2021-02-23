@@ -5,6 +5,10 @@ To migrate the Model Schema to database
 2. flask db migrate -m "message"
 3. flask db upgrade
 
+## To seed database
+After migrating table run below command
+## flask seed run
+
 Seed Database:(after creating database)
 1. Add the roles in this format(Admin, Provider, Patient, User)
 

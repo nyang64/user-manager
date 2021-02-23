@@ -10,9 +10,8 @@ class Salvos(BaseModel):
                                   ForeignKey('ES.therapy_reports.id',
                                              ondelete="CASCADE"),
                                   nullable=False)
-    device_id = db.Column('device_id', Integer,
-                          ForeignKey('ES.devices.id',
-                                     ondelete="CASCADE"),
-                          nullable=False)
+    device_serial_number = db.Column('device_serial_number', String)
+    clinician_verified_at = db.Column("clinician_verified_at",
+                                      db.DateTime)
     raw_data_location = db.Column('raw_data_location', String(100))
     pdf_location = db.Column('pdf_location', String(100))

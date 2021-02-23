@@ -18,17 +18,5 @@ class UserRoles(BaseModel):
 
     @classmethod
     def find_by_user_id(cls, user_id: str) -> "UserRoles":
-        try:
-            user_role = cls.query.filter_by(user_id=user_id).first()
-        except SQLAlchemyError as error:
-            db.session.rollback()
-            raise InternalServerError(str(error))
+        user_role = cls.query.filter_by(user_id=user_id).first()
         return user_role
-
-    def save_to_db(self) -> None:
-        try:
-            db.session.add(self)
-            db.session.commit()
-        except SQLAlchemyError as error:
-            db.session.rollback()
-            raise InternalServerError(str(error))

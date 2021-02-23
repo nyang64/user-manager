@@ -18,7 +18,7 @@ class RegisterSchema(BaseSchema):
 
     @post_load
     def make_post_load_object(self, data, **kwargs):
-        email = data.get('email')
+        email = str(data.get('email')).lower()
         password = data.get('password')
         register = (email, password)
         return register

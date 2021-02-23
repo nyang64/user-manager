@@ -19,10 +19,6 @@ class Users(BaseModel):
     uuid = db.Column('uuid', String(50), default=str(uuid.uuid4()),
                      unique=True, nullable=False)
 
-    def save_user(self) -> None:
-        db.session.add(self)
-        db.session.commit()
-
     @classmethod
     def find_by_email(cls, email: str) -> "Users":
         return cls.query.filter_by(email=email).first()
@@ -34,3 +30,8 @@ class Users(BaseModel):
     @classmethod
     def find_by_user_id(cls, user_id: str) -> "Users":
         return cls.query.filter_by(id=user_id).first()
+    
+    @classmethod
+    def check_user_exist(cls, user_id):
+        return db.session.query(cls).filter_by(
+            id=user_id).first()

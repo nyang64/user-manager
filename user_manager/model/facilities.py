@@ -12,9 +12,6 @@ class Facilities(BaseModel):
     name = db.Column('name', String(100))
 
     @classmethod
-    def find_by_id(cls, id: str) -> "Facilities":
+    def find_by_id(cls, id) -> "Facilities":
         return cls.query.filter_by(id=id).first()
 
-    def save_to_db(self) -> None:
-        db.session.add(self)
-        db.session.commit()

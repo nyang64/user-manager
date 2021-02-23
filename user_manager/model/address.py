@@ -1,6 +1,7 @@
 from db import db
 from sqlalchemy import String, ForeignKey, Integer
 from model.base_model import BaseModel
+from sqlalchemy.orm import column_property
 
 
 class Address(BaseModel):
@@ -10,6 +11,7 @@ class Address(BaseModel):
                         ForeignKey('ES.users.id', ondelete="CASCADE"))
     street_address_1 = db.Column('street_address_1', String(100))
     street_address_2 = db.Column('street_address_2', String(100))
+    full_address = column_property(street_address_1 + " " + street_address_2)
     city = db.Column('city', String(100))
     state = db.Column('state', String(50))
     country = db.Column('country', String(20))
@@ -18,7 +20,3 @@ class Address(BaseModel):
     @classmethod
     def find_by_id(cls, id: str) -> "Address":
         return cls.query.filter_by(id=id).first()
-
-    def save_to_db(self) -> None:
-        db.session.add(self)
-        db.session.commit()

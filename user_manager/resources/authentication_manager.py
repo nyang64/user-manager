@@ -8,18 +8,16 @@ from utils.common import have_keys, have_keys_NotForce, encPass, generateOTP
 from utils.send_mail import send_otp
 from model.user_registration import UserRegister
 from model.user_otp import UserOTPModel
-from services.auth_repo import AuthRepository
-from services.user_repository import UserRepository
+from services.auth_services import AuthServices
 
 
 class AuthOperation():
     def __init__(self):
-        self.auth_repo = AuthRepository()
-        pass
+        self.auth_obj = AuthServices()
 
     def login_user(self):
         login_object = user_login_schema.validate_data(request.get_json())
-        return self.auth_repo.User_login(login_object)
+        return self.auth_obj.User_login(login_object)
 
     @require_refresh_token
     def refresh_token(self, decrypt):
@@ -42,7 +40,7 @@ class AuthOperation():
                 "user_email": decrypt["user_email"],
                 "newpassword": newpassword
             })
-        self.auth_repo.update_password(decrypt["user_email"], newpassword)
+        self.auth_obj.update_password(decrypt["user_email"], newpassword)
         return {"message": "Password Updated"}, 200
 
     def reset_user_password(self):
@@ -51,7 +49,7 @@ class AuthOperation():
             user_json, 'email', 'otp', 'password'
          )
         if have_key is True:
-            user_data = UserRegister.find_by_username(
+            user_data = UserRegister.find_by_email(
                 email=str(user_json["email"]).lower()
                 )
             if user_data is None:
@@ -70,7 +68,7 @@ class AuthOperation():
             user_json, 'email'
          )
         if have_keyN is True:
-            user_data = UserRegister.find_by_username(
+            user_data = UserRegister.find_by_email(
                 email=str(user_json["email"]).lower())
             if user_data is None:
                 return {"message": "No Such User Exist"}, 404
@@ -84,6 +82,6 @@ class AuthOperation():
             user_otp = UserOTPModel(
                 user_id=user_data.id, otp=otp, temp_password=""
             )
-            user_otp.save_to_db()
+            self.auth_obj.add_otp(user_otp)
             return {"message": "OTP Sent to Email"}, 200
         return {"message": "Invalid Request Parameters"}, 400

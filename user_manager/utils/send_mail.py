@@ -10,6 +10,7 @@ def send_otp(
         subject: str, otp: str):
 
     from_address = os.environ["SMTP_FROM"]
+    print('address email', from_address)
     msg = MIMEMultipart()
     msg['From'] = from_address
     msg['To'] = to_address
@@ -41,6 +42,8 @@ def send_otp(
             os.environ["SMTP_PORT"])
         server.starttls()
         server.login(os.environ["SMTP_USERNAME"], os.environ["SMTP_PASSWORD"])
+        print('-------SMTP------------')
+        print(os.environ["SMTP_USERNAME"], os.environ["SMTP_PASSWORD"])
         text = msg.as_string()
         server.sendmail(from_address, to_address, text)
         server.quit()

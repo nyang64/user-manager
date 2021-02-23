@@ -109,18 +109,16 @@ def user_exists(provider_json):
 
 def insert_ref(provider_json):
     try:
-        register = (str(provider_json['email']).lower(),
-                    encPass(provider_json['password']))
-        user = (provider_json['first_name'],
-                provider_json['last_name'],
-                provider_json['phone_number'])
-        reg_id = auth_obj.register_new_user(register)
-        user_id, uuid = user_obj.save_user(user[0], user[1],
-                                           user[2], reg_id)
+        reg_id = auth_obj.register_new_user(provider_json['email'],
+                                            provider_json['password'])
+        user_id, uuid = user_obj.save_user(provider_json['first_name'],
+                                           provider_json['last_name'],
+                                           provider_json['phone_number'],
+                                           reg_id)
         user_obj.assign_role(user_id, ADMIN)
         db_obj.commit_db()
     except SQLAlchemyError as error:
-        raise InternalServerError(str(error))
+        raise InternalServerError('Error', str(error))
     except (AttributeError, NameError, TypeError) as e:
-        raise InternalServerError(str(e))
+        raise InternalServerError('Errors', str(e))
     return user_id

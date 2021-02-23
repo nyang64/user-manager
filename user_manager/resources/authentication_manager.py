@@ -7,6 +7,7 @@ from flask import request
 from utils.common import have_keys, have_keys_NotForce, encPass, generateOTP
 from utils.send_mail import send_otp
 from model.user_registration import UserRegister
+from model.users import Users
 from model.user_otp import UserOTPModel
 from services.auth_services import AuthServices
 
@@ -61,8 +62,8 @@ class AuthOperation():
             if otp_data is None:
                 return {"message": "OTP is Incorrect"}, 404
             otp_data.temp_password = encPass(user_json["password"])
-            otp_data.update_db()
-            return {"message": "OTP Matched"}, 200
+            msg = self.auth_obj.update_otp_data(otp_data)
+            return {"message": msg}, 200
 
         have_keyN = have_keys(
             user_json, 'email'
@@ -72,7 +73,7 @@ class AuthOperation():
                 email=str(user_json["email"]).lower())
             if user_data is None:
                 return {"message": "No Such User Exist"}, 404
-            user_detail = UserRepository.getUserById(user_reg_id=user_data.id)
+            user_detail = Users.getUserById(user_reg_id=user_data.id)
             otp = generateOTP()
             send_otp(
                 user_detail.first_name,

@@ -34,3 +34,12 @@ class UserOTPModel(BaseModel):
             db.session.rollback()
             raise InternalServerError(str(error))
         return user_otp
+    
+    @classmethod
+    def deleteAll_OTP(cls, user_id):
+        try:
+            cls.query.filter(user_id == user_id).\
+                delete(synchronize_session=False)
+            db.session.commit()
+        except SQLAlchemyError as error:
+            raise InternalServerError(str(error))

@@ -13,19 +13,18 @@ from utils.constants import ADMIN, PROVIDER, PATIENT
 class PatientManager():
     def __init__(self):
         self.patient_obj = PatientServices()
-        
-    def create(self):
-        request_data = validate_request()
-        cr = create_patient_schema.load(request_data)
-        print(cr)
-        return {}
 
     @require_user_token(ADMIN, PROVIDER)
     def create_patient(self, decrypt):
+        from utils.send_mail import send_registration_email
         request_data = validate_request()
         register, user, patient = create_patient_schema.load(request_data)
         user_id, user_uuid = self.patient_obj.register_patient(register,
                                                                user, patient)
+        if user_id is not None and user_uuid is not None:
+            send_registration_email(user[0], register[0],
+                                    'Welcome to Element Science',
+                                    register[0], register[1])
         return {'message': 'Patient created',
                 'data': {
                     'patient_uuid': user_uuid,

@@ -84,7 +84,7 @@ def send_registration_email(
 
 
 
-    Thanks & Regards,
+    Thanks & Regards,</br>
     Element Science
     
     """.format(first_name, os.environ.get('APP_LINK'), username, password)

@@ -34,8 +34,9 @@ class provider_manager():
             'email', 'password'
                 ) is False:
             return {"message": "Invalid Request Parameters"}, 400
-        register = (str(provider_json['email']).lower(), encPass(
-            provider_json['password']))
+        register = (str(provider_json['email']).lower(),
+                    provider_json['password'])
+        print(register)
         user = (provider_json['first_name'], provider_json['last_name'],
                 provider_json['phone_number'])
         facility_id = provider_json["facility_id"]

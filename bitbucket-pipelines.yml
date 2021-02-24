@@ -1,35 +1,49 @@
 image: "python:3.8"
-pipelines: 
-  branches: 
-    feature/EC-608-implement-service-to-create-update-provider: 
-      - 
-        step: 
-          name: "Git Checkout"
-          script: 
-            - "git clone git@bitbucket.org:elementsci/user-manager.git"
-            - echo "Git repo cloned on the runner instance."
-      - 
-        step: 
-          name: "Python Dependencies Installation."
-          script: 
-            - "pip install -r es-api/requirements.txt"
-            - echo "Python requirement packages installed successfully."
-      - 
-        step: 
-          services: 
-            - docker
-          caches: 
-            - pip
-          name: "Building docker image and pushing it to ECR."
-          script: 
-            - pip install awscli
-            - echo "AWS CLI installed successfully."
-            - cd es-api
-            - docker build -t $BITBUCKET_COMMIT .
-            - echo "Docker image build successfull."
-            - aws configure set aws_access_key_id "${AWS_KEY}"
-            - aws configure set aws_secret_access_key "${AWS_SECRET}"
-            - aws ecr get-login-password --region us-west-1 | docker login --username AWS --password-stdin $AWS_ACCOUNT_URL
-            - docker tag $BITBUCKET_COMMIT $AWS_ACCOUNT_URL/$ECR_REPO_NAME:$BITBUCKET_COMMIT
-            - docker push $AWS_ACCOUNT_URL/$ECR_REPO_NAME:$BITBUCKET_COMMIT
-            - echo "Docker image pushed to ECR successfully."
+definitions:
+  steps: &Pull-SC-Push-Img-Create-SLS-Deploy-on-ECS
+    services:
+      - docker
+    caches:
+      - pip
+    name: Pull the source code, prepare/push docker image to ECR, setup SLS and deploy new ECR image to ECS cluster service.
+    script:
+      - "pip install -r es-api/requirements.txt"
+
+      - pip install awscli
+
+      - cd es-api
+      - docker build -t $BITBUCKET_COMMIT .
+
+      - aws configure set aws_access_key_id "${AWS_ACCESS_KEY_ID}"
+      - aws configure set aws_secret_access_key "${AWS_SECRET_ACCESS_KEY}"
+      - aws ecr get-login-password --region us-west-1 | docker login --username AWS --password-stdin $AWS_ACCOUNT_URL
+      - docker tag $BITBUCKET_COMMIT $AWS_ACCOUNT_URL/$ECR_REPO_NAME:$BITBUCKET_COMMIT
+      - docker push $AWS_ACCOUNT_URL/$ECR_REPO_NAME:$BITBUCKET_COMMIT
+
+      # Replace the docker image name in the task definition with the newly pushed image.
+      - cd ..
+      - pip install envsubst
+      - export IMAGE_NAME="$AWS_ACCOUNT_URL/$ECR_REPO_NAME:$BITBUCKET_COMMIT"
+      - envsubst < task-definition-template/task-definition-template.json >  task-definition.json
+
+      # Update the task definition.
+      - pipe: atlassian/aws-ecs-deploy:1.0.0
+        variables:
+          AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+          AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+          AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+          CLUSTER_NAME: $CLUSTER_NAME
+          SERVICE_NAME: $SERVICE_NAME
+          TASK_DEFINITION: 'task-definition.json'
+pipelines:
+  custom:
+    dev-deployment:
+      - step:
+          <<: *Pull-SC-Push-Img-Create-SLS-Deploy-on-ECS
+          name: Deploy to Development environment
+          deployment: dev
+    prod-deployment:
+      - step:
+          <<: *Pull-SC-Push-Img-Create-SLS-Deploy-on-ECS
+          name: Deploy to Production environment
+          deployment: prod

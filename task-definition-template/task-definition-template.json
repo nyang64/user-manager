@@ -1,0 +1,89 @@
+{
+  "executionRoleArn": "arn:aws:iam::488323030461:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/qa-es-ecs",
+          "awslogs-region": "us-west-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "portMappings": [
+        {
+          "hostPort": 5000,
+          "protocol": "tcp",
+          "containerPort": 5000
+        }
+      ],
+      "cpu": 0,
+      "environment": [
+        {
+          "name": "ACCESS_TOKEN_KEY",
+          "value": "C718D5FDDEC279567385BE3E52894"
+        },
+        {
+          "name": "POSTGRES_DB_HOST",
+          "value": "test-es-db.caneampnjecs.us-west-1.rds.amazonaws.com"
+        },
+        {
+          "name": "POSTGRES_DB_NAME",
+          "value": "testes"
+        },
+        {
+          "name": "POSTGRES_DB_PASSWORD_KEY",
+          "value": "Es#12390"
+        },
+        {
+          "name": "POSTGRES_DB_PORT",
+          "value": "5432"
+        },
+        {
+          "name": "POSTGRES_DB_USER_KEY",
+          "value": "postgres"
+        },
+        {
+          "name": "REFRESH_TOKEN_KEY",
+          "value": "9EA72AD96C39A87A1AFF153983592"
+        },
+        {
+          "name": "SMTP_FROM",
+          "value": "dhruv.rana@infostretch.com"
+        },
+        {
+          "name": "SMTP_PASSWORD",
+          "value": "BIqBtf84NQ5jnpYKCeZcH0+/j7hXixGZmPW3X7PlTZeT"
+        },
+        {
+          "name": "SMTP_PORT",
+          "value": "587"
+        },
+        {
+          "name": "SMTP_SERVER",
+          "value": "email-smtp.us-west-1.amazonaws.com"
+        },
+        {
+          "name": "SMTP_USERNAME",
+          "value": "AKIAXDMSSDW6WYN34VTV"
+        }
+      ],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "image": "$IMAGE_NAME",
+      "essential": true,
+      "name": "test-es-api"
+    }
+  ],
+  "placementConstraints": [],
+  "memory": "2048",
+  "taskRoleArn": "arn:aws:iam::488323030461:role/ECS-Managed-Policy",
+  "family": "test-es-ecs",
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "networkMode": "awsvpc",
+  "cpu": "1024",
+  "volumes": []
+}
+

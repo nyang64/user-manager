@@ -1,9 +1,6 @@
-from werkzeug.exceptions import InternalServerError, NotFound, Unauthorized
+from werkzeug.exceptions import InternalServerError
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import String, Boolean
-from utils.common import encPass, checkPass, auth_response_model
-from utils.jwt import encoded_Token
-from model.user_otp import UserOTPModel
 from model.base_model import BaseModel
 from model.user_roles import UserRoles
 from model.roles import Roles
@@ -12,7 +9,7 @@ from db import db
 
 
 class UserRegister(BaseModel):
-    __tablename__ = "user_registration"
+    __tablename__ = "registrations"
     __table_args__ = ({"schema": "ES"})
     email = db.Column('email', String(50), nullable=False, unique=True)
     password = db.Column('password', String(255), nullable=False)

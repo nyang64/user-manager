@@ -9,7 +9,7 @@ class Users(BaseModel):
     __tablename__ = "users"
     __table_args__ = ({"schema": "ES"})
     registration_id = db.Column('registration_id', Integer,
-                                ForeignKey('ES.user_registration.id',
+                                ForeignKey('ES.registrations.id',
                                            ondelete="CASCADE"))
     first_name = db.Column('first_name', String(30),
                            nullable=False)

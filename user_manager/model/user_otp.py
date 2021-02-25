@@ -6,7 +6,7 @@ from werkzeug.exceptions import InternalServerError
 
 
 class UserOTPModel(BaseModel):
-    __tablename__ = "user_otp"
+    __tablename__ = "user_otps"
     __table_args__ = ({"schema": "ES"})
     user_id = db.Column('user_id', Integer, nullable=False)
     otp = db.Column('otp', String(255), nullable=False)

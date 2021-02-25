@@ -9,7 +9,7 @@ class UserRoles(BaseModel):
     __tablename__ = "user_roles"
     __table_args__ = ({"schema": "ES"})
     role_id = db.Column('role_id', Integer,
-                        ForeignKey('ES.roles.id',
+                        ForeignKey('ES.role_types.id',
                                    ondelete="CASCADE"),
                         nullable=False)
     user_id = db.Column('user_id', Integer,

@@ -1,15 +1,15 @@
 import smtplib
-import os
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from werkzeug.exceptions import InternalServerError
+from config import read_environ_value
 
 
 def send_otp(
         name: str, to_address: str,
         subject: str, otp: str):
 
-    from_address = os.environ["SMTP_FROM"]
+    from_address = read_environ_value("SMTP_FROM")
     print('address email', from_address)
     msg = MIMEMultipart()
     msg['From'] = from_address
@@ -38,12 +38,12 @@ def send_otp(
     msg.attach(MIMEText(body, 'plain'))
     try:
         server = smtplib.SMTP(
-            os.environ["SMTP_SERVER"],
-            os.environ["SMTP_PORT"])
+            read_environ_value("SMTP_SERVER"),
+            read_environ_value("SMTP_PORT"))
         server.starttls()
-        server.login(os.environ["SMTP_USERNAME"], os.environ["SMTP_PASSWORD"])
+        server.login(read_environ_value("SMTP_USERNAME"), read_environ_value("SMTP_PASSWORD"))
         print('-------SMTP------------')
-        print(os.environ["SMTP_USERNAME"], os.environ["SMTP_PASSWORD"])
+        print(read_environ_value("SMTP_USERNAME"), read_environ_value("SMTP_PASSWORD"))
         text = msg.as_string()
         server.sendmail(from_address, to_address, text)
         server.quit()
@@ -57,7 +57,7 @@ def send_registration_email(
         first_name: str, to_address: str,
         subject: str, username: str, password: str):
 
-    from_address = os.environ["SMTP_FROM"]
+    from_address = read_environ_value("SMTP_FROM")
     print('address email', from_address)
     msg = MIMEMultipart()
     msg['From'] = from_address
@@ -81,16 +81,16 @@ def send_registration_email(
                 username: {}
                 password: {}
     </ul></p>
-    """.format(first_name, os.environ.get('APP_LINK'), username, password)
+    """.format(first_name, read_environ_value('APP_LINK'), username, password)
     msg.attach(MIMEText(body, 'html'))
     try:
         server = smtplib.SMTP(
-            os.environ["SMTP_SERVER"],
-            os.environ["SMTP_PORT"])
+            read_environ_value("SMTP_SERVER"),
+            read_environ_value("SMTP_PORT"))
         server.starttls()
-        server.login(os.environ["SMTP_USERNAME"], os.environ["SMTP_PASSWORD"])
+        server.login(read_environ_value("SMTP_USERNAME"), read_environ_value("SMTP_PASSWORD"))
         print('-------SMTP------------')
-        print(os.environ["SMTP_USERNAME"], os.environ["SMTP_PASSWORD"])
+        print(read_environ_value("SMTP_USERNAME"), read_environ_value("SMTP_PASSWORD"))
         text = msg.as_string()
         server.sendmail(from_address, to_address, text)
         server.quit()

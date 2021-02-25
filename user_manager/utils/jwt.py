@@ -1,6 +1,6 @@
 from flask import request
 import jwt
-import os
+from config import read_environ_value
 from utils.common import tokenTime
 import datetime
 from werkzeug.exceptions import Unauthorized
@@ -11,9 +11,9 @@ def encoded_Token(
         user_email: str,
         user_role: str = "Patient"):
     if isrefreshToken:
-        secret = os.environ["REFRESH_TOKEN_KEY"]
+        secret = read_environ_value("REFRESH_TOKEN_KEY")
     else:
-        secret = os.environ["ACCESS_TOKEN_KEY"]
+        secret = read_environ_value("ACCESS_TOKEN_KEY")
     print('-----------secret------------')
     print(secret, '=-----secret value----')
     return jwt.encode({
@@ -32,7 +32,7 @@ def require_user_token(*args):
                 raise Unauthorized('Token is Expired')
             try:
                 decrypted = jwt.decode(
-                        token, os.environ["ACCESS_TOKEN_KEY"],
+                        token, read_environ_value("ACCESS_TOKEN_KEY"),
                         algorithms=["HS256"]
                     )
             except jwt.ExpiredSignatureError:
@@ -54,7 +54,7 @@ def require_refresh_token(func):
             raise Unauthorized('Unauthorized Access')
         try:
             decrypt = jwt.decode(
-                    token, os.environ["REFRESH_TOKEN_KEY"],
+                    token, read_environ_value("REFRESH_TOKEN_KEY"),
                     algorithms=["HS256"]
                 )
         except Exception:

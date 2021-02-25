@@ -2,7 +2,6 @@ from model.user_registration import UserRegister
 from model.users import Users
 from model.roles import Roles
 from model.address import Address
-from utils.common import encPass
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import InternalServerError
 from db import db
@@ -30,14 +29,14 @@ class AdminManager():
         return [role_msg, admin_msg, address_msg, facility_msg]
 
     def register_admin(self):
-        import os
+        from config import read_environ_value
         admin_json = {
             'first_name': 'admin',
             'last_name': 'admin',
             'phone_number': '8097810754',
             'uuid': '1212121212',
-            'email': os.environ.get('ADMIN_USERNAME'),
-            'password': os.environ.get('ADMIN_PASSWORD')
+            'email': read_environ_value('ADMIN_USERNAME'),
+            'password': read_environ_value('ADMIN_PASSWORD')
         }
         exist = user_exists(admin_json)
         if exist is False:

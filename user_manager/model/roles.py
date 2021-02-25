@@ -4,7 +4,7 @@ from model.base_model import BaseModel
 
 
 class Roles(BaseModel):
-    __tablename__ = "roles"
+    __tablename__ = "role_types"
     __table_args__ = (UniqueConstraint('role_name'), {"schema": "ES"})
     role_name = db.Column('role_name', String(30), nullable=False)
 

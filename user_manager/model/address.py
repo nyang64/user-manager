@@ -5,7 +5,7 @@ from sqlalchemy.orm import column_property
 
 
 class Address(BaseModel):
-    __tablename__ = "address"
+    __tablename__ = "addresses"
     __table_args__ = ({"schema": "ES"})
     user_id = db.Column('user_id', Integer,
                         ForeignKey('ES.users.id', ondelete="CASCADE"))

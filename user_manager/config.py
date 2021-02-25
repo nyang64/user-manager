@@ -6,7 +6,7 @@ from werkzeug.exceptions import BadHost
 def read_environ_value(key):
     value = os.environ.get(key)
     try:
-        if len(value.split(':')) == 2:
+        if value is not None and len(value.split(':')) == 2:
             print('Convert to JSON')
             json_value = json.loads(value)
             print(json_value, type(json_value))

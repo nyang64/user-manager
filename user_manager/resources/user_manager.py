@@ -65,14 +65,16 @@ class UserManager():
 
     @require_user_token(ADMIN, PROVIDER, PATIENT, ESUSER)
     def get_detail_bytoken(self, decrypt):
-        print(decrypt)
         email = decrypt.get('user_email')
         user = self.user_obj.get_detail_by_email(email)
+        if user is None or len(user) < 3:
+            return jsonify({'message': 'No data found'})
         resp = dict()
         resp['email'] = email
-        resp['user_id'] = user[0]
-        resp['user_uuid'] = user[1]
+        resp['id'] = user[0]
+        resp['uuid'] = user[1]
         resp['registration_id'] = user[2]
-        resp['type'] = decrypt.get('user_role')
-        return jsonify({'data': resp}), http.client.OK
-
+        resp['type'] = str(decrypt.get('user_role')).capitalize()
+        resp['status'] = 'Active'
+        resp['scope'] = 'User'
+        return jsonify(resp), http.client.OK

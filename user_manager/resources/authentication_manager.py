@@ -10,6 +10,8 @@ from model.user_registration import UserRegister
 from model.users import Users
 from model.user_otp import UserOTPModel
 from services.auth_services import AuthServices
+# Do not remove used at time of migration
+from model.facilities import Facilities
 
 
 class AuthOperation():

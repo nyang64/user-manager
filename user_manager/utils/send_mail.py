@@ -3,13 +3,16 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from werkzeug.exceptions import InternalServerError
 from config import read_environ_value
+import os
+
+value = os.environ.get('user-manager-secrets')
 
 
 def send_otp(
         name: str, to_address: str,
         subject: str, otp: str):
 
-    from_address = read_environ_value("SMTP_FROM")
+    from_address = read_environ_value(value, "SMTP_FROM")
     print('address email', from_address)
     msg = MIMEMultipart()
     msg['From'] = from_address
@@ -38,12 +41,14 @@ def send_otp(
     msg.attach(MIMEText(body, 'plain'))
     try:
         server = smtplib.SMTP(
-            read_environ_value("SMTP_SERVER"),
-            read_environ_value("SMTP_PORT"))
+            read_environ_value(value, "SMTP_SERVER"),
+            read_environ_value(value, "SMTP_PORT"))
         server.starttls()
-        server.login(read_environ_value("SMTP_USERNAME"), read_environ_value("SMTP_PASSWORD"))
+        server.login(read_environ_value(value, "SMTP_USERNAME"),
+                     read_environ_value(value, "SMTP_PASSWORD"))
         print('-------SMTP------------')
-        print(read_environ_value("SMTP_USERNAME"), read_environ_value("SMTP_PASSWORD"))
+        print(read_environ_value(value, "SMTP_USERNAME"),
+              read_environ_value(value, "SMTP_PASSWORD"))
         text = msg.as_string()
         server.sendmail(from_address, to_address, text)
         server.quit()
@@ -57,7 +62,7 @@ def send_registration_email(
         first_name: str, to_address: str,
         subject: str, username: str, password: str):
 
-    from_address = read_environ_value("SMTP_FROM")
+    from_address = read_environ_value(value, "SMTP_FROM")
     print('address email', from_address)
     msg = MIMEMultipart()
     msg['From'] = from_address
@@ -68,8 +73,9 @@ def send_registration_email(
 
 
      <h1>Welcome to Element Science</h1>
-        <p>The ES-2 Jewel app is a mobile app accessory to the Jewel device. 
-        This version of the mobile app will display current Jewel device status.</p>
+        <p>The ES-2 Jewel app is a mobile app accessory to the Jewel device.
+        This version of the mobile app will display current Jewel
+        device status.</p>
 
 
     <h1>App download instructions</h1>
@@ -77,20 +83,23 @@ def send_registration_email(
     <ul>
         <li>Download and install the app using the link <a>{}</a>
         <li>Install the app
-        <li>Login with the credentials:
+        <li>Login with the credentials:<br/>
                 username: {}
                 password: {}
     </ul></p>
-    """.format(first_name, read_environ_value('APP_LINK'), username, password)
+    """.format(first_name, read_environ_value(value, 'APP_LINK'),
+               username, password)
     msg.attach(MIMEText(body, 'html'))
     try:
         server = smtplib.SMTP(
-            read_environ_value("SMTP_SERVER"),
-            read_environ_value("SMTP_PORT"))
+            read_environ_value(value, "SMTP_SERVER"),
+            read_environ_value(value, "SMTP_PORT"))
         server.starttls()
-        server.login(read_environ_value("SMTP_USERNAME"), read_environ_value("SMTP_PASSWORD"))
+        server.login(read_environ_value(value, "SMTP_USERNAME"),
+                     read_environ_value(value, "SMTP_PASSWORD"))
         print('-------SMTP------------')
-        print(read_environ_value("SMTP_USERNAME"), read_environ_value("SMTP_PASSWORD"))
+        print(read_environ_value(value, "SMTP_USERNAME"),
+              read_environ_value(value, "SMTP_PASSWORD"))
         text = msg.as_string()
         server.sendmail(from_address, to_address, text)
         server.quit()

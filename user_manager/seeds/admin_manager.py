@@ -30,13 +30,15 @@ class AdminManager():
 
     def register_admin(self):
         from config import read_environ_value
+        import os
+        value = os.environ.get('user-manager-secrets')
         admin_json = {
             'first_name': 'admin',
             'last_name': 'admin',
             'phone_number': '8097810754',
             'uuid': '1212121212',
-            'email': read_environ_value('ADMIN_USERNAME'),
-            'password': read_environ_value('ADMIN_PASSWORD')
+            'email': read_environ_value(value, 'ADMIN_USERNAME'),
+            'password': read_environ_value(value, 'ADMIN_PASSWORD')
         }
         exist = user_exists(admin_json)
         if exist is False:

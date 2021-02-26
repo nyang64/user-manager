@@ -117,14 +117,17 @@ class responseModel:
 class auth_response_model:
     def __init__(
             self,
-            message: str,
-            id_token: str,
-            refresh_token: str = "",
-            isFirstTimeLogin: bool = False):
+            message: str, first_name: str,
+            id_token: str, last_name: str,
+            refresh_token: str = "", user_status: str = 'Provider',
+            isFirstTimeLogin: bool = False,):
         self.message = message
         self.id_token = id_token
         self.refresh_token = refresh_token
         self.isFirstTimeLogin = isFirstTimeLogin
+        self.user_status = user_status.capitalize()
+        self.first_name = first_name.capitalize()
+        self.last_name = last_name.capitalize()
 
     def toJsonObj(obj):
         return json.loads(json.dumps(obj, default=lambda o: o.__dict__))

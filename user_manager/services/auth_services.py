@@ -1,4 +1,5 @@
 from model.user_registration import UserRegister
+from model.users import Users
 from utils.common import encPass
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import (InternalServerError, NotFound,
@@ -43,6 +44,7 @@ class AuthServices(DbRepository):
             raise NotFound("No Such User Exist")
         role_name_data = UserRegister.get_role_by_id(
             user_reg_id=user_data.id)
+        user_detail = Users.find_by_registration_id(user_data.id)
         if role_name_data is None:
             raise Unauthorized("No Such User Allowed")
         if checkPass(data.password, user_data.password):
@@ -54,6 +56,8 @@ class AuthServices(DbRepository):
                 role_name_data.role_name)
             response_model = auth_response_model(
                 message="Successfully Login",
+                first_name=user_detail.first_name,
+                last_name=user_detail.last_name,
                 id_token=encoded_accessToken,
                 refresh_token=encoded_refreshToken,
                 isFirstTimeLogin=user_data.isFirst

@@ -46,12 +46,11 @@ class ProviderService(DbRepository):
             facility_id=facility_id
             )
         self.flush_db(provider)
-        
+
     def report_signed_link(self, report_id):
         from utils.common import generate_signed_url
         key = db.session.query(Salvos.pdf_location).filter(
             Salvos.therapy_report_id == report_id).scalar()
-        print(key)
         if key is None:
             return 'No report found', 404
         signed_url = generate_signed_url(report_key=key)
@@ -63,9 +62,7 @@ class ProviderService(DbRepository):
             return 'reportId is None', 404
         salvos = db.session.query(Salvos).filter(
             Salvos.therapy_report_id == report_id).first()
-        print(salvos.clinician_verified_at)
         salvos.clinician_verified_at = datetime.now()
-        print(salvos.clinician_verified_at)
         self.save_db(salvos)
         return 'updated data', 201
 
@@ -82,7 +79,7 @@ class ProviderService(DbRepository):
                 Patient.emergency_contact_number, Address.full_address,
                 UserStatusType.name).first()
         if patient_data is None:
-            return {}
+            return {}, []
         reports = db.session.query(TherapyReport.id, TherapyReport.created_at,
                                    TherapyReport.updated_on).filter(
                 TherapyReport.patient_id == patient_data[0]).order_by(
@@ -94,7 +91,7 @@ class ProviderService(DbRepository):
         patient_list = namedtuple("PatientList",
                                   ("id", "email", "first_name",
                                    "last_name", "mobile", "date_of_birth",
-                                   "status", "report"))
+                                   "status", "reports"))
         base_query = self._base_query()
         base_query = base_query.with_entities(
             Patient.id, Users.id, UserRegister.email, Users.first_name,
@@ -107,7 +104,6 @@ class ProviderService(DbRepository):
             page_number + 1, record_per_page).items
         lists = []
         for data in query_data:
-            print(data[0])
             reports = db.session.query(TherapyReport.id).filter(
                 TherapyReport.patient_id == data[0]).all()
             reports = [report[0] for report in reports]
@@ -136,21 +132,17 @@ class ProviderService(DbRepository):
         if report_id is not None and report_id != 0:
             patient_id = db.session.query(TherapyReport.patient_id)\
                 .filter(TherapyReport.id == report_id).scalar()
-            print(patient_id)
             if patient_id is None:
                 raise NotFound('report not found')
             else:
                 base_query = base_query.filter(Patient.id == patient_id)
         if first_name is not None and len(first_name) > 0:
-            print('first', first_name)
             first_name = '%{}%'.format(first_name)
             base_query = base_query.filter(Users.first_name.like(first_name))
         if last_name is not None and len(last_name) > 0:
-            print('last')
             last_name = '%{}%'.format(last_name)
             base_query = base_query.filter(Users.last_name.like(last_name))
         if date_of_birth is not None and len(date_of_birth):
-            print('date')
             base_query = base_query.filter(
                 Patient.date_of_birth == date_of_birth)
         return base_query

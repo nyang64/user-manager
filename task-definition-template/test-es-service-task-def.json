@@ -66,11 +66,6 @@
   "placementConstraints": [],
   "memory": "2048",
   "taskRoleArn": "arn:aws:iam::488323030461:role/ECS-Managed-Policy",
-  "compatibilities": [
-    "EC2",
-    "FARGATE"
-  ],
-  "taskDefinitionArn": "arn:aws:ecs:us-west-1:488323030461:task-definition/test-es-ecs:34",
   "family": "test-es-ecs",
   "requiresCompatibilities": [
     "FARGATE"

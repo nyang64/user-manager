@@ -138,10 +138,10 @@ class ProviderService(DbRepository):
                 base_query = base_query.filter(Patient.id == patient_id)
         if first_name is not None and len(first_name) > 0:
             first_name = '%{}%'.format(first_name)
-            base_query = base_query.filter(Users.first_name.like(first_name))
+            base_query = base_query.filter(Users.first_name.ilike(first_name))
         if last_name is not None and len(last_name) > 0:
             last_name = '%{}%'.format(last_name)
-            base_query = base_query.filter(Users.last_name.like(last_name))
+            base_query = base_query.filter(Users.last_name.ilike(last_name))
         if date_of_birth is not None and len(date_of_birth):
             base_query = base_query.filter(
                 Patient.date_of_birth == date_of_birth)

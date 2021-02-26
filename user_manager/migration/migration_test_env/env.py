@@ -83,6 +83,8 @@ def run_migrations_online():
             connection=connection,
             target_metadata=target_metadata,
             process_revision_directives=process_revision_directives,
+            include_schemas=True,
+            compare_type=True,
             **current_app.extensions['migrate'].configure_args
         )
 

@@ -45,9 +45,12 @@ class PatientServices(DbRepository):
             raise InternalServerError(str(error))
 
     def assign_device_to_patient(self, patient_device):
+        print('Assign to device patient started')
         exist_patient = Patient.check_patient_exist(patient_device.patient_id)
-        payload = {'serial_number':patient_device.device_id}
+        payload = {'serial_number': patient_device.device_id}
+        print('payload', payload)
         r = requests.get(CHECK_DEVICE_EXIST_URL, params=payload)
+        print('Request finished', r.status_code)
         if int(r.status_code) == 404:
             MSG = f'Device serial number {patient_device.device_id} not found'
             raise NotFound(MSG)
@@ -75,11 +78,16 @@ class PatientServices(DbRepository):
         new_keys = {'encryption_key': 'key', 'serial_number': 'serial_number'}
         devices = []
         for d in device_serial_numbers:
+            print('Fetching the device detail')
             payload = {'serial_number': str(d[0])}
+            print('API calling', GET_DEVICE_DETAIL_URL)
+            print('payload', payload)
             r = requests.get(GET_DEVICE_DETAIL_URL,
                              params=payload)
+            print('Request finished', r.status_code)
             if r.status_code == 200:
                 response = json.loads(r.text)
+                print('API response', response)
                 device = response['data'] if 'data' in response else None
                 try:
                     device_info = rename_keys(device, new_keys)

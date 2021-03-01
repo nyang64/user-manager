@@ -51,6 +51,8 @@ class PatientServices(DbRepository):
         print('payload', payload)
         r = requests.get(CHECK_DEVICE_EXIST_URL, params=payload)
         print('Request finished', r.status_code)
+        print('response', r.text)
+        print(r.url, 'The Called API')
         if int(r.status_code) == 404:
             MSG = f'Device serial number {patient_device.device_id} not found'
             raise NotFound(MSG)
@@ -73,7 +75,7 @@ class PatientServices(DbRepository):
             .filter(UserRegister.email == token.get('user_email'))\
             .with_entities(PatientsDevices.device_id)\
             .all()
-        print(device_serial_numbers)
+        print('Database list', device_serial_numbers)
         # Count should be same as the original one
         new_keys = {'encryption_key': 'key', 'serial_number': 'serial_number'}
         devices = []
@@ -85,6 +87,8 @@ class PatientServices(DbRepository):
             r = requests.get(GET_DEVICE_DETAIL_URL,
                              params=payload)
             print('Request finished', r.status_code)
+            print('response', r.text)
+            print('The URL fetch detail', r.url)
             if r.status_code == 200:
                 response = json.loads(r.text)
                 print('API response', response)

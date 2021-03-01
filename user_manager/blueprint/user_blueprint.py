@@ -26,6 +26,6 @@ class UserBluePrint(Blueprint):
                           self.userObj.delete_user,
                           methods=['DELETE'])
         self.add_url_rule('/user/get',
-                          'mock user information by token',
+                          'user information by token',
                           self.userObj.get_detail_bytoken,
                           methods=['GET'])

@@ -54,14 +54,14 @@ class PatientManager():
     @require_user_token(ADMIN, PROVIDER)
     def assign_device(self, decrypt):
         request_data = validate_request()
-        patient_id, device_id = assign_device_schema.load(request_data)
-        self.patient_obj.assign_device_to_patient(patient_id, device_id)
-        print("id", id)
+        patient_device = assign_device_schema.load(request_data)
+        self.patient_obj.assign_device_to_patient(patient_device)
         return {'message': 'Device assigned',
                 'status_code': '201'}, http.client.CREATED
 
-    def patient_device_list(self):
-        device_list = self.patient_obj.patient_device_list()
+    @require_user_token(PATIENT, ADMIN, PROVIDER)
+    def patient_device_list(self, token):
+        device_list = self.patient_obj.patient_device_list(token)
         resp = {'devices': device_list}
         return jsonify(resp), http.client.OK
 

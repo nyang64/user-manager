@@ -3,9 +3,13 @@ from werkzeug.exceptions import InternalServerError, NotFound
 from model.patient import Patient
 from model.patients_devices import PatientsDevices
 from model.users import Users
+from model.user_registration import UserRegister
+from db import db
 from services.user_services import UserServices
 from services.auth_services import AuthServices
 from services.repository.db_repositories import DbRepository
+from utils.constants import GET_DEVICE_DETAIL_URL, CHECK_DEVICE_EXIST_URL
+import requests
 
 
 class PatientServices(DbRepository):
@@ -40,20 +44,49 @@ class PatientServices(DbRepository):
         except SQLAlchemyError as error:
             raise InternalServerError(str(error))
 
-    def assign_device_to_patient(self, patient_id, device_id):
-        exist_patient = Patient.check_patient_exist(patient_id)
+    def assign_device_to_patient(self, patient_device):
+        exist_patient = Patient.check_patient_exist(patient_device.patient_id)
+        payload = {'serial_number':patient_device.device_id}
+        r = requests.get(CHECK_DEVICE_EXIST_URL, params=payload)
+        if int(r.status_code) == 404:
+            MSG = f'Device serial number {patient_device.device_id} not found'
+            raise NotFound(MSG)
         if bool(exist_patient) is False:
             raise NotFound('patient record not found')
         try:
-            patient_device_data = PatientsDevices(patient_id=patient_id,
-                                                  device_id=device_id)
-            self.save_db(patient_device_data)
+            self.save_db(patient_device)
+            if patient_device.id is None:
+                raise SQLAlchemyError('Failed to assign device')
         except SQLAlchemyError as error:
             raise InternalServerError(str(error))
 
-    def patient_device_list(self):
-        json_device = {'serial_number': "working"}
-        return json_device
+    def patient_device_list(self, token):
+        from utils.common import rename_keys
+        import json
+        device_serial_numbers = db.session.query(UserRegister, Users)\
+            .join(Users, UserRegister.id == Users.registration_id)\
+            .join(Patient, Users.id == Patient.user_id)\
+            .join(PatientsDevices, Patient.id == PatientsDevices.patient_id)\
+            .filter(UserRegister.email == token.get('user_email'))\
+            .with_entities(PatientsDevices.device_id)\
+            .all()
+        print(device_serial_numbers)
+        # Count should be same as the original one
+        new_keys = {'encryption_key': 'key', 'serial_number': 'serial_number'}
+        devices = []
+        for d in device_serial_numbers:
+            payload = {'serial_number': str(d[0])}
+            r = requests.get(GET_DEVICE_DETAIL_URL,
+                             params=payload)
+            if r.status_code == 200:
+                response = json.loads(r.text)
+                device = response['data'] if 'data' in response else None
+                try:
+                    device_info = rename_keys(device, new_keys)
+                except AttributeError:
+                    device_info = {}
+                devices.append(device_info)
+        return devices
 
     def update_patient_data(self, patient_id, emer_contact_name,
                             emer_contact_no, dob):

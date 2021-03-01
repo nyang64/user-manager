@@ -153,3 +153,7 @@ def generate_signed_url(report_key=None):
         return presign_url
     else:
         return "Report doesn't exists"
+
+
+def rename_keys(original, transform):
+    return dict([(transform.get(k), v) for k, v in original.items()])

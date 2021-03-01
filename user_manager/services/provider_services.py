@@ -62,6 +62,8 @@ class ProviderService(DbRepository):
             return 'reportId is None', 404
         salvos = db.session.query(Salvos).filter(
             Salvos.therapy_report_id == report_id).first()
+        if salvos is None:
+            return 'not found', 404
         salvos.clinician_verified_at = datetime.now()
         self.save_db(salvos)
         return 'updated data', 201

@@ -147,7 +147,7 @@ class provider_manager():
         request_data = request.args
         report_id = report_id_schema.load(request_data).get('reportId')
         signed_url, code = self.provider_obj.report_signed_link(report_id)
-        return {"message": signed_url}, code
+        return {"report_url": signed_url}, code
 
     @require_user_token(PROVIDER)
     def update_uploaded_ts(self, token):

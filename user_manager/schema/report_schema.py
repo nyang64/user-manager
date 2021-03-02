@@ -9,9 +9,9 @@ def must_not_blank(data):
 
 
 class PatientReportSchema(BaseSchema):
-    id = fields.Int(dump_only=True)
+    id = fields.Int(dump_only=True, data_key='report_id')
     created_at = fields.Str(dump_only=True)
-    uploaded_ts = fields.Str(attributes="updated_at", dump_only=True)
+    clinician_verified_at = fields.Str(data_key="uploaded_ts", dump_only=True)
 
 
 patient_reports_schema = PatientReportSchema(many=True)

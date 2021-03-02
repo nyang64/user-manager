@@ -82,10 +82,13 @@ class ProviderService(DbRepository):
                 UserStatusType.name).first()
         if patient_data is None:
             return {}, []
-        reports = db.session.query(TherapyReport.id, TherapyReport.created_at,
-                                   TherapyReport.updated_on).filter(
-                TherapyReport.patient_id == patient_data[0]).order_by(
-                    TherapyReport.id).all()
+        reports = db.session.query(TherapyReport, Salvos)\
+                    .join(Salvos, TherapyReport.id == Salvos.therapy_report_id,
+                          isouter=True)\
+                    .with_entities(TherapyReport.id, TherapyReport.created_at,
+                                   Salvos.clinician_verified_at)\
+                    .filter(TherapyReport.patient_id == patient_data[0])\
+                    .order_by(TherapyReport.id).all()
         return patient_data, reports
 
     def patients_list(self, page_number, record_per_page, first_name,

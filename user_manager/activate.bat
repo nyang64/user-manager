@@ -9,6 +9,6 @@ set SMTP_USERNAME=AKIAXDMSSDW6WYN34VTV
 set SMTP_PASSWORD=BIqBtf84NQ5jnpYKCeZcH0+/j7hXixGZmPW3X7PlTZeT
 set SMTP_SERVER=email-smtp.us-west-1.amazonaws.com
 set SMTP_PORT=587
-set SMTP_FROM=app@elementscience.com
+set SMTP_FROM=elementapp@elementsci.com
 set ADMIN_USERNAME=esadmin@elementsci.com
 set ADMIN_PASSWORD=EleM3nTSci

@@ -79,6 +79,8 @@ class AuthServices(DbRepository):
                 response_model = auth_response_model(
                     message="Successfully Login",
                     id_token=encoded_accessToken,
+                    first_name=user_detail.first_name,
+                    last_name=user_detail.last_name,
                     refresh_token=encoded_refreshToken,
                     isFirstTimeLogin=user_data.isFirst
                     )

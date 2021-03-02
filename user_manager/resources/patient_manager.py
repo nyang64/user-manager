@@ -61,6 +61,7 @@ class PatientManager():
 
     @require_user_token(PATIENT, ADMIN, PROVIDER)
     def patient_device_list(self, token):
+        print('In patient device list')
         device_list = self.patient_obj.patient_device_list(token)
         resp = {'devices': device_list}
         return jsonify(resp), http.client.OK

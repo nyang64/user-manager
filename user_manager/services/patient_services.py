@@ -68,6 +68,7 @@ class PatientServices(DbRepository):
     def patient_device_list(self, token):
         from utils.common import rename_keys
         import json
+        print("In Patient Device list of patient services")
         device_serial_numbers = db.session.query(UserRegister, Users)\
             .join(Users, UserRegister.id == Users.registration_id)\
             .join(Patient, Users.id == Patient.user_id)\

@@ -50,7 +50,7 @@ class ProviderService(DbRepository):
     def report_signed_link(self, report_id):
         from utils.common import generate_signed_url
         key = db.session.query(Salvos.pdf_location).filter(
-            Salvos.therapy_report_id == report_id).scalar()
+            Salvos.id == report_id).scalar()
         if key is None:
             return 'No report found', 404
         signed_url = generate_signed_url(report_key=key)
@@ -73,7 +73,7 @@ class ProviderService(DbRepository):
         patient_data = base_query.filter(Users.id == patient_id)\
             .join(Address, Users.id == Address.user_id, isouter=True)\
             .join(TherapyReport, Patient.id == TherapyReport.patient_id,
-                  isouter=True)\
+                  isouter=True) \
             .with_entities(
                 Patient.id, Users.id, UserRegister.email, Users.first_name,
                 Users.last_name, Users.phone_number, Patient.date_of_birth,
@@ -84,11 +84,12 @@ class ProviderService(DbRepository):
             return {}, []
         reports = db.session.query(TherapyReport, Salvos)\
                     .join(Salvos, TherapyReport.id == Salvos.therapy_report_id,
-                          isouter=True)\
-                    .with_entities(TherapyReport.id, TherapyReport.created_at,
+                          isouter=True) \
+                    .with_entities(Salvos.id, TherapyReport.created_at,
                                    Salvos.clinician_verified_at)\
                     .filter(TherapyReport.patient_id == patient_data[0])\
-                    .order_by(TherapyReport.id).all()
+                    .order_by(Salvos.id).all()
+        print(reports)
         return patient_data, reports
 
     def patients_list(self, page_number, record_per_page, first_name,

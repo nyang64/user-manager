@@ -13,7 +13,6 @@ def send_otp(
         subject: str, otp: str):
 
     from_address = read_environ_value(value, "SMTP_FROM")
-    print('address email', from_address)
     msg = MIMEMultipart()
     msg['From'] = from_address
     msg['To'] = to_address
@@ -46,14 +45,10 @@ def send_otp(
         server.starttls()
         server.login(read_environ_value(value, "SMTP_USERNAME"),
                      read_environ_value(value, "SMTP_PASSWORD"))
-        print('-------SMTP------------')
-        print(read_environ_value(value, "SMTP_USERNAME"),
-              read_environ_value(value, "SMTP_PASSWORD"))
         text = msg.as_string()
         server.sendmail(from_address, to_address, text)
         server.quit()
     except Exception as e:
-        print("Something went wrong. {0}".format(e))
         raise InternalServerError("Something went wrong. {0}".format(e))
         return False
 
@@ -63,7 +58,6 @@ def send_registration_email(
         subject: str, username: str, password: str):
 
     from_address = read_environ_value(value, "SMTP_FROM")
-    print('address email', from_address)
     msg = MIMEMultipart()
     msg['From'] = from_address
     msg['To'] = to_address
@@ -97,13 +91,9 @@ def send_registration_email(
         server.starttls()
         server.login(read_environ_value(value, "SMTP_USERNAME"),
                      read_environ_value(value, "SMTP_PASSWORD"))
-        print('-------SMTP------------')
-        print(read_environ_value(value, "SMTP_USERNAME"),
-              read_environ_value(value, "SMTP_PASSWORD"))
         text = msg.as_string()
         server.sendmail(from_address, to_address, text)
         server.quit()
     except Exception as e:
-        print("Something went wrong. {0}".format(e))
         raise InternalServerError("Something went wrong. {0}".format(e))
         return False

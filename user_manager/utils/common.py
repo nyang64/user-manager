@@ -83,7 +83,6 @@ def encPass(passW: str):
 
 
 def checkPass(passW: str, dbPassW: str):
-    print(passW, dbPassW)
     return bcrypt.checkpw(
         passW.encode('utf-8'),
         dbPassW.encode('utf-8')
@@ -141,18 +140,22 @@ def generate_signed_url(report_key=None):
     '''
     from utils.constants import REPORT_BUCKET_NAME
     import boto3
-    s3_client = boto3.client('s3')
-    resp = s3_client.list_objects_v2(Bucket=REPORT_BUCKET_NAME,
-                                     Prefix=report_key)
-    key_exists = True if 'Contents' in resp else False
-    if key_exists:
-        presign_url = s3_client.generate_presigned_url(
-            'get_object', Params={
-                'Bucket': REPORT_BUCKET_NAME, 'Key': report_key},
-            ExpiresIn=600)
-        return presign_url
-    else:
-        return "Report doesn't exists"
+    from botocore.exceptions import ClientError
+    try:
+        s3_client = boto3.client('s3')
+        resp = s3_client.list_objects_v2(Bucket=REPORT_BUCKET_NAME,
+                                         Prefix=report_key)
+        key_exists = True if 'Contents' in resp else False
+        if key_exists:
+            presign_url = s3_client.generate_presigned_url(
+                    'get_object', Params={
+                        'Bucket': REPORT_BUCKET_NAME, 'Key': report_key},
+                    ExpiresIn=600)
+            return presign_url
+        else:
+            return "Report doesn't exists"
+    except ClientError:
+        return "Error while generation URL"
 
 
 def rename_keys(original, transform):

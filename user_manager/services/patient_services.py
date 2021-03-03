@@ -23,11 +23,11 @@ class PatientServices(DbRepository):
                                                  register[1])
         user_id, user_uuid = self.user_obj.save_user(user[0], user[1],
                                                      user[2], reg_id)
-        self.save_patient(user_id, patient[0],
-                          patient[1], patient[2])
+        patient_id = self.save_patient(user_id, patient[0],
+                                       patient[1], patient[2])
         self.user_obj.assign_role(user_id, PATIENT)
         self.commit_db()
-        return user_id, user_uuid
+        return user_id, user_uuid, patient_id
 
     def save_patient(self, user_id, emer_contact_name,
                      emer_contact_no, date_of_birth):
@@ -76,7 +76,6 @@ class PatientServices(DbRepository):
             .filter(UserRegister.email == token.get('user_email'))\
             .with_entities(PatientsDevices.device_id)\
             .all()
-        print('Database list', device_serial_numbers)
         # Count should be same as the original one
         new_keys = {'encryption_key': 'key', 'serial_number': 'serial_number'}
         devices = []

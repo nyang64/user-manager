@@ -5,6 +5,7 @@ from werkzeug.exceptions import InternalServerError, NotFound
 from services.auth_services import AuthServices
 from db import db
 from utils.common import generate_uuid
+from utils.constants import ESUSER
 from services.repository.db_repositories import DbRepository
 
 
@@ -17,7 +18,7 @@ class UserServices(DbRepository):
             register[0], register[1])
         user_id, user_uuid = self.save_user(user[0], user[1],
                                             user[2], reg_id)
-        self.assign_role(user_id)
+        self.assign_role(user_id, ESUSER)
         self.commit_db()
         return user_id, user_uuid
 

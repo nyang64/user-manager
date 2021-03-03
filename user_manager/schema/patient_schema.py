@@ -57,7 +57,6 @@ class UpdatePatientSchema(BaseSchema):
     
     @post_load
     def make_post_dump_object(self, data, **kwargs):
-        print(data)
         emergency_contact_name = data.get('emergency_contact_name')
         emergency_contact_number = data.get('emergency_contact_number')
         date_of_birth = data.get('date_of_birth')
@@ -124,7 +123,6 @@ class FilterPatientSchema(BaseSchema):
             report_id = 0
         filter_input = (page_number, record_per_page, first_name,
                         last_name, date_of_birth, report_id)
-        print(filter_input)
         return filter_input
 
 

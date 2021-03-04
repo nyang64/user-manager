@@ -19,16 +19,17 @@ class PatientManager():
         from utils.send_mail import send_registration_email
         request_data = validate_request()
         register, user, patient = create_patient_schema.load(request_data)
-        user_id, user_uuid = self.patient_obj.register_patient(register,
-                                                               user, patient)
+        user_id, user_uuid, patient_id = self.patient_obj.register_patient(
+            register, user, patient)
         if user_id is not None and user_uuid is not None:
             send_registration_email(user[0], register[0],
                                     'Welcome to Element Science',
                                     register[0], register[1])
         return {'message': 'Patient created',
                 'data': {
-                    'patient_uuid': user_uuid,
-                    'patient_id': user_id
+                    'user_uuid': user_uuid,
+                    'user_id': user_id,
+                    'patient_id': patient_id
                     },
                 'status_code': '201'}, http.client.CREATED
 
@@ -54,26 +55,13 @@ class PatientManager():
     @require_user_token(ADMIN, PROVIDER)
     def assign_device(self, decrypt):
         request_data = validate_request()
-        patient_id, device_id = assign_device_schema.load(request_data)
-        self.patient_obj.assign_device_to_patient(patient_id, device_id)
-        print("id", id)
+        patient_device = assign_device_schema.load(request_data)
+        self.patient_obj.assign_device_to_patient(patient_device)
         return {'message': 'Device assigned',
                 'status_code': '201'}, http.client.CREATED
 
-    def patient_device_list(self):
-        device_list = self.patient_obj.patient_device_list()
-        resp = {'devices': device_list}
-        return jsonify(resp), http.client.OK
-
     @require_user_token(PATIENT, ADMIN, PROVIDER)
-    def mock_patient_device_list(self, decrypt):
-        devices = [['1212', '12EE', True],
-                   ['1213', '13EE', True],
-                   ['1512', '12TE', False]]
-        device_list = [
-            {'serial_number': d[0],
-             'key': d[1],
-             'status': d[2]
-             } for d in devices]
+    def patient_device_list(self, token):
+        device_list = self.patient_obj.patient_device_list(token)
         resp = {'devices': device_list}
         return jsonify(resp), http.client.OK

@@ -7,7 +7,7 @@ definitions:
       - pip
     name: Pull the source code, prepare/push docker image to ECR, setup SLS and deploy new ECR image to ECS cluster service.
     script:
-      - "pip install -r user_manager/requirements.txt"
+      - pip install -r user_manager/requirements.txt
 
       - pip install awscli
 
@@ -24,7 +24,7 @@ definitions:
       - cd ..
       - pip install envsubst
       - export IMAGE_NAME="$AWS_ACCOUNT_URL/$ECR_REPO_NAME:$BITBUCKET_COMMIT"
-      - envsubst < task-definition-template/task-definition-template.json >  task-definition.json
+      - envsubst < task-definition-template/"$SERVICE_NAME"-task-def.json >  task-definition.json
 
       # Update the task definition.
       - pipe: atlassian/aws-ecs-deploy:1.0.0

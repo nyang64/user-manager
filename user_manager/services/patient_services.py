@@ -3,9 +3,13 @@ from werkzeug.exceptions import InternalServerError, NotFound
 from model.patient import Patient
 from model.patients_devices import PatientsDevices
 from model.users import Users
+from model.user_registration import UserRegister
+from db import db
 from services.user_services import UserServices
 from services.auth_services import AuthServices
 from services.repository.db_repositories import DbRepository
+from utils.constants import GET_DEVICE_DETAIL_URL, CHECK_DEVICE_EXIST_URL
+import requests
 
 
 class PatientServices(DbRepository):
@@ -19,11 +23,11 @@ class PatientServices(DbRepository):
                                                  register[1])
         user_id, user_uuid = self.user_obj.save_user(user[0], user[1],
                                                      user[2], reg_id)
-        self.save_patient(user_id, patient[0],
-                          patient[1], patient[2])
+        patient_id = self.save_patient(user_id, patient[0],
+                                       patient[1], patient[2])
         self.user_obj.assign_role(user_id, PATIENT)
         self.commit_db()
-        return user_id, user_uuid
+        return user_id, user_uuid, patient_id
 
     def save_patient(self, user_id, emer_contact_name,
                      emer_contact_no, date_of_birth):
@@ -40,20 +44,61 @@ class PatientServices(DbRepository):
         except SQLAlchemyError as error:
             raise InternalServerError(str(error))
 
-    def assign_device_to_patient(self, patient_id, device_id):
-        exist_patient = Patient.check_patient_exist(patient_id)
+    def assign_device_to_patient(self, patient_device):
+        print('Assign to device patient started')
+        exist_patient = Patient.check_patient_exist(patient_device.patient_id)
+        payload = {'serial_number': patient_device.device_id}
+        print('payload', payload)
+        r = requests.get(CHECK_DEVICE_EXIST_URL, params=payload)
+        print('Request finished', r.status_code)
+        print('response', r.text)
+        print(r.url, 'The Called API')
+        if int(r.status_code) == 404:
+            MSG = f'Device serial number {patient_device.device_id} not found'
+            raise NotFound(MSG)
         if bool(exist_patient) is False:
             raise NotFound('patient record not found')
         try:
-            patient_device_data = PatientsDevices(patient_id=patient_id,
-                                                  device_id=device_id)
-            self.save_db(patient_device_data)
+            self.save_db(patient_device)
+            if patient_device.id is None:
+                raise SQLAlchemyError('Failed to assign device')
         except SQLAlchemyError as error:
             raise InternalServerError(str(error))
 
-    def patient_device_list(self):
-        json_device = {'serial_number': "working"}
-        return json_device
+    def patient_device_list(self, token):
+        from utils.common import rename_keys
+        import json
+        print("In Patient Device list of patient services")
+        device_serial_numbers = db.session.query(UserRegister, Users)\
+            .join(Users, UserRegister.id == Users.registration_id)\
+            .join(Patient, Users.id == Patient.user_id)\
+            .join(PatientsDevices, Patient.id == PatientsDevices.patient_id)\
+            .filter(UserRegister.email == token.get('user_email'))\
+            .with_entities(PatientsDevices.device_id)\
+            .all()
+        # Count should be same as the original one
+        new_keys = {'encryption_key': 'key', 'serial_number': 'serial_number'}
+        devices = []
+        for d in device_serial_numbers:
+            print('Fetching the device detail')
+            payload = {'serial_number': str(d[0])}
+            print('API calling', GET_DEVICE_DETAIL_URL)
+            print('payload', payload)
+            r = requests.get(GET_DEVICE_DETAIL_URL,
+                             params=payload)
+            print('Request finished', r.status_code)
+            print('response', r.text)
+            print('The URL fetch detail', r.url)
+            if r.status_code == 200:
+                response = json.loads(r.text)
+                print('API response', response)
+                device = response['data'] if 'data' in response else None
+                try:
+                    device_info = rename_keys(device, new_keys)
+                except AttributeError:
+                    device_info = {}
+                devices.append(device_info)
+        return devices
 
     def update_patient_data(self, patient_id, emer_contact_name,
                             emer_contact_no, dob):

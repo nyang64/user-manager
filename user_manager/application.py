@@ -42,7 +42,6 @@ class Appplication(Flask):
         error_response = self.generate_response(error, f"Forbidden: '{error.description}'.")
         return jsonify(error_response), error.code
 
-
     def __handle_conflict(self, error: HTTPException):
         error_response = self.generate_response(error, f"request has error: '{error.description}'.")
         return jsonify(error_response), error.code
@@ -52,7 +51,6 @@ class Appplication(Flask):
         return jsonify(error_response), error.code
 
     def __handle_internal_server_error(self, error: HTTPException):
-        print(error)
         error_response = self.generate_response(error, f"request has error: '{error.description}'.")
         return jsonify(error_response), error.code
 

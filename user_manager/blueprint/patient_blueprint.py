@@ -13,7 +13,8 @@ class PatientBluePrint(Blueprint):
                           'create patient',
                           self.patient_obj.create_patient,
                           methods=['POST'])
-        self.add_url_rule('/patients', 'update patient',
+        self.add_url_rule('/patients',
+                          'update patient',
                           self.patient_obj.update_patient,
                           methods=['PUT'])
         self.add_url_rule('/patients',
@@ -24,11 +25,7 @@ class PatientBluePrint(Blueprint):
                           'assign device to patient',
                           self.patient_obj.assign_device,
                           methods=['POST'])
-        self.add_url_rule('/patient/device/getlist',
+        self.add_url_rule('/patient/device/get',
                           'patient device list',
                           self.patient_obj.patient_device_list,
-                          methods=['GET'])
-        self.add_url_rule('/patient/device/get',
-                          'mock patient device list',
-                          self.patient_obj.mock_patient_device_list,
                           methods=['GET'])

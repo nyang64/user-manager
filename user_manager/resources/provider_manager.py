@@ -36,7 +36,6 @@ class provider_manager():
             return {"message": "Invalid Request Parameters"}, 400
         register = (str(provider_json['email']).lower(),
                     provider_json['password'])
-        print(register)
         user = (provider_json['first_name'], provider_json['last_name'],
                 provider_json['phone_number'])
         facility_id = provider_json["facility_id"]
@@ -147,7 +146,7 @@ class provider_manager():
         request_data = request.args
         report_id = report_id_schema.load(request_data).get('reportId')
         signed_url, code = self.provider_obj.report_signed_link(report_id)
-        return {"message": signed_url}, code
+        return {"report_url": signed_url}, code
 
     @require_user_token(PROVIDER)
     def update_uploaded_ts(self, token):
@@ -159,7 +158,6 @@ class provider_manager():
         '''
         request_data = validate_request()
         report_id = report_id_schema.load(request_data).get('reportId')
-        print(report_id)
         msg, code = self.provider_obj.update_uploaded_ts(report_id)
         return {"message": msg,
                 "status_code": code}, code

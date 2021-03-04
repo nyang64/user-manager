@@ -1,8 +1,8 @@
 from schema.user_schema import CreateUserSchema
 from schema.base_schema import validate_number, BaseSchema
-from model.patient import Patient
-from marshmallow import fields, ValidationError, post_load, post_dump, pre_load
-from werkzeug.exceptions import InternalServerError
+from model.patients_devices import PatientsDevices 
+from marshmallow import fields, ValidationError, post_load
+from ma import ma
 
 ENAME_MISSING = "emergenct_contact_name parameter is missing"
 ENUMBER_MISSING = "emergenct_contact_number parameter is missing"
@@ -13,6 +13,15 @@ def must_not_blank(data):
     if not data:
         NAME_NONE = f"{data} parameter is missing"
         raise ValidationError(NAME_NONE)
+
+
+def validate_device_serial_number(data):
+    '''Validate the device serial number is of 8 digit or not'''
+    if not data:
+        raise ValidationError('parameter missing')
+    if len(data) != 8:
+        DEVICE_ERROR = 'device_serial_number should be of 8 digit only'
+        raise ValidationError(DEVICE_ERROR)
 
 
 class CreatePatientSchema(CreateUserSchema):
@@ -32,7 +41,6 @@ class CreatePatientSchema(CreateUserSchema):
         patient = (emergency_contact_name,
                    emergency_contact_number, date_of_birth)
         return register, user, patient
-        
 
 
 create_patient_schema = CreatePatientSchema()
@@ -49,7 +57,6 @@ class UpdatePatientSchema(BaseSchema):
     
     @post_load
     def make_post_dump_object(self, data, **kwargs):
-        print(data)
         emergency_contact_name = data.get('emergency_contact_name')
         emergency_contact_number = data.get('emergency_contact_number')
         date_of_birth = data.get('date_of_birth')
@@ -62,17 +69,14 @@ update_patient_schema = UpdatePatientSchema()
 update_patients_schema = UpdatePatientSchema(many=True)
 
 
-class AssignDeviceSchema(BaseSchema):
-    patient_id = fields.Int(required=True,
-                            validate=must_not_blank)
-    device_id = fields.Int(required=True,
-                           validate=must_not_blank)
+class AssignDeviceSchema(BaseSchema, ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = PatientsDevices
+        load_instance = True
+        include_fk = True
 
-    @post_load
-    def post_load_object(self, data, **kwargs):
-        patient_id = data.get('patient_id')
-        device_id = data.get('device_id')
-        return patient_id, device_id
+    device_id = fields.Str(required=True,
+                           validate=validate_device_serial_number)
 
 
 assign_device_schema = AssignDeviceSchema()
@@ -89,7 +93,7 @@ class PatientDetailSchema(BaseSchema):
     emergency_contact_name = fields.Str(dump_only=True)
     emergency_contact_number = fields.Str(dump_only=True)
     address = fields.Str(attribute='full_address', dump_only=True)
-    status = fields.Str(dump_only=True)
+    status = fields.Str(attribute='name', dump_only=True)
 
 
 patient_detail_schema = PatientDetailSchema()
@@ -119,7 +123,6 @@ class FilterPatientSchema(BaseSchema):
             report_id = 0
         filter_input = (page_number, record_per_page, first_name,
                         last_name, date_of_birth, report_id)
-        print(filter_input)
         return filter_input
 
 

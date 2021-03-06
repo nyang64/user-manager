@@ -8,6 +8,10 @@ from blueprint.user_blueprint import UserBluePrint
 from blueprint.patient_blueprint import PatientBluePrint
 from blueprint.provider_blueprint import ProviderBlueprint
 from application import Appplication
+from dotenv import load_dotenv
+import os
+
+load_dotenv(".env")
 
 
 app = Appplication(__name__, '/v1')

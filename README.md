@@ -1,34 +1,31 @@
-In env file include_schemas=True,
+# User Manager
 
-To migrate the Model Schema to database
-1. flask db init(only to generate the migration folder)
-2. flask db migrate -m "message"
-3. flask db upgrade
+## Generate and Run Database Migrations
 
-## To seed database
-After migrating table run below command
-## flask seed run
+1. Generate a new migration
+  1. `flask db migrate -m "message"`
+1. Apply migration to database
+  1. `flask db upgrade`
 
-Seed Database:(after creating database)
+## Seed database
+
+1. After running migrations, setup seed data
+  1. `flask seed run`
 1. Add the roles in this format(Admin, Provider, Patient, User)
 
-To run Application
-1. create a virtual env using command python venv <env_name>
-2. copy this command in activate.bat file
-set POSTGRES_DB_PORT=value
-set POSTGRES_DB_USER_KEY=value
-set POSTGRES_DB_PASSWORD_KEY=value
-set POSTGRES_DB_HOST=value
-set POSTGRES_DB_NAME=value
+## Run "user_manager" application
 
-set ACCESS_TOKEN_KEY=value
-set REFRESH_TOKEN_KEY=value
+1. from /user-manager/user_manager
+  1. Install dependencies using [Pipenv](https://pipenv-fork.readthedocs.io/en/latest/basics.html)
+    1. `pip install pipenv`
+    1. `pipenv install`
+    1. `pipenv shell`
+  1. Run application
+    1. `python app.py`
+      1. If you get a path error "No such file or directory for app.py"
+      1. Start app with: `python -m flask run` OR include the full path (eg  `python /Users/laura/workspace/user-manager/user_manager/app.py`)
 
-set SMTP_USERNAME=value
-set SMTP_PASSWORD=value
-set SMTP_SERVER=value
-set SMTP_PORT=value
-set SMTP_FROM=value
-set SMTP_FROM=value
-3. Activate the virtual env using cd/env_name/Scripts/activate.bat(for window user)
-4. python app.py (For application up)
+## Environment Variables
+
+1. Create a file called ".env"
+  1. See ".env.example" for the required environment variables

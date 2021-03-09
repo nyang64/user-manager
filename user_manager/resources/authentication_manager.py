@@ -12,6 +12,10 @@ from model.user_otp import UserOTPModel
 from services.auth_services import AuthServices
 # Do not remove used at time of migration
 from model.facilities import Facilities
+from model.patches import Patches
+from model.patients_providers import PatientsProviders
+from model.provider_role_types import ProviderRoleTypes
+from model.providers_roles import ProviderRoles
 
 
 class AuthOperation():

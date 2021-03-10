@@ -60,7 +60,7 @@
       "dockerLabels": {
         "Org": "Infostretch"
       },
-      "name": "qa-user-manager-cont"
+      "name": "jatintesting-es-container"
     }
   ],
   "placementConstraints": [],

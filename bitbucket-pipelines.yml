@@ -52,3 +52,8 @@ pipelines:
           <<: *Pull-SC-Push-Img-Create-SLS-Deploy-on-ECS
           name: Deploy to QA environment
           deployment: qa
+    test-deployment:
+      - step:
+          <<: *Pull-SC-Push-Img-Create-SLS-Deploy-on-ECS
+          name: Deploy to test environment
+          deployment: test

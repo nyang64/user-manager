@@ -45,7 +45,7 @@
         },
         {
           "name": "SMTP_SERVER",
-          "value": "email-smtp.us-west-1.amazonaws.com"
+          "value": "email-smtp.us-east-1.amazonaws.com"
         }
       ],
       "secrets": [

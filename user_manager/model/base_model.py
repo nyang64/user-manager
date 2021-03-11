@@ -7,8 +7,9 @@ class BaseModel(db.Model):
     created_at = db.Column('created_at',
                            db.DateTime(timezone=True),
                            default=db.func.now(),
-                           nullable=False)
-    updated_on = db.Column('updated_at',
-                           db.DateTime(timezone=True),
+                           nullable=False,
+                           server_default=db.text('now()'))
+    updated_on = db.Column('updated_at', db.DateTime(timezone=True),
                            default=db.func.now(),
-                           onupdate=db.func.now())
+                           onupdate=db.func.now(),
+                           server_default=db.text('now()'))

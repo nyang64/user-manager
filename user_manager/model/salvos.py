@@ -24,5 +24,3 @@ class Salvos(BaseModel):
                                  db.DateTime)
     receiver_id = db.Column('receiver_id',
                             String(20))
-    shock_count = db.Column('shock_count',
-                            Integer)

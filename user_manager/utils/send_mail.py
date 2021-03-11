@@ -48,6 +48,7 @@ def send_otp(
         text = msg.as_string()
         server.sendmail(from_address, to_address, text)
         server.quit()
+        return True
     except Exception as e:
         raise InternalServerError("Something went wrong. {0}".format(e))
         return False
@@ -94,6 +95,7 @@ def send_registration_email(
         text = msg.as_string()
         server.sendmail(from_address, to_address, text)
         server.quit()
+        return True
     except Exception as e:
         raise InternalServerError("Something went wrong. {0}".format(e))
         return False

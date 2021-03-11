@@ -3,7 +3,9 @@ from sqlalchemy import Integer, String, desc
 from model.base_model import BaseModel
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import InternalServerError
-
+from datetime import datetime, timedelta
+import os
+from config import read_environ_value
 
 class UserOTPModel(BaseModel):
     __tablename__ = "user_otps"
@@ -34,7 +36,25 @@ class UserOTPModel(BaseModel):
             db.session.rollback()
             raise InternalServerError(str(error))
         return user_otp
-    
+
+    @classmethod
+    def find_list_by_user_id(cls, user_id: str) -> "UserOTPModel":
+        try:
+            value = os.environ.get('user-manager-secrets')
+            now = datetime.now()
+            d = now - timedelta(
+                hours=int(read_environ_value(
+                    value, "OTP_LIMIT_HOURS")),
+                minutes=int(read_environ_value(
+                    value, "OTP_LIMIT_MINUTES")))
+            user_otp_list = cls.query.filter(
+                    user_id == user_id,
+                    d <= BaseModel.created_at).count()
+        except SQLAlchemyError as error:
+            db.session.rollback()
+            raise InternalServerError(str(error))
+        return user_otp_list
+
     @classmethod
     def deleteAll_OTP(cls, user_id):
         try:

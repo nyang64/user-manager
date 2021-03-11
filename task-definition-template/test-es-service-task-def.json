@@ -36,6 +36,26 @@
           "value": "5432"
         },
         {
+          "name": "OTP_EXPIRATION_TIME_HOURS",
+          "value": "24"
+        },
+        {
+          "name": "OTP_EXPIRATION_TIME_MINUTES",
+          "value": "0"
+        },
+        {
+          "name": "OTP_LIMIT",
+          "value": "7"
+        },
+        {
+          "name": "OTP_LIMIT_HOURS",
+          "value": "1"
+        },
+        {
+          "name": "OTP_LIMIT_MINUTES",
+          "value": "0"
+        },
+        {
           "name": "SMTP_FROM",
           "value": "elementapp@elementsci.com"
         },

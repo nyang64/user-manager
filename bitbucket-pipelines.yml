@@ -24,7 +24,7 @@ definitions:
       - cd ..
       - pip install envsubst
       - export IMAGE_NAME="$AWS_ACCOUNT_URL/$ECR_REPO_NAME:$BITBUCKET_COMMIT"
-      - envsubst < task-definition-template/"$SERVICE_NAME"-task-def.json >  task-definition.json
+      - envsubst < task-definition-template/"$BITBUCKET_DEPLOYMENT_ENVIRONMENT"-task-definition.json >  task-definition.json
 
       # Update the task definition.
       - pipe: atlassian/aws-ecs-deploy:1.0.0

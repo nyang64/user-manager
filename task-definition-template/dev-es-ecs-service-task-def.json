@@ -5,7 +5,7 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/jatintesting-user-manager-task-def",
+          "awslogs-group": "/ecs/dev-user-manager-task-def",
           "awslogs-region": "us-east-1",
           "awslogs-stream-prefix": "ecs"
         }
@@ -25,7 +25,7 @@
         },
         {
           "name": "POSTGRES_DB_HOST",
-          "value": "jatintesting-es-db.cypfku5dqbr4.us-east-1.rds.amazonaws.com"
+          "value": "dev-es-db.cypfku5dqbr4.us-east-1.rds.amazonaws.com"
         },
         {
           "name": "POSTGRES_DB_NAME",
@@ -66,11 +66,34 @@
         {
           "name": "SMTP_SERVER",
           "value": "email-smtp.us-east-1.amazonaws.com"
+<<<<<<< HEAD:task-definition-template/dev-es-ecs-service-task-def.json
+        },
+	{
+          "name": "OTP_EXPIRATION_TIME_HOURS",
+          "value": "24"
+        },
+	{
+          "name": "OTP_EXPIRATION_TIME_MINUTES",
+          "value": "0"
+        },
+	{
+          "name": "OTP_LIMIT",
+          "value": "7"
+        },
+	{
+          "name": "OTP_LIMIT_HOURS",
+          "value": "1"
+        },
+	{
+          "name": "OTP_LIMIT_MINUTES",
+          "value": "0"
+=======
+>>>>>>> 31e183c4deabadbb22acdc8c41eff6c635fe3baf:task-definition-template/jatintesting-es-ecs-service-task-def.json
         }
       ],
       "secrets": [
         {
-          "valueFrom": "arn:aws:secretsmanager:us-east-1:488323030461:secret:jatintesting-es-usr-mgr-secret2-dYjFWi",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:488323030461:secret:dev-es-usr-mgr-secret3-WrbgWM",
           "name": "user-manager-secrets"
         }
       ],
@@ -80,13 +103,13 @@
       "dockerLabels": {
         "Org": "Infostretch"
       },
-      "name": "jatintesting-es-container"
+      "name": "dev-es-container"
     }
   ],
   "placementConstraints": [],
   "memory": "2048",
   "taskRoleArn": "arn:aws:iam::488323030461:role/ECS-Managed-Policy",
-  "family": "jatintesting-user-manager-task-def",
+  "family": "dev-user-manager-task-def",
   "requiresCompatibilities": [
     "FARGATE"
   ],

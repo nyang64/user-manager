@@ -66,7 +66,6 @@
         {
           "name": "SMTP_SERVER",
           "value": "email-smtp.us-east-1.amazonaws.com"
-<<<<<<< HEAD:task-definition-template/dev-es-ecs-service-task-def.json
         },
 	{
           "name": "OTP_EXPIRATION_TIME_HOURS",
@@ -87,8 +86,6 @@
 	{
           "name": "OTP_LIMIT_MINUTES",
           "value": "0"
-=======
->>>>>>> 31e183c4deabadbb22acdc8c41eff6c635fe3baf:task-definition-template/jatintesting-es-ecs-service-task-def.json
         }
       ],
       "secrets": [

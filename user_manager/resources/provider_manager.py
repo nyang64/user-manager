@@ -81,7 +81,7 @@ class provider_manager():
         provider_data = Providers.find_by_id(id=provider_json["provider_id"])
         if provider_data is None:
             return {"message": "Unable To Delete, No Such Provider Exist"}, 404
-        UserRegister.delete_user_by_Userid(user_id=provider_data.user_id)
+        self.userObj.delete_user_byid(provider_data.user_id)
         return {"message": "Provider Deleted"}, 200
 
     @require_user_token(ADMIN, PROVIDER)

@@ -9,6 +9,7 @@ from blueprint.patient_blueprint import PatientBluePrint
 from blueprint.provider_blueprint import ProviderBlueprint
 from application import Appplication
 
+
 app = Appplication(__name__, '/v1')
 app.config["SQLALCHEMY_DATABASE_URI"] = get_connection_url()
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
@@ -21,6 +22,7 @@ migrate.init_app(app, db)
 
 seeder = FlaskSeeder()
 seeder.init_app(app, db)
+
 
 auth_blueprint = AuthenticationBlueprint()
 app.register_blueprint(auth_blueprint)

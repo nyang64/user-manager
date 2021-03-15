@@ -44,10 +44,8 @@ class provider_manager():
 
     @require_user_token(ADMIN, PROVIDER)
     def get_provider_by_id(self, decrypt):
-        provider_json = request.get_json()
-        if have_keys(provider_json, 'provider_id') is False:
-            return {"message": "Invalid Request Parameters"}, 400
-        provider_data = Providers.find_by_id(provider_json["provider_id"])
+        provider_id = request.args.get('provider_id')
+        provider_data = Providers.find_by_id(provider_id)
         if provider_data is None:
             return {"message": "No Such Provider Exist"}, 404
         provider_data_json = provider_data.__dict__

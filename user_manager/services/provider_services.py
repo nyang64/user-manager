@@ -33,6 +33,7 @@ class ProviderService(DbRepository):
             self.user_obj.assign_role(user_id, PROVIDER)
             self.add_provider(user_id, facility_id)
             self.commit_db()
+            return True
         except SQLAlchemyError as error:
             raise InternalServerError(str(error))
 

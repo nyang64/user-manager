@@ -16,7 +16,7 @@ definitions:
 
       - aws configure set aws_access_key_id "${AWS_ACCESS_KEY_ID}"
       - aws configure set aws_secret_access_key "${AWS_SECRET_ACCESS_KEY}"
-      - aws ecr get-login-password --region us-west-1 | docker login --username AWS --password-stdin $AWS_ACCOUNT_URL
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_URL
       - docker tag $BITBUCKET_COMMIT $AWS_ACCOUNT_URL/$ECR_REPO_NAME:$BITBUCKET_COMMIT
       - docker push $AWS_ACCOUNT_URL/$ECR_REPO_NAME:$BITBUCKET_COMMIT
 
@@ -24,7 +24,7 @@ definitions:
       - cd ..
       - pip install envsubst
       - export IMAGE_NAME="$AWS_ACCOUNT_URL/$ECR_REPO_NAME:$BITBUCKET_COMMIT"
-      - envsubst < task-definition-template/"$SERVICE_NAME"-task-def.json >  task-definition.json
+      - envsubst < task-definition-template/"$BITBUCKET_DEPLOYMENT_ENVIRONMENT"-task-definition.json >  task-definition.json
 
       # Update the task definition.
       - pipe: atlassian/aws-ecs-deploy:1.0.0
@@ -52,3 +52,8 @@ pipelines:
           <<: *Pull-SC-Push-Img-Create-SLS-Deploy-on-ECS
           name: Deploy to QA environment
           deployment: qa
+    test-deployment:
+      - step:
+          <<: *Pull-SC-Push-Img-Create-SLS-Deploy-on-ECS
+          name: Deploy to test environment
+          deployment: test

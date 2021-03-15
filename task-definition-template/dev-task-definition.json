@@ -5,8 +5,8 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/test-es-ecs",
-          "awslogs-region": "us-west-1",
+          "awslogs-group": "/ecs/dev-user-manager-task-def",
+          "awslogs-region": "us-east-1",
           "awslogs-stream-prefix": "ecs"
         }
       },
@@ -25,15 +25,35 @@
         },
         {
           "name": "POSTGRES_DB_HOST",
-          "value": "test-es-db.caneampnjecs.us-west-1.rds.amazonaws.com"
+          "value": "dev-es-db.cypfku5dqbr4.us-east-1.rds.amazonaws.com"
         },
         {
           "name": "POSTGRES_DB_NAME",
-          "value": "testes"
+          "value": "postgres"
         },
         {
           "name": "POSTGRES_DB_PORT",
           "value": "5432"
+        },
+        {
+          "name": "OTP_EXPIRATION_TIME_HOURS",
+          "value": "24"
+        },
+        {
+          "name": "OTP_EXPIRATION_TIME_MINUTES",
+          "value": "0"
+        },
+        {
+          "name": "OTP_LIMIT",
+          "value": "7"
+        },
+        {
+          "name": "OTP_LIMIT_HOURS",
+          "value": "1"
+        },
+        {
+          "name": "OTP_LIMIT_MINUTES",
+          "value": "0"
         },
         {
           "name": "SMTP_FROM",
@@ -45,12 +65,32 @@
         },
         {
           "name": "SMTP_SERVER",
-          "value": "email-smtp.us-west-1.amazonaws.com"
+          "value": "email-smtp.us-east-1.amazonaws.com"
+        },
+	{
+          "name": "OTP_EXPIRATION_TIME_HOURS",
+          "value": "24"
+        },
+	{
+          "name": "OTP_EXPIRATION_TIME_MINUTES",
+          "value": "0"
+        },
+	{
+          "name": "OTP_LIMIT",
+          "value": "7"
+        },
+	{
+          "name": "OTP_LIMIT_HOURS",
+          "value": "1"
+        },
+	{
+          "name": "OTP_LIMIT_MINUTES",
+          "value": "0"
         }
       ],
       "secrets": [
         {
-          "valueFrom": "arn:aws:secretsmanager:us-west-1:488323030461:secret:user-manager-secrets-pd4Rwt",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:488323030461:secret:dev-es-usr-mgr-secret3-WrbgWM",
           "name": "user-manager-secrets"
         }
       ],
@@ -60,13 +100,13 @@
       "dockerLabels": {
         "Org": "Infostretch"
       },
-      "name": "test-es-api"
+      "name": "dev-es-container"
     }
   ],
   "placementConstraints": [],
   "memory": "2048",
   "taskRoleArn": "arn:aws:iam::488323030461:role/ECS-Managed-Policy",
-  "family": "test-es-ecs",
+  "family": "dev-user-manager-task-def",
   "requiresCompatibilities": [
     "FARGATE"
   ],
@@ -74,3 +114,4 @@
   "cpu": "1024",
   "volumes": []
 }
+

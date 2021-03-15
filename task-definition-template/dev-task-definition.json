@@ -5,7 +5,7 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/dev-user-manager-task-def",
+          "awslogs-group": "/ecs/dev-user-manager",
           "awslogs-region": "us-east-1",
           "awslogs-stream-prefix": "ecs"
         }
@@ -90,7 +90,7 @@
       ],
       "secrets": [
         {
-          "valueFrom": "arn:aws:secretsmanager:us-east-1:488323030461:secret:dev-es-usr-mgr-secret3-WrbgWM",
+          "valueFrom": "$SM_ARN",
           "name": "user-manager-secrets"
         }
       ],
@@ -104,14 +104,13 @@
     }
   ],
   "placementConstraints": [],
-  "memory": "2048",
+  "memory": "1024",
   "taskRoleArn": "arn:aws:iam::488323030461:role/ECS-Managed-Policy",
-  "family": "dev-user-manager-task-def",
+  "family": "dev-user-manager",
   "requiresCompatibilities": [
     "FARGATE"
   ],
   "networkMode": "awsvpc",
-  "cpu": "1024",
+  "cpu": "512",
   "volumes": []
 }
-

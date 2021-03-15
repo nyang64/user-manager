@@ -23,17 +23,18 @@ class PatientServices(DbRepository):
                                                  register[1])
         user_id, user_uuid = self.user_obj.save_user(user[0], user[1],
                                                      user[2], reg_id)
-        patient_id = self.save_patient(user_id, patient[0],
-                                       patient[1], patient[2])
+        patient_id = self.save_patient(user_id, patient[0], patient[1],
+                                       patient[2], patient[3])
         self.user_obj.assign_role(user_id, PATIENT)
         self.commit_db()
         return user_id, user_uuid, patient_id
 
     def save_patient(self, user_id, emer_contact_name,
-                     emer_contact_no, date_of_birth):
+                     emer_contact_no, date_of_birth, gender):
         try:
             Users.check_user_exist(user_id)
             patient_data = Patient(user_id=user_id,
+                                   gender=gender,
                                    emergency_contact_name=emer_contact_name,
                                    emergency_contact_number=emer_contact_no,
                                    date_of_birth=date_of_birth)
@@ -47,14 +48,14 @@ class PatientServices(DbRepository):
     def assign_device_to_patient(self, patient_device):
         print('Assign to device patient started')
         exist_patient = Patient.check_patient_exist(patient_device.patient_id)
-        payload = {'serial_number': patient_device.device_id}
+        payload = {'serial_number': patient_device.device_serial_number}
         print('payload', payload)
         r = requests.get(CHECK_DEVICE_EXIST_URL, params=payload)
         print('Request finished', r.status_code)
         print('response', r.text)
         print(r.url, 'The Called API')
         if int(r.status_code) == 404:
-            MSG = f'Device serial number {patient_device.device_id} not found'
+            MSG = f'Device serial number {patient_device.device_serial_number} not found'
             raise NotFound(MSG)
         if bool(exist_patient) is False:
             raise NotFound('patient record not found')
@@ -74,7 +75,7 @@ class PatientServices(DbRepository):
             .join(Patient, Users.id == Patient.user_id)\
             .join(PatientsDevices, Patient.id == PatientsDevices.patient_id)\
             .filter(UserRegister.email == token.get('user_email'))\
-            .with_entities(PatientsDevices.device_id)\
+            .with_entities(PatientsDevices.device_serial_number)\
             .all()
         # Count should be same as the original one
         new_keys = {'encryption_key': 'key', 'serial_number': 'serial_number'}
@@ -108,7 +109,7 @@ class PatientServices(DbRepository):
         exist_patient.emergency_contact_name = emer_contact_name
         exist_patient.emergency_contact_number = emer_contact_no
         exist_patient.date_of_birth = dob
-        Patient.update_db(exist_patient)
+        self.update_db(exist_patient)
 
     def delete_patient_data(self, patient_id):
         exist_patient = Patient.check_patient_exist(patient_id)

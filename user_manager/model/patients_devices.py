@@ -10,9 +10,9 @@ class PatientsDevices(BaseModel):
     patient_id = db.Column('patient_id', db.Integer,
                            ForeignKey('ES.patients.id', ondelete="CASCADE"),
                            nullable=False)
-    device_id = db.Column('device_serial_number',
-                          db.String(50),
-                          nullable=False)
+    device_serial_number = db.Column('device_serial_number',
+                                     db.String(50),
+                                     nullable=False)
     patient = db.relationship(
         "Patient", backref=backref("patient_list")
     )

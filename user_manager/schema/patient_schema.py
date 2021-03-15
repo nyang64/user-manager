@@ -31,15 +31,18 @@ class CreatePatientSchema(CreateUserSchema):
                                           validate=validate_number)
     date_of_birth = fields.Str(required=True,
                                validate=must_not_blank)
+    gender = fields.Str(required=True,
+                        validate=must_not_blank)
 
     @post_load
     def make_post_load_object(self, data, **kwargs):
         register, user = super().make_post_load_object(data)
         emergency_contact_name = data.get('emergency_contact_name')
         emergency_contact_number = data.get('emergency_contact_number')
-        date_of_birth = data.get('date_of_birth')  
-        patient = (emergency_contact_name,
-                   emergency_contact_number, date_of_birth)
+        date_of_birth = data.get('date_of_birth')
+        gender = data.get('gender')
+        patient = (emergency_contact_name, emergency_contact_number,
+                   date_of_birth, gender)
         return register, user, patient
 
 
@@ -75,8 +78,8 @@ class AssignDeviceSchema(BaseSchema, ma.SQLAlchemyAutoSchema):
         load_instance = True
         include_fk = True
 
-    device_id = fields.Str(required=True,
-                           validate=validate_device_serial_number)
+    device_serial_number = fields.Str(required=True,
+                                      validate=validate_device_serial_number)
 
 
 assign_device_schema = AssignDeviceSchema()

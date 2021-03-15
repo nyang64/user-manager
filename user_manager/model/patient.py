@@ -22,7 +22,8 @@ class Patient(BaseModel):
     date_of_birth = db.Column('date_of_birth',
                               String(30))
     enrolled_date = db.Column('enrolled_at',
-                              DateTime)
+                              DateTime,
+                              default=db.func.now())
     users = db.relationship("Users",
                             backref=backref("users_patient", uselist=False))
 

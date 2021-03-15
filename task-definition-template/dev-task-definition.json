@@ -5,8 +5,8 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/dev-user-manager",
-          "awslogs-region": "us-east-1",
+          "awslogs-group": "/ecs/$BITBUCKET_DEPLOYMENT_ENVIRONMENT-user-manager",
+          "awslogs-region": "$AWS_DEFAULT_REGION",
           "awslogs-stream-prefix": "ecs"
         }
       },
@@ -25,7 +25,7 @@
         },
         {
           "name": "POSTGRES_DB_HOST",
-          "value": "dev-es-db.cypfku5dqbr4.us-east-1.rds.amazonaws.com"
+          "value": "$DB_URL"
         },
         {
           "name": "POSTGRES_DB_NAME",
@@ -65,7 +65,7 @@
         },
         {
           "name": "SMTP_SERVER",
-          "value": "email-smtp.us-east-1.amazonaws.com"
+          "value": "email-smtp.$AWS_DEFAULT_REGION.amazonaws.com"
         },
 	{
           "name": "OTP_EXPIRATION_TIME_HOURS",
@@ -100,13 +100,13 @@
       "dockerLabels": {
         "Org": "Infostretch"
       },
-      "name": "dev-es-container"
+      "name": "$BITBUCKET_DEPLOYMENT_ENVIRONMENT-es-container"
     }
   ],
   "placementConstraints": [],
   "memory": "1024",
   "taskRoleArn": "arn:aws:iam::488323030461:role/ECS-Managed-Policy",
-  "family": "dev-user-manager",
+  "family": "$BITBUCKET_DEPLOYMENT_ENVIRONMENT-user-manager",
   "requiresCompatibilities": [
     "FARGATE"
   ],

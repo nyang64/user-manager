@@ -1,5 +1,5 @@
 from sqlalchemy.exc import SQLAlchemyError
-from werkzeug.exceptions import InternalServerError, NotFound
+from werkzeug.exceptions import InternalServerError, NotFound, Conflict
 from model.patient import Patient
 from model.patients_devices import PatientsDevices
 from model.users import Users
@@ -10,6 +10,7 @@ from services.auth_services import AuthServices
 from services.repository.db_repositories import DbRepository
 from utils.constants import GET_DEVICE_DETAIL_URL, CHECK_DEVICE_EXIST_URL
 import requests
+import logging
 
 
 class PatientServices(DbRepository):
@@ -46,24 +47,42 @@ class PatientServices(DbRepository):
             raise InternalServerError(str(error))
 
     def assign_device_to_patient(self, patient_device):
-        print('Assign to device patient started')
+        logging.info('Assign to device patient started')
         exist_patient = Patient.check_patient_exist(patient_device.patient_id)
+        if bool(exist_patient) is False:
+            logging.error('Patient Record Not Found')
+            raise NotFound('patient record not found')
+        is_assign = PatientsDevices.check_device_assigned(
+            patient_device.device_serial_number)
+        logging.info('Device Assigned to another patient : {}'.format(
+            bool(is_assign)))
+        if bool(is_assign) is True:
+            logging.warning(
+                'Device {} Already assigned to another patient'.format(
+                    patient_device.device_serial_number))
+            raise Conflict('Device Already assigned to another patient')
         payload = {'serial_number': patient_device.device_serial_number}
-        print('payload', payload)
+        logging.info('Request payload {}'.format(payload))
         r = requests.get(CHECK_DEVICE_EXIST_URL, params=payload)
-        print('Request finished', r.status_code)
-        print('response', r.text)
-        print(r.url, 'The Called API')
+        logging.info('Request finished with status code {}'.format(
+            r.status_code))
+        logging.info('response {}'.format(r.text))
+        logging.info('The Called API {}'.format(r.url))
         if int(r.status_code) == 404:
             MSG = f'Device serial number {patient_device.device_serial_number} not found'
             raise NotFound(MSG)
-        if bool(exist_patient) is False:
-            raise NotFound('patient record not found')
+        
         try:
+            logging.info('Saving to the database')
             self.save_db(patient_device)
             if patient_device.id is None:
+                logging.warning('Failed to save device to database')
                 raise SQLAlchemyError('Failed to assign device')
+            logging.info('Assigned Device')
         except SQLAlchemyError as error:
+            logging.error(
+                'Error Occured while assign device to patient {}'.format(
+                    str(error)))
             raise InternalServerError(str(error))
 
     def patient_device_list(self, token):

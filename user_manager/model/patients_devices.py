@@ -16,3 +16,8 @@ class PatientsDevices(BaseModel):
     patient = db.relationship(
         "Patient", backref=backref("patient_list")
     )
+
+    @classmethod
+    def check_device_assigned(cls, device_serial_no):
+        return db.session.query(cls.id).filter(
+            cls.device_serial_number == device_serial_no).first()

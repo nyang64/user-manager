@@ -24,6 +24,10 @@ definitions:
       - cd ..
       - pip install envsubst
       - export IMAGE_NAME="$AWS_ACCOUNT_URL/$ECR_REPO_NAME:$BITBUCKET_COMMIT"
+      - export DB_URL="$AWS_DB_URL"
+      - export SM_ARN="$AWS_SM_ARN"
+      - export AWS_REGION="$AWS_DEFAULT_REGION"
+      - export DEPLOYMENT_ENVIRONMENT="$BITBUCKET_DEPLOYMENT_ENVIRONMENT"
       - envsubst < task-definition-template/"$BITBUCKET_DEPLOYMENT_ENVIRONMENT"-task-definition.json >  task-definition.json
 
       # Update the task definition.

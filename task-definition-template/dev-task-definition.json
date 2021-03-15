@@ -5,8 +5,8 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/$BITBUCKET_DEPLOYMENT_ENVIRONMENT-user-manager",
-          "awslogs-region": "$AWS_DEFAULT_REGION",
+          "awslogs-group": "/ecs/$DEPLOYMENT_ENVIRONMENT-user-manager",
+          "awslogs-region": "$AWS_REGION",
           "awslogs-stream-prefix": "ecs"
         }
       },
@@ -65,7 +65,7 @@
         },
         {
           "name": "SMTP_SERVER",
-          "value": "email-smtp.$AWS_DEFAULT_REGION.amazonaws.com"
+          "value": "email-smtp.$AWS_REGION.amazonaws.com"
         },
 	{
           "name": "OTP_EXPIRATION_TIME_HOURS",
@@ -100,13 +100,13 @@
       "dockerLabels": {
         "Org": "Infostretch"
       },
-      "name": "$BITBUCKET_DEPLOYMENT_ENVIRONMENT-es-container"
+      "name": "$DEPLOYMENT_ENVIRONMENT-es-container"
     }
   ],
   "placementConstraints": [],
   "memory": "1024",
   "taskRoleArn": "arn:aws:iam::488323030461:role/ECS-Managed-Policy",
-  "family": "$BITBUCKET_DEPLOYMENT_ENVIRONMENT-user-manager",
+  "family": "$DEPLOYMENT_ENVIRONMENT-user-manager",
   "requiresCompatibilities": [
     "FARGATE"
   ],

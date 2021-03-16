@@ -20,12 +20,12 @@ class TestClass:
     def test_generate_signed_url_none_data(self):
         with pytest.raises(Exception) as e:
             assert generate_signed_url(None)
-        assert "Parameter validation failed" in str(e.value)
+        assert "expected string or bytes-like object" in str(e.value)
 
     def test_generate_signed_url_none_invalid_data(self):
         with pytest.raises(Exception) as e:
             assert generate_signed_url('')
-        assert "Parameter validation failed" in str(e.value)
+        assert "expected string or bytes-like object" in str(e.value)
 
     def test_time_differance_none_invalid_data(self):
         with pytest.raises(Exception) as e:

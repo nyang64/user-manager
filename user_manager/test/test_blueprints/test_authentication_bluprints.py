@@ -6,14 +6,7 @@ from db import db
 from flask_migrate import Migrate
 from utils.constants import ADMIN
 from utils import jwt
-# from resources.authentication_manager import AuthOperation
-# from model.user_registration import UserRegister
-# from model.user_otp import UserOTPModel
-# from utils.common import have_keys
 from pytest_mock import MockerFixture
-# import flask
-# import json
-
 from blueprint.auth_blueprint import AuthenticationBlueprint
 from blueprint.user_blueprint import UserBluePrint
 from blueprint.patient_blueprint import PatientBluePrint
@@ -23,7 +16,6 @@ from blueprint.provider_blueprint import ProviderBlueprint
 def mock_require_user_token(*args):
     def require_user_token_validator(func):
         def inner(jsonT):
-            print("jsc")
             decrypted = {"user_role": ADMIN}
             return func(jsonT, decrypted)
         return inner
@@ -60,12 +52,6 @@ def flask_app():
     app.register_blueprint(patient_blueprint)
 
     yield app
-
-
-# @pytest.fixture
-# def auth_object():
-#     authObject = AuthOperation()
-#     yield authObject
 
 
 class TestClass:
@@ -157,37 +143,4 @@ class TestClass:
                       password='12345678'
                 ), follow_redirects=True)
                 assert resp.status_code == 404
-    # def test_update_password_with_valid_data(
-    #         self, flask_app, mocker: MockerFixture):
-    #     with flask_app.app_context():
-    #         with flask_app.test_client() as client:
-    #             mocker.patch(
-    #                 jwt.require_user_token,
-    #                 return_value=({}, {"user_role": ADMIN}))
-    #             resp = client.put('/v1/updatepassword', json=dict(
-    #                 email='esadmin@elementsci.com',
-    #                 password='EleM3nTSci'
-    #             ), follow_redirects=True)
-    #             print(resp.data)
-    #             assert resp.status_code == 200
 
-    # def test_User_login_with_valid_data(
-    #         self, flask_app, auth_object, mocker: MockerFixture):
-    #     with flask_app.app_context():
-    #         with flask_app.test_client() as client:
-    #             client.get('/')
-    #         with flask_app.test_request_context():
-    #             request_mock = mocker.patch.object(flask, "request")
-
-    #             # request_mock = mocker.patch(
-    #             # 'resources.authentication_manager.AuthOperation')
-    #             # jdata = {
-    #             #     "email": "esadmin@elementsci.com",
-    #             #     "password": "EleM3nTSci"
-    #             #     }
-    #             # request_mock.headers = {'content-type': 'application/json'}
-    #             request_mock.get_json.return_value.email.return_value = "es"
-    #             with pytest.raises(Exception) as e:
-    #                 assert auth_object.login_user()
-    #             print(e)
-    #             assert "400 Bad Request" in str(e.value)

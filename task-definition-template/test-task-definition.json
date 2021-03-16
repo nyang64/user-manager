@@ -5,7 +5,7 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/qa-user-manager-task-def",
+          "awslogs-group": "/ecs/test-es-ecs",
           "awslogs-region": "us-west-1",
           "awslogs-stream-prefix": "ecs"
         }
@@ -25,15 +25,35 @@
         },
         {
           "name": "POSTGRES_DB_HOST",
-          "value": "qa-user-manager-rds.caneampnjecs.us-west-1.rds.amazonaws.com"
+          "value": "test-es-db.caneampnjecs.us-west-1.rds.amazonaws.com"
         },
         {
           "name": "POSTGRES_DB_NAME",
-          "value": "postgres"
+          "value": "testes"
         },
         {
           "name": "POSTGRES_DB_PORT",
           "value": "5432"
+        },
+        {
+          "name": "OTP_EXPIRATION_TIME_HOURS",
+          "value": "24"
+        },
+        {
+          "name": "OTP_EXPIRATION_TIME_MINUTES",
+          "value": "0"
+        },
+        {
+          "name": "OTP_LIMIT",
+          "value": "7"
+        },
+        {
+          "name": "OTP_LIMIT_HOURS",
+          "value": "1"
+        },
+        {
+          "name": "OTP_LIMIT_MINUTES",
+          "value": "0"
         },
         {
           "name": "SMTP_FROM",
@@ -50,7 +70,7 @@
       ],
       "secrets": [
         {
-          "valueFrom": "arn:aws:secretsmanager:us-west-1:488323030461:secret:qa-user-manager-secrets-KchvKy",
+          "valueFrom": "arn:aws:secretsmanager:us-west-1:488323030461:secret:user-manager-secrets-pd4Rwt",
           "name": "user-manager-secrets"
         }
       ],
@@ -60,13 +80,13 @@
       "dockerLabels": {
         "Org": "Infostretch"
       },
-      "name": "qa-user-manager-cont"
+      "name": "test-es-api"
     }
   ],
   "placementConstraints": [],
   "memory": "2048",
   "taskRoleArn": "arn:aws:iam::488323030461:role/ECS-Managed-Policy",
-  "family": "qa-user-manager-task-def",
+  "family": "test-es-ecs",
   "requiresCompatibilities": [
     "FARGATE"
   ],

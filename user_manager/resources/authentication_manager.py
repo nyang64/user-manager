@@ -12,6 +12,9 @@ from model.user_otp import UserOTPModel
 from services.auth_services import AuthServices
 # Do not remove used at time of migration
 from model.facilities import Facilities
+from datetime import datetime, timedelta
+import os
+from config import read_environ_value
 
 
 class AuthOperation():
@@ -47,6 +50,7 @@ class AuthOperation():
         return {"message": "Password Updated"}, 200
 
     def reset_user_password(self):
+        value = os.environ.get('user-manager-secrets')
         user_json = request.get_json()
         have_key = have_keys_NotForce(
             user_json, 'email', 'otp', 'password'
@@ -63,6 +67,14 @@ class AuthOperation():
                 )
             if otp_data is None:
                 return {"message": "OTP is Incorrect"}, 404
+            now = datetime.now()
+            expiration_time = now - timedelta(
+                hours=int(read_environ_value(
+                    value, "OTP_EXPIRATION_TIME_HOURS")),
+                minutes=int(read_environ_value(
+                    value, "OTP_EXPIRATION_TIME_MINUTES")))
+            if otp_data.created_at < expiration_time:
+                return {"message": "OTP is Expired"}, 410
             otp_data.temp_password = encPass(user_json["password"])
             msg = self.auth_obj.update_otp_data(otp_data)
             return {"message": msg}, 200
@@ -75,6 +87,9 @@ class AuthOperation():
                 email=str(user_json["email"]).lower())
             if user_data is None:
                 return {"message": "No Such User Exist"}, 404
+            otp_cnt = UserOTPModel.find_list_by_user_id(user_data.id)
+            if int(otp_cnt) >= int(read_environ_value(value, "OTP_LIMIT")):
+                return {"message": "OTP Limit Reached"}, 429
             user_detail = Users.getUserById(user_reg_id=user_data.id)
             otp = generateOTP()
             send_otp(

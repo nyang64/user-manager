@@ -116,8 +116,8 @@ class responseModel:
 class auth_response_model:
     def __init__(
             self,
-            message: str, first_name: str,
-            id_token: str, last_name: str,
+            message: str, id_token: str, first_name: str = "",
+            last_name: str = "",
             refresh_token: str = "", user_status: str = 'Provider',
             isFirstTimeLogin: bool = False,):
         self.message = message

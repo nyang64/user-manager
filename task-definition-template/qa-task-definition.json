@@ -5,7 +5,7 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/qa-es-ecs",
+          "awslogs-group": "/ecs/qa-user-manager-task-def",
           "awslogs-region": "us-west-1",
           "awslogs-stream-prefix": "ecs"
         }
@@ -20,32 +20,20 @@
       "cpu": 0,
       "environment": [
         {
-          "name": "ACCESS_TOKEN_KEY",
-          "value": "C718D5FDDEC279567385BE3E52894"
+          "name": "APP_LINK",
+          "value": "http://applink"
         },
         {
           "name": "POSTGRES_DB_HOST",
-          "value": "test-es-db.caneampnjecs.us-west-1.rds.amazonaws.com"
+          "value": "qa-user-manager-rds.caneampnjecs.us-west-1.rds.amazonaws.com"
         },
         {
           "name": "POSTGRES_DB_NAME",
-          "value": "testes"
-        },
-        {
-          "name": "POSTGRES_DB_PASSWORD_KEY",
-          "value": "Es#12390"
+          "value": "postgres"
         },
         {
           "name": "POSTGRES_DB_PORT",
           "value": "5432"
-        },
-        {
-          "name": "POSTGRES_DB_USER_KEY",
-          "value": "postgres"
-        },
-        {
-          "name": "REFRESH_TOKEN_KEY",
-          "value": "9EA72AD96C39A87A1AFF153983592"
         },
         {
           "name": "OTP_EXPIRATION_TIME_HOURS",
@@ -69,11 +57,7 @@
         },
         {
           "name": "SMTP_FROM",
-          "value": "dhruv.rana@infostretch.com"
-        },
-        {
-          "name": "SMTP_PASSWORD",
-          "value": "BIqBtf84NQ5jnpYKCeZcH0+/j7hXixGZmPW3X7PlTZeT"
+          "value": "elementapp@elementsci.com"
         },
         {
           "name": "SMTP_PORT",
@@ -82,23 +66,27 @@
         {
           "name": "SMTP_SERVER",
           "value": "email-smtp.us-west-1.amazonaws.com"
-        },
-        {
-          "name": "SMTP_USERNAME",
-          "value": "AKIAXDMSSDW6WYN34VTV"
         }
       ],
-      "mountPoints": [],
+      "secrets": [
+        {
+          "valueFrom": "arn:aws:secretsmanager:us-west-1:488323030461:secret:qa-user-manager-secrets-KchvKy",
+          "name": "user-manager-secrets"
+        }
+      ],
       "volumesFrom": [],
       "image": "$IMAGE_NAME",
       "essential": true,
-      "name": "test-es-api"
+      "dockerLabels": {
+        "Org": "Infostretch"
+      },
+      "name": "qa-user-manager-cont"
     }
   ],
   "placementConstraints": [],
   "memory": "2048",
   "taskRoleArn": "arn:aws:iam::488323030461:role/ECS-Managed-Policy",
-  "family": "test-es-ecs",
+  "family": "qa-user-manager-task-def",
   "requiresCompatibilities": [
     "FARGATE"
   ],
@@ -106,4 +94,3 @@
   "cpu": "1024",
   "volumes": []
 }
-

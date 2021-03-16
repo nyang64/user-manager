@@ -132,6 +132,29 @@ class TestClass:
                 email=provider_schema_object[0][0])
             auth_object.delete_regtration(user_obj.id)
 
+    def test_patient_detail_with_valid_data(
+                self,
+                flask_app,
+                provider_object,
+                provider_schema_object):
+        with flask_app.app_context():
+            response = provider_object.patient_detail_byid(
+                None
+                )
+            assert response == ({}, [])
+
+    def test_report_signed_link_valid_data(
+                self,
+                flask_app,
+                provider_object,
+                provider_schema_object):
+        with flask_app.app_context():
+            response = provider_object.report_signed_link(
+                None
+                )
+            assert response == ('No report found', 404)
+
+# report_signed_link
     # assert str(e.value) == "409 Conflict: Users Already Register"
 
     # Test Cases For Provider Register End

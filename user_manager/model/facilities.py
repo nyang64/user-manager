@@ -9,8 +9,7 @@ class Facilities(BaseModel):
     address_id = db.Column('address_id', Integer,
                            ForeignKey('ES.addresses.id', ondelete="CASCADE"),
                            nullable=False)
-    on_call_phone = db.Column('on_call_phone',
-                              String(12))
+    on_call_phone = db.Column('on_call_phone', String(12), nullable=False)
     name = db.Column('name', String(100))
 
     @classmethod

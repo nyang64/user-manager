@@ -65,3 +65,15 @@ class PatientManager():
         device_list = self.patient_obj.patient_device_list(token)
         resp = {'devices': device_list}
         return jsonify(resp), http.client.OK
+
+    def add_facility(self):
+        ''' Add address, Facility and assign address id to facility table '''
+        from schema.facility_schema import add_facility_schema
+        from services.facility_services import FacilityService
+        request_data = validate_request()
+        address, facility_name = add_facility_schema.load(request_data)
+        facility_obj = FacilityService()
+        aid, fid = facility_obj.register_facility(address, facility_name)
+        return {'address_id': aid,
+                'facility_id': fid,
+                'status_code': http.client.CREATED}, http.client.CREATED

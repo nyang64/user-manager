@@ -29,3 +29,8 @@ class PatientBluePrint(Blueprint):
                           'patient device list',
                           self.patient_obj.patient_device_list,
                           methods=['GET'])
+        '''------------------------ Facility Endpoint -------------------------'''
+        self.add_url_rule('/add/facility',
+                          'Add Facility',
+                          self.patient_obj.add_facility,
+                          methods=['POST'])

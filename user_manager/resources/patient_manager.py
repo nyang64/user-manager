@@ -8,6 +8,7 @@ from schema.patient_schema import (create_patient_schema,
                                    update_patient_schema,
                                    assign_device_schema,)
 from utils.constants import ADMIN, PROVIDER, PATIENT
+import logging
 
 
 class PatientManager():
@@ -70,8 +71,11 @@ class PatientManager():
         ''' Add address, Facility and assign address id to facility table '''
         from schema.facility_schema import add_facility_schema
         from services.facility_services import FacilityService
+        logging.info('Request Received to add facility')
         request_data = validate_request()
         address, facility_name = add_facility_schema.load(request_data)
+        logging.info('Facility Name: {}'.format(facility_name))
+        logging.info('Address Info: {}'.format(address))
         facility_obj = FacilityService()
         aid, fid = facility_obj.register_facility(address, facility_name)
         return {'address_id': aid,

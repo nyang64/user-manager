@@ -24,7 +24,6 @@ class AddFacilitySchema(BaseSchema):
 
     @post_load
     def load_data(self, data, **kwargs):
-        print(data)
         return data.get('address'), data.get('facility_name')
 
 

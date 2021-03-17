@@ -40,14 +40,13 @@ class PatientSchema(ma.SQLAlchemyAutoSchema):
 
 
 class CreatePatientSchema(CreateUserSchema):
-    emergency_contact_name = fields.Str(required=True,
-                                        validate=must_not_blank)
-    emergency_contact_number = fields.Str(required=True,
-                                          validate=validate_number)
-    date_of_birth = fields.Str(required=True,
-                               validate=must_not_blank)
-    gender = fields.Str(required=True,
-                        validate=must_not_blank)
+    emergency_contact_name = fields.Str(required=True, validate=must_not_blank)
+    emergency_contact_number = fields.Str(required=True, validate=validate_number)
+    date_of_birth = fields.Str(required=True, validate=must_not_blank)
+    gender = fields.Str(required=True, validate=must_not_blank)
+    provider_id = fields.Int(required=True, validate=must_not_blank)
+    prescribing_provider = fields.Int(required=True, validate=must_not_blank)
+    outpatient_provider = fields.Int(required=True, validate=must_not_blank)
 
     @post_load
     def make_post_load_object(self, data, **kwargs):
@@ -56,8 +55,9 @@ class CreatePatientSchema(CreateUserSchema):
         emergency_contact_number = data.get('emergency_contact_number')
         date_of_birth = data.get('date_of_birth')
         gender = data.get('gender')
+        provider_id = data.get('provider_id')
         patient = (emergency_contact_name, emergency_contact_number,
-                   date_of_birth, gender)
+                   date_of_birth, gender, provider_id)
         return register, user, patient
 
 

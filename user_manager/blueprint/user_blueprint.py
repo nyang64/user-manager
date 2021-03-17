@@ -29,3 +29,7 @@ class UserBluePrint(Blueprint):
                           'user information by token',
                           self.userObj.get_detail_bytoken,
                           methods=['GET'])
+        self.add_url_rule('/users/<user_id>',
+                          'show user by id',
+                          self.userObj.show,
+                          methods=['GET'])

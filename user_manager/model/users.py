@@ -1,5 +1,6 @@
 from db import db
 from sqlalchemy import Integer, String, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
 from werkzeug.exceptions import NotFound, InternalServerError
 import uuid
 from model.base_model import BaseModel
@@ -20,8 +21,7 @@ class Users(BaseModel):
                           nullable=False)
     phone_number = db.Column('phone_number', String(12),
                              nullable=False)
-    uuid = db.Column('uuid', String(50), default=str(uuid.uuid4()),
-                     unique=True, nullable=False)
+    uuid = db.Column(UUID(as_uuid=True), default=uuid.uuid4, unique=True)
 
     @classmethod
     def find_by_email(cls, email: str) -> "Users":
@@ -32,8 +32,8 @@ class Users(BaseModel):
         return cls.query.filter_by(registration_id=registration_id).first()
 
     @classmethod
-    def find_by_user_id(cls, user_id: str) -> "Users":
-        return cls.query.filter_by(id=user_id).first()
+    def find_by_id(cls, _id: str) -> "Users":
+        return cls.query.filter_by(id=_id).first()
 
     @classmethod
     def find_by_patient_id(cls, patient_id: str) -> "Users":
@@ -55,3 +55,7 @@ class Users(BaseModel):
         except Exception as e:
             logger.error(e)
             raise InternalServerError("Something Went Wrong")
+
+    def save_to_db(self) -> None:
+        db.session.add(self)
+        db.session.commit()

@@ -1,4 +1,7 @@
+from dotenv import load_dotenv
+load_dotenv(".env")
 import os
+
 from db import db
 from ma import ma
 from flask_migrate import Migrate
@@ -40,9 +43,13 @@ app.register_blueprint(patient_blueprint)
 
 
 if __name__ == "__main__":
-    # app.run(
-    #     host=os.environ.get("APP_HOST"),
-    #     port=os.environ.get("APP_PORT"),
-    #     debug=os.environ.get("APP_DEBUG"),
-    # )
-    app.run(host='0.0.0.0', port=5000)
+
+    # NOTE: DO NOT change the host and port numbers while deploying to cloud. The application
+    # WILL NOT work as the port is tied to ECS container. If the port is changed here, we need to
+    # make changes to the ECS infrastructure.
+    # app.run(host='0.0.0.0', port=5000)
+    app.run(
+        host=os.environ.get("APP_HOST"),
+        port=os.environ.get("APP_PORT"),
+        debug=os.environ.get("APP_DEBUG"),
+    )

@@ -18,3 +18,7 @@ class UserRoles(BaseModel):
     def find_by_user_id(cls, user_id: str) -> "UserRoles":
         user_role = cls.query.filter_by(user_id=user_id).first()
         return user_role
+
+    def save_to_db(self) -> None:
+        db.session.add(self)
+        db.session.commit()

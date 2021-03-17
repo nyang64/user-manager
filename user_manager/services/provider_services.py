@@ -16,8 +16,10 @@ from model.users import Users
 from model.patient import Patient
 from model.providers_roles import ProviderRoles
 from model.provider_role_types import ProviderRoleTypes
+from model.patients_providers import PatientsProviders
 from db import db
 from collections import namedtuple
+from utils.constants import PROVIDER
 import logging
 logger = logging.getLogger()
 logger.setLevel(logging.ERROR)
@@ -28,17 +30,23 @@ class ProviderService(DbRepository):
         self.auth_obj = AuthServices()
         self.user_obj = UserServices()
 
-    def register_provider(self, register, user, facility_id):
-        from utils.constants import PROVIDER
+    def register_provider_service(self, register, user, facility_id, role):
         try:
-            reg_id = self.auth_obj.register_new_user(register[0],
-                                                     register[1])
-            user_id, uuid = self.user_obj.save_user(user[0], user[1],
-                                                    user[2], reg_id)
+            # Save data in the registration table
+            reg_id = self.auth_obj.register_new_user(register[0], register[1])
+
+            # Create and save user.
+            user_id, uuid = self.user_obj.save_user(user[0], user[1], user[2], reg_id)
+
+            # Create and save the user's role.
             self.user_obj.assign_role(user_id, PROVIDER)
-            self.add_provider(user_id, facility_id, type)
-            self.commit_db()
-            return True
+
+            # Create and assign a provider, provider facility and provider role.
+            provider_id = self.add_provider(user_id, facility_id, role)
+
+            # return the id of the provider created.
+            return provider_id
+
         except SQLAlchemyError as error:
             logger.error(str(error))
             raise InternalServerError(str(error))
@@ -46,22 +54,17 @@ class ProviderService(DbRepository):
     def add_provider(self, user_id, facility_id, role_name):
         from model.facilities import Facilities
         exist_facility = Facilities.find_by_id(facility_id)
-
         if not exist_facility:
             raise NotFound('facility id not found')
-
         provider = Providers(
             user_id=user_id,
             facility_id=facility_id
         )
         self.flush_db(provider)
-
         role = ProviderRoleTypes.find_by_name(role_name)
         provider_role = ProviderRoles(provider_role_id=role.id, provider_id=provider.id)
-
         self.flush_db(provider)
         self.flush_db(provider_role)
-
         return provider.id
 
     def report_signed_link(self, report_id):
@@ -86,8 +89,15 @@ class ProviderService(DbRepository):
         return 'updated data', 201
 
     def patient_detail_byid(self, patient_id):
-        base_query = self._base_query()
-        patient_data = base_query.filter(Users.id == patient_id)\
+        base_query = db.session.query(Patient).filter(Patient.id == patient_id)\
+            .join(Users, Users.id == Patient.user_id) \
+            .join(UserRegister, UserRegister.id == Users.id) \
+            .join(UserStatUses, Users.id == UserStatUses.user_id,
+                  isouter=True) \
+            .join(UserStatusType, UserStatUses.status_id ==
+                  UserStatusType.id, isouter=True)
+
+        patient_data = base_query\
             .join(Address, Users.id == Address.user_id, isouter=True)\
             .join(TherapyReport, Patient.id == TherapyReport.patient_id,
                   isouter=True) \
@@ -97,6 +107,7 @@ class ProviderService(DbRepository):
                 Patient.enrolled_date, Patient.emergency_contact_name,
                 Patient.emergency_contact_number, Address.street_address_1,
                 UserStatusType.name).first()
+
         if patient_data is None:
             return {}, []
         reports = db.session.query(TherapyReport, Salvos)\
@@ -109,13 +120,15 @@ class ProviderService(DbRepository):
         print(reports)
         return patient_data, reports
 
-    def patients_list(self, page_number, record_per_page, first_name,
+    def patients_list(self, provider_id, page_number, record_per_page, first_name,
                       last_name, date_of_birth, report_id):
         patient_list = namedtuple("PatientList",
                                   ("id", "email", "first_name",
                                    "last_name", "mobile", "date_of_birth",
                                    "status", "reports"))
-        base_query = self._base_query()
+        # query patientsproviders to find all patients for a provider
+
+        base_query = self._base_query(provider_id)
         base_query = base_query.with_entities(
             Patient.id, Users.id, UserRegister.email, Users.first_name,
             Users.last_name, Users.phone_number, Patient.date_of_birth,
@@ -127,6 +140,7 @@ class ProviderService(DbRepository):
             page_number + 1, record_per_page).items
         lists = []
         for data in query_data:
+
             reports = db.session.query(TherapyReport.id).filter(
                 TherapyReport.patient_id == data[0]).all()
             reports = [report[0] for report in reports]
@@ -134,20 +148,21 @@ class ProviderService(DbRepository):
             lists.append(patient_data._asdict())
         return lists, data_count
 
-    def _base_query(self):
+    def _base_query(self, provider_id):
         '''
         :return := Return the base query for patient list
         '''
-        base_query = db.session.query(Users)\
-            .join(UserRoles, Users.id == UserRoles.user_id)\
-            .join(Roles, Roles.id == UserRoles.role_id)\
-            .filter(Roles.role_name == 'PATIENT')\
-            .join(UserRegister, UserRegister.id == Users.id)\
+        patient_query = db.session.query(Patient).join(
+            PatientsProviders, Patient.id == PatientsProviders.patient_id).filter(
+            PatientsProviders.provider_id == provider_id)
+
+        base_query = patient_query \
+            .join(Users, Users.id == Patient.user_id) \
+            .join(UserRegister, UserRegister.id == Users.id) \
             .join(UserStatUses, Users.id == UserStatUses.user_id,
-                  isouter=True)\
+                  isouter=True) \
             .join(UserStatusType, UserStatUses.status_id ==
-                  UserStatusType.id, isouter=True)\
-            .join(Patient, Users.id == Patient.user_id)
+                  UserStatusType.id, isouter=True)
         return base_query
 
     def _filter_query(self, base_query, first_name, last_name,

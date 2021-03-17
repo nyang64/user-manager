@@ -17,6 +17,7 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
         load_instance = True
 
     id = ma.auto_field(dump_only=True)
+    registration_id = ma.auto_field()
 
 
 class CreateUserSchema(RegisterSchema):

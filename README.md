@@ -29,3 +29,12 @@
 
 1. Create a file called ".env"
   1. See ".env.example" for the required environment variables
+
+## Docker
+
+1. build image (name it something short a sweet with `-t` flag)
+    1. run `docker build -t um .`
+    1. note: be sure that you are in the same directory as your Dockerfile (eg user-manager/user_manager)
+1. run docker image
+   1. run `docker run -p 5000:5000 um`
+   1. "um" below refers to the tag we created in the previous step

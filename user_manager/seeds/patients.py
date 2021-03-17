@@ -41,8 +41,6 @@ def create_patient(patient_details, outpatient_provider, prescribing_provider):
     print_message_details()
 
     return patient.id
-    # else:
-    #     message_details["patient"] += "Patient was not added. "
 
 
 def create_patient_device(patient_id, serial_number):

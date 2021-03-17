@@ -4,7 +4,7 @@ import http
 from services.patient_services import PatientServices
 from utils.validation import validate_request
 from utils.jwt import require_user_token
-from utils.constants import ADMIN, PROVIDER, PATIENT, PATIENT_2_DICTIONARY
+from utils.constants import ADMIN, PROVIDER, PATIENT
 
 from model.patient import Patient
 from model.users import Users
@@ -18,13 +18,12 @@ from model.user_registration import UserRegister
 from schema.patient_schema import PatientSchema
 from schema.patients_devices_schema import PatientsDevicesSchema
 from schema.providers_schema import ProvidersSchema
-from schema.address_schema import AddressSchema
 from schema.user_schema import UserSchema
 from schema.register_schema import RegistrationSchema
 from schema.address_schema import AddressSchema
 from schema.patient_schema import (create_patient_schema,
                                    update_patient_schema,
-                                   assign_device_schema,)
+                                   assign_device_schema)
 
 
 class PatientManager():
@@ -35,20 +34,26 @@ class PatientManager():
     def create_patient(self, decrypt):
         from utils.send_mail import send_registration_email
         request_data = validate_request()
+        outpatient_id = request_data["outpatient_provider"]
+        prescribing_id = request_data["prescribing_provider"]
         register, user, patient = create_patient_schema.load(request_data)
         user_id, user_uuid, patient_id = self.patient_obj.register_patient(
-            register, user, patient)
+            register, user, patient, outpatient_id, prescribing_id)
         if user_id is not None and user_uuid is not None:
-            send_registration_email(user[0], register[0],
-                                    'Welcome to Element Science',
-                                    register[0], register[1])
-        return {'message': 'Patient created',
-                'data': {
-                    'user_uuid': user_uuid,
-                    'user_id': user_id,
-                    'patient_id': patient_id
-                    },
-                'status_code': '201'}, http.client.CREATED
+            send_registration_email(
+                user[0], register[0],
+                'Welcome to Element Science',
+                register[0], register[1]
+            )
+        return {
+                   'message': 'Patient created',
+                   'data': {
+                       'user_uuid': user_uuid,
+                       'user_id': user_id,
+                       'patient_id': patient_id
+                   },
+                   'status_code': '201'
+               }, http.client.CREATED
 
     @require_user_token(ADMIN, PROVIDER)
     def update_patient(self, decrypt):
@@ -86,7 +91,6 @@ class PatientManager():
     def therapy_report_details(self, patient_id):
         # create schemas for formatting the JSON response
         address_schema = AddressSchema()
-        address_details = PATIENT_2_DICTIONARY["address"]
         register_schema = RegistrationSchema()
         patient_schema = PatientSchema()
         address_schema = AddressSchema()
@@ -101,24 +105,21 @@ class PatientManager():
         registration = UserRegister.find_by_id(user.registration_id)
         # patient's current device
         patient_device = PatientsDevices.find_by_patient_id(patient.id)
-        address_details["user_id"] = user.id
-        address = address_schema.load(address_details)
-        address.save_to_db()
 
         # outpatient_provider
         outpatient_role_id = 1
         out_patient_provider = PatientsProviders.find_by_patient_and_role_id(patient.id, outpatient_role_id)
         outpatient_provider = Providers.find_by_id(out_patient_provider.id)
-        outpatient_provider_user = Users.find_by_user_id(outpatient_provider.user_id)
+        outpatient_provider_user = Users.find_by_id(outpatient_provider.user_id)
         outpatient_facility = Facilities.find_by_id(outpatient_provider.facility_id)
         outpatient_address = Address.find_by_id(outpatient_facility.address_id)
         outpatient_registration = UserRegister.find_by_id(outpatient_provider_user.registration_id)
 
         # prescribing provider
-        prescirbing_role_id = 2
-        pre_patient_provider = PatientsProviders.find_by_patient_and_role_id(patient.id, prescirbing_role_id)
+        prescribing_role_id = 2
+        pre_patient_provider = PatientsProviders.find_by_patient_and_role_id(patient.id, prescribing_role_id)
         prescribing_provider = Providers.find_by_id(pre_patient_provider.id)
-        prescribing_provider_user = Users.find_by_user_id(prescribing_provider.user_id)
+        prescribing_provider_user = Users.find_by_id(prescribing_provider.user_id)
         prescribing_facility = Facilities.find_by_id(prescribing_provider.facility_id)
         prescribing_address = Address.find_by_id(prescribing_facility.address_id)
         prescribing_registration = UserRegister.find_by_id(prescribing_provider_user.registration_id)
@@ -127,7 +128,7 @@ class PatientManager():
             "patient": {
                 "patient": patient_schema.dump(patient),
                 "user": user_schema.dump(user),
-                "address": address_schema.dump(address),
+                "address": address_schema.dump(address) if address else "",
                 "registration": register_schema.dump(registration)
             },
             "device": patient_device_schema.dump(patient_device),

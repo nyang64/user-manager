@@ -18,6 +18,10 @@ class ProviderRoles(BaseModel):
     def all(cls) -> "ProviderRoles":
         return cls.query.all()
 
+    @classmethod
+    def find_by_provider_id(cls, _provider_id):
+        return cls.query.filter_by(provider_id=_provider_id).all()
+
     def save_to_db(self) -> None:
         db.session.add(self)
         db.session.commit()

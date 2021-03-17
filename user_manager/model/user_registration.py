@@ -47,9 +47,9 @@ class UserRegister(BaseModel):
             raise InternalServerError(str(error))
 
     @classmethod
-    def delete_user_by_Userid(cls, user_id) -> None:
+    def delete_user_by_user_id(cls, user_id) -> None:
         try:
-            users_data = Users.find_by_user_id(user_id=user_id)
+            users_data = Users.find_by_id(user_id)
             if users_data is not None:
                 user_registration_data = cls.query.filter_by(
                         id=users_data.registration_id
@@ -58,3 +58,7 @@ class UserRegister(BaseModel):
         except SQLAlchemyError as error:
             logger.error(error)
             raise InternalServerError(str(error))
+
+    def save_to_db(self) -> None:
+        db.session.add(self)
+        db.session.commit()

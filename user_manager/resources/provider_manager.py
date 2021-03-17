@@ -1,19 +1,37 @@
 from flask import request, jsonify
-from model.providers import Providers
-from utils.common import (
-    have_keys)
-from utils.jwt import require_user_token
-from schema.patient_schema import (filter_patient_schema, patient_id_schema)
-from utils.constants import ADMIN, PROVIDER
-from services.user_services import UserServices
-from services.provider_services import ProviderService
-from utils.validation import validate_request
-from schema.report_schema import report_id_schema
-from schema.patient_schema import patient_detail_schema
-from schema.report_schema import patient_reports_schema
+from utils.common import have_keys
 import http
 import logging
 
+from utils.jwt import require_user_token
+from utils.constants import ADMIN, PROVIDER
+from utils.validation import validate_request
+
+from model.users import Users
+from model.providers import Providers
+from model.facilities import Facilities
+from model.address import Address
+from model.providers_roles import ProviderRoles
+from model.user_registration import UserRegister
+
+from services.user_services import UserServices
+from services.provider_services import ProviderService
+
+from schema.address_schema import AddressSchema
+from schema.report_schema import report_id_schema
+from schema.patient_schema import (patient_detail_schema, filter_patient_schema, patient_id_schema)
+from schema.report_schema import patient_reports_schema
+from schema.providers_schema import ProvidersSchema
+from schema.providers_roles_schema import ProvidersRolesSchema
+from schema.user_schema import UserSchema
+from schema.register_schema import RegistrationSchema
+
+provider_schema = ProvidersSchema()
+providers_schema = ProvidersSchema(many=True)
+providers_roles_schema = ProvidersRolesSchema(many=True)
+address_schema = AddressSchema()
+register_schema = RegistrationSchema()
+user_schema = UserSchema()
 
 class provider_manager():
     def __init__(self):
@@ -21,22 +39,46 @@ class provider_manager():
         self.provider_obj = ProviderService()
 
     @require_user_token(ADMIN, PROVIDER)
-    def register_provider(self, decrypt):
+    def register_provider(self, device):
         provider_json = request.get_json()
+
         if have_keys(
             provider_json,
             'first_name', 'last_name',
             'facility_id', 'phone_number',
-            'email', 'password'
+            'email', 'password', 'role'
                 ) is False:
             return {"message": "Invalid Request Parameters"}, 400
+
         register = (str(provider_json['email']).lower(),
                     provider_json['password'])
         user = (provider_json['first_name'], provider_json['last_name'],
                 provider_json['phone_number'])
+
         facility_id = provider_json["facility_id"]
-        self.provider_obj.register_provider(register, user, facility_id)
-        return {"message": "Provider Created"}, 201
+        role_name = provider_json["role"]
+        provider_id = self.provider_obj.register_provider_service(register, user, facility_id, role_name)
+
+        provider = Providers.find_by_id(provider_id)
+        facility = Facilities.find_by_id(int(facility_id))
+        address = Address.find_by_id(facility.address_id)
+        provider_roles = ProviderRoles.find_by_provider_id(provider_id)
+        user = Users.find_by_id(provider.user_id)
+        registration = UserRegister.find_by_id(user.registration_id)
+
+        response = {
+            "registration": register_schema.dump(registration),
+            "user": user_schema.dump(user),
+            "provider_role": providers_roles_schema.dump(provider_roles),
+            "facility": {
+                "name": facility.name,
+                "address": address_schema.dump(address),
+                "on_call_phone": facility.on_call_phone
+            }
+        }
+        response.update(provider_schema.dump(provider))
+
+        return response, 201
 
     @require_user_token(ADMIN, PROVIDER)
     def get_provider_by_id(self, decrypt):
@@ -106,9 +148,12 @@ class provider_manager():
                   last_name, date_of_birth, report_id
         :return filtered patient list
         '''
+
+        provider = Providers.find_by_email(token['user_email'])
         request_data = validate_request()
         filter_input = filter_patient_schema.load(request_data)
-        patients_list, total = self.provider_obj.patients_list(*filter_input)
+        patients_list, total = self.provider_obj.patients_list(provider.id, *filter_input)
+
         return {"total": total,
                 "page_number": filter_input[0],
                 "record_per_page": filter_input[1],
@@ -123,6 +168,7 @@ class provider_manager():
         return: patient detail in dict format
         '''
         request_data = request.args
+        provider = Providers.find_by_email(token['user_email'])
         patient_id = patient_id_schema.load(request_data).get('patientID')
         patient_data, reports = self.provider_obj.patient_detail_byid(
             patient_id)

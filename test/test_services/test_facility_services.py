@@ -56,7 +56,7 @@ class TestProviderService:
             provider_schema_object):
 
         with flask_app.app_context():
-            response = provider_object.register_provider(
+            response = provider_object.register_provider_service(
                     provider_schema_object[0],
                     provider_schema_object[1],
                     provider_schema_object[2]
@@ -71,7 +71,7 @@ class TestProviderService:
 
         with flask_app.app_context():
             with pytest.raises(Exception) as e:
-                response = provider_object.register_provider(
+                response = provider_object.register_provider_service(
                         provider_schema_object[0],
                         provider_schema_object[1],
                         provider_schema_object[2]

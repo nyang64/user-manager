@@ -6,7 +6,7 @@ import pytest
 import datetime
 
 
-class TestClass:
+class TestCommonUtils:
     def test_is_json_none_data(self):
         with pytest.raises(Exception) as e:
             assert is_json(None)

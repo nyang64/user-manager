@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 import os
 from config import read_environ_value
 
+
 class UserOTPModel(BaseModel):
     __tablename__ = "user_otps"
     __table_args__ = ({"schema": "ES"})

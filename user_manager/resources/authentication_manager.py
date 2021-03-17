@@ -10,15 +10,19 @@ from model.user_registration import UserRegister
 from model.users import Users
 from model.user_otp import UserOTPModel
 from services.auth_services import AuthServices
-# Do not remove used at time of migration
-from model.facilities import Facilities
 from datetime import datetime, timedelta
 import os
 from config import read_environ_value
+import logging
+
+# Do not remove used at time of migration
+from model.facilities import Facilities
 
 
 class AuthOperation():
     def __init__(self):
+        self.logger = logging.getLogger()
+        self.logger.setLevel(logging.ERROR)
         self.auth_obj = AuthServices()
 
     def login_user(self):
@@ -38,7 +42,8 @@ class AuthOperation():
         user_json = request.get_json()
         try:
             newpassword = user_json["newpassword"]
-        except Exception:
+        except Exception as ex:
+            self.logger.error(ex)
             raise InternalServerError("Invalid Request Parameters")
         if 'user_email' not in decrypt:
             return {"Message": "Unauthorized Access"}, 401

@@ -2,7 +2,7 @@ from utils.validation import validate_number, get_param, validate_request
 import pytest
 
 
-class TestClass:
+class TestValidations:
     def test_validate_number_none(self):
         with pytest.raises(Exception) as e:
             assert validate_number(None)

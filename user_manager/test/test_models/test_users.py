@@ -21,7 +21,7 @@ def flask_app():
     yield app
 
 
-class TestClass:
+class TestUsersModel:
     def test_user_get_by_id_none(self, flask_app):
         with flask_app.app_context():
             with pytest.raises(Exception) as e:

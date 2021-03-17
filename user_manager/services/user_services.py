@@ -78,7 +78,7 @@ class UserServices(DbRepository):
                 raise SQLAlchemyError('Roles not updated')
         except SQLAlchemyError as error:
             raise InternalServerError(str(error))
-        
+
     def get_detail_by_email(self, email):
         ''' Get the detail of logged in user by email id'''
         from model.user_registration import UserRegister

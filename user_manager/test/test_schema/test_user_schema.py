@@ -2,7 +2,7 @@ import pytest
 from schema.user_schema import must_not_blank
 
 
-class TestClass:
+class TestUserSchema:
 
     def test_report_schema_mustnotblank(self):
         with pytest.raises(Exception) as e:

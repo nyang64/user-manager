@@ -1,6 +1,6 @@
 from schema.user_schema import CreateUserSchema
 from schema.base_schema import validate_number, BaseSchema
-from model.patients_devices import PatientsDevices 
+from model.patients_devices import PatientsDevices
 from marshmallow import fields, ValidationError, post_load
 from ma import ma
 
@@ -37,7 +37,7 @@ class CreatePatientSchema(CreateUserSchema):
         register, user = super().make_post_load_object(data)
         emergency_contact_name = data.get('emergency_contact_name')
         emergency_contact_number = data.get('emergency_contact_number')
-        date_of_birth = data.get('date_of_birth')  
+        date_of_birth = data.get('date_of_birth')
         patient = (emergency_contact_name,
                    emergency_contact_number, date_of_birth)
         return register, user, patient
@@ -54,7 +54,7 @@ class UpdatePatientSchema(BaseSchema):
                                           validate=validate_number)
     date_of_birth = fields.Str(required=True,
                                validate=must_not_blank)
-    
+
     @post_load
     def make_post_dump_object(self, data, **kwargs):
         emergency_contact_name = data.get('emergency_contact_name')
@@ -107,7 +107,7 @@ class FilterPatientSchema(BaseSchema):
     last_name = fields.Str(load_only=True)
     date_of_birth = fields.Str(load_only=True)
     report_id = fields.Int(load_only=True)
-    
+
     @post_load
     def post_data(self, data, **kwargs):
         first_name = data.get('first_name', None)

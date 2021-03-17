@@ -16,7 +16,7 @@ class CreateUserSchema(RegisterSchema):
                            validate=must_not_blank)
     phone_number = fields.Str(required=True,
                               validate=validate_number)
-    
+
     @post_load
     def make_post_load_object(self, data, **kwargs):
         register = super().make_post_load_object(data)
@@ -37,7 +37,7 @@ class UpdateUserSchema(BaseSchema):
                            validate=must_not_blank)
     phone_number = fields.Str(required=True,
                               validate=validate_number)
-    
+
     @post_load
     def post_load_object(self, data, **kwargs):
         first_name = data.get('first_name')

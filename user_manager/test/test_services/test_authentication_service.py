@@ -54,7 +54,7 @@ def otp_existing_object():
     yield otp_mdl
 
 
-class TestClass:
+class TestAuthenticationService:
     # Test Cases For User_login Start
 
     def test_User_login_with_unregisterd_user(

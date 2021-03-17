@@ -21,7 +21,7 @@ def flask_app():
     yield app
 
 
-class TestClass:
+class TestUserOtpModel:
     def test_user_otp_schema(self, flask_app):
         with flask_app.app_context():
             UserOTPModel.matchOTP(None, None)

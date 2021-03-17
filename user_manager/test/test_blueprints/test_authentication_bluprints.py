@@ -54,7 +54,7 @@ def flask_app():
     yield app
 
 
-class TestClass:
+class TestAuthenticationBluePrint:
     # Test Cases For User_login Start
     def test_User_login_with_invalid_data(
             self, flask_app, mocker: MockerFixture):
@@ -143,4 +143,3 @@ class TestClass:
                       password='12345678'
                 ), follow_redirects=True)
                 assert resp.status_code == 404
-

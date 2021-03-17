@@ -3,7 +3,7 @@ from schema.register_schema import (
     RegisterSchema, must_not_blank, register_schema)
 
 
-class TestClass:
+class TestRegisterSchema:
     def test_register_schema_with_none(self):
         with pytest.raises(Exception) as e:
             create_provider = RegisterSchema()

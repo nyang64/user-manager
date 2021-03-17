@@ -46,7 +46,7 @@ def provider_schema_object():
     yield register, user, provider
 
 
-class TestClass:
+class TestProviderService:
     # Test Cases For Provider Register Start
 
     def test_provider_register_with_valid_data(

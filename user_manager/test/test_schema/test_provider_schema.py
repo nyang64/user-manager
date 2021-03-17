@@ -3,7 +3,7 @@ from schema.provider_schema import (
     CreateProviderSchema, UpdateProviderSchema, must_not_blank)
 
 
-class TestClass:
+class TestProviderSchema:
     def test_create_provider_schema_with_none(self):
         with pytest.raises(Exception) as e:
             create_provider = CreateProviderSchema()

@@ -3,7 +3,7 @@ from schema.patient_schema import (
     PatientDetailSchema, must_not_blank, validate_device_serial_number)
 
 
-class TestClass:
+class TestPatientSchema:
     def test_register_schema_with_none(self):
         with pytest.raises(Exception) as e:
             create_provider = PatientDetailSchema()

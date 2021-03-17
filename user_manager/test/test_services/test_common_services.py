@@ -27,7 +27,7 @@ def commpoRepo():
     yield comm_repo
 
 
-class TestClass:
+class TestCommonService:
     def test_check_patient_exist(self, flask_app, commpoRepo):
         with flask_app.app_context():
             with pytest.raises(Exception) as e:

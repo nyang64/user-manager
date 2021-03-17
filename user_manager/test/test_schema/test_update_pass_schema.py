@@ -2,7 +2,7 @@ import pytest
 from schema.update_password_schema import UserUpdateSchema
 
 
-class TestClass:
+class TestUpdatePasswordSchema:
 
     def test_update_password_schema_mustnotblank(self):
         with pytest.raises(Exception) as e:

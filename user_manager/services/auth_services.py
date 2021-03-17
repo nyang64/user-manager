@@ -105,8 +105,7 @@ class AuthServices(DbRepository):
         self.update_db(user_data)
         UserOTPModel.deleteAll_OTP(user_id=user_data.id)
         return {"message": "Password Updated"}, 200
-    
+
     def update_otp_data(self, otp_data):
         self.update_db(otp_data)
         return 'OTP Matched'
-

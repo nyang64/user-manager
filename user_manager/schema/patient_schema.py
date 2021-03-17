@@ -3,6 +3,10 @@ from schema.base_schema import validate_number, BaseSchema
 from model.patients_devices import PatientsDevices
 from marshmallow import fields, ValidationError, post_load
 from ma import ma
+import logging
+logger = logging.getLogger()
+logger.setLevel(logging.ERROR)
+
 
 ENAME_MISSING = "emergenct_contact_name parameter is missing"
 ENUMBER_MISSING = "emergenct_contact_number parameter is missing"
@@ -117,7 +121,8 @@ class FilterPatientSchema(BaseSchema):
             page_number = int(data.get('page_number', 0))
             record_per_page = int(data.get('record_per_page', 10))
             report_id = int(data.get('report_id', 0))
-        except ValueError:
+        except ValueError as e:
+            logger.error(e)
             page_number = 0
             record_per_page = 10
             report_id = 0

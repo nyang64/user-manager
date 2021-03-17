@@ -16,6 +16,9 @@ from model.users import Users
 from model.patient import Patient
 from db import db
 from collections import namedtuple
+import logging
+logger = logging.getLogger()
+logger.setLevel(logging.ERROR)
 
 
 class ProviderService(DbRepository):
@@ -35,6 +38,7 @@ class ProviderService(DbRepository):
             self.commit_db()
             return True
         except SQLAlchemyError as error:
+            logger.error(str(error))
             raise InternalServerError(str(error))
 
     def add_provider(self, user_id, facility_id):

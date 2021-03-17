@@ -3,6 +3,9 @@ from werkzeug.exceptions import InternalServerError, NotFound, Conflict
 from model.patient import Patient
 from model.user_registration import UserRegister
 from db import db
+import logging
+logger = logging.getLogger()
+logger.setLevel(logging.ERROR)
 
 
 class CommonRepo():
@@ -17,6 +20,7 @@ class CommonRepo():
                 raise NotFound('Patient does not exist')
             return exist_patient
         except SQLAlchemyError as error:
+            logger.error(error)
             raise InternalServerError(str(error))
 
     def is_email_registered(self, email):
@@ -26,4 +30,5 @@ class CommonRepo():
                 raise Conflict(f"email '{email}' already exist")
             return exist_registration
         except SQLAlchemyError as error:
+            logger.error(error)
             raise InternalServerError(str(error))

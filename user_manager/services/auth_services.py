@@ -8,6 +8,9 @@ from utils.common import checkPass, auth_response_model
 from utils.jwt import encoded_Token
 from model.user_otp import UserOTPModel
 from services.repository.db_repositories import DbRepository
+import logging
+logger = logging.getLogger()
+logger.setLevel(logging.ERROR)
 
 
 class AuthServices(DbRepository):
@@ -26,6 +29,7 @@ class AuthServices(DbRepository):
             self.flush_db(user_data)
             return user_data.id
         except SQLAlchemyError as error:
+            logger.error(error)
             raise InternalServerError(str(error))
 
     def delete_regtration(self, reg_id):

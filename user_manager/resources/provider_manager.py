@@ -7,7 +7,6 @@ from utils.common import (
     have_keys,
     encPass)
 from utils.jwt import require_user_token
-from werkzeug.exceptions import Conflict
 from schema.patient_schema import (filter_patient_schema, patient_id_schema)
 from utils.constants import ADMIN, PROVIDER
 from services.user_services import UserServices
@@ -17,6 +16,7 @@ from schema.report_schema import report_id_schema
 from schema.patient_schema import patient_detail_schema
 from schema.report_schema import patient_reports_schema
 import http
+import logging
 
 
 class provider_manager():
@@ -118,7 +118,7 @@ class provider_manager():
                 "record_per_page": filter_input[1],
                 "data": patients_list,
                 "status_code": http.client.OK}, http.client.OK
-        
+
     @require_user_token(PROVIDER)
     def get_patient_detail_byid(self, token):
         '''
@@ -159,3 +159,18 @@ class provider_manager():
         msg, code = self.provider_obj.update_uploaded_ts(report_id)
         return {"message": msg,
                 "status_code": code}, code
+
+    def add_facility(self):
+        ''' Add address, Facility and assign address id to facility table '''
+        from schema.facility_schema import add_facility_schema
+        from services.facility_services import FacilityService
+        logging.info('Request Received to add facility')
+        request_data = validate_request()
+        address, facility_name = add_facility_schema.load(request_data)
+        logging.info('Facility Name: {}'.format(facility_name))
+        logging.info('Address Info: {}'.format(address))
+        facility_obj = FacilityService()
+        aid, fid = facility_obj.register_facility(address, facility_name)
+        return {'address_id': aid,
+                'facility_id': fid,
+                'status_code': http.client.CREATED}, http.client.CREATED

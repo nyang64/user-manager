@@ -29,3 +29,4 @@ class PatientBluePrint(Blueprint):
                           'patient device list',
                           self.patient_obj.patient_device_list,
                           methods=['GET'])
+

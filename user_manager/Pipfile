@@ -1,0 +1,23 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+flask-marshmallow = "==0.14.0"
+marshmallow-sqlalchemy = "==0.24.1"
+psycopg2-binary = "==2.8.6"
+boto3 = "==1.16.61"
+requests = "*"
+python-dotenv = "*"
+Flask = "==1.1.2"
+Flask-SQLAlchemy = "==2.4.4"
+Flask-Migrate = "==2.5.3"
+PyJWT = "==2.0.1"
+Flask-Bcrypt = "==0.7.1"
+Flask-Seeder = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.8"

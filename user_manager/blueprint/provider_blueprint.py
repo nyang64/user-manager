@@ -45,3 +45,8 @@ class ProviderBlueprint(Blueprint):
                           'Update uploaded ts',
                           self.provider_Obj.update_uploaded_ts,
                           methods=['POST'])
+        '''------------------------ Facility Endpoint -------------------------'''
+        self.add_url_rule('/add/facility',
+                          'Add Facility',
+                          self.provider_Obj.add_facility,
+                          methods=['POST'])

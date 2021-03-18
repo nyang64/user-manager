@@ -128,7 +128,7 @@ class PatientServices(DbRepository):
 
     def assign_device_to_patient(self, patient_device):
         logging.info('Assign to device patient started')
-        exist_patient = Patient.check_patient_exist(patient_device.patient_id)
+        exist_patient = Patient.find_by_id(patient_device.patient_id)
         if bool(exist_patient) is False:
             logging.warning('Patient Record Not Found')
             raise NotFound('patient record not found')
@@ -192,7 +192,7 @@ class PatientServices(DbRepository):
 
     def update_patient_data(self, patient_id, emer_contact_name,
                             emer_contact_no, dob):
-        exist_patient = Patient.check_patient_exist(patient_id)
+        exist_patient = Patient.find_by_id(patient_id)
         if bool(exist_patient) is False:
             raise NotFound('patient record not found')
         exist_patient.emergency_contact_name = emer_contact_name
@@ -201,7 +201,10 @@ class PatientServices(DbRepository):
         self.update_db(exist_patient)
 
     def delete_patient_data(self, patient_id):
-        exist_patient = Patient.check_patient_exist(patient_id)
+        exist_patient = Patient.find_by_id(patient_id)
         if bool(exist_patient) is False:
             raise NotFound('patient record not found')
         self.user_obj.delete_user_byid(exist_patient.user_id)
+
+    def find_by_id(self, patient_id):
+        return Patient.find_by_id(patient_id)

@@ -51,6 +51,7 @@ class ProviderService(DbRepository):
             facility_id=facility_id
             )
         self.flush_db(provider)
+        return provider.id
 
     def report_signed_link(self, report_id):
         from utils.common import generate_signed_url

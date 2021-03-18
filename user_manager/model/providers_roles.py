@@ -14,3 +14,10 @@ class ProviderRoles(BaseModel):
                             Integer,
                             ForeignKey('ES.providers.id',
                                        ondelete="CASCADE"))
+    @classmethod
+    def all(cls) -> "ProviderRoles":
+        return cls.query.all()
+
+    def save_to_db(self) -> None:
+        db.session.add(self)
+        db.session.commit()

@@ -16,8 +16,12 @@ class Providers(BaseModel):
     )
 
     @classmethod
-    def find_by_id(cls, id: str) -> "Providers":
-        return cls.query.filter_by(id=id).first()
+    def all(cls) -> "Providers":
+        return cls.query.all()
+
+    @classmethod
+    def find_by_id(cls, _id: str) -> "Providers":
+        return cls.query.filter_by(id=_id).first()
 
     @classmethod
     def find_providers(cls) -> "Providers":
@@ -26,3 +30,7 @@ class Providers(BaseModel):
     @classmethod
     def find_all(cls, id: str) -> "Providers":
         return cls.query.all()
+
+    def save_to_db(self) -> None:
+        db.session.add(self)
+        db.session.commit()

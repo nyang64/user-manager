@@ -1,6 +1,7 @@
 from db import db
 from sqlalchemy import String, UniqueConstraint
 from model.base_model import BaseModel
+import pdb
 
 
 class Roles(BaseModel):
@@ -15,5 +16,13 @@ class Roles(BaseModel):
 
     @classmethod
     def get_roleid(cls, role_name: str):
-        return db.session.query(cls.id).filter_by(
-            role_name=role_name).scalar()
+        role_id = cls.query.filter_by(role_name=role_name).first().id
+        return role_id
+
+    @classmethod
+    def all(cls):
+        return cls.query.all()
+
+    def save_to_db(self) -> None:
+        db.session.add(self)
+        db.session.commit()

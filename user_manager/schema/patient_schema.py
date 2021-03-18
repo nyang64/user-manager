@@ -1,6 +1,7 @@
 from schema.user_schema import CreateUserSchema
 from schema.base_schema import validate_number, BaseSchema
 from model.patients_devices import PatientsDevices
+from model.patient import Patient
 from marshmallow import fields, ValidationError, post_load
 from ma import ma
 import logging
@@ -26,6 +27,15 @@ def validate_device_serial_number(data):
     if len(data) != 8:
         DEVICE_ERROR = 'device_serial_number should be of 8 digit only'
         raise ValidationError(DEVICE_ERROR)
+
+
+class PatientSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Patient
+        load_instance = True
+
+    id = ma.auto_field(dump_only=True)
+    provider_id = ma.auto_field()
 
 
 class CreatePatientSchema(CreateUserSchema):

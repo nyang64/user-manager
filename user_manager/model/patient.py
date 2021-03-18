@@ -28,6 +28,6 @@ class Patient(BaseModel):
                             backref=backref("users_patient", uselist=False))
 
     @classmethod
-    def check_patient_exist(cls, patient_id):
+    def find_by_id(cls, patient_id):
         return db.session.query(cls).filter_by(
             id=patient_id).first()

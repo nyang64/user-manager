@@ -18,3 +18,15 @@ class PatientsProviders(BaseModel):
                             Integer,
                             ForeignKey('ES.providers.id',
                                        ondelete="CASCADE"))
+
+    @classmethod
+    def all(cls) -> "PatientsProviders":
+        return cls.query.all()
+
+    @classmethod
+    def find_by_id(cls, _id) -> "PatientsProviders":
+        return cls.query.filter_by(id=_id).first()
+
+    def save_to_db(self) -> None:
+        db.session.add(self)
+        db.session.commit()

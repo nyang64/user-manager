@@ -21,3 +21,10 @@ class PatientsDevices(BaseModel):
     def check_device_assigned(cls, device_serial_no):
         return db.session.query(cls.id).filter(
             cls.device_serial_number == device_serial_no).first()
+
+    def all(cls) -> "PatientsDevices":
+        return cls.query.all()
+
+    def save_to_db(self) -> None:
+        db.session.add(self)
+        db.session.commit()

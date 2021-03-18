@@ -8,12 +8,14 @@ from blueprint.user_blueprint import UserBluePrint
 from blueprint.patient_blueprint import PatientBluePrint
 from blueprint.provider_blueprint import ProviderBlueprint
 from application import Appplication
+import pdb
 
 
 app = Appplication(__name__, '/v1')
 app.config["SQLALCHEMY_DATABASE_URI"] = get_connection_url()
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 app.config["E_EXCEPTIONS"] = True
+app.debug = True
 
 migrate = Migrate()
 db.init_app(app)

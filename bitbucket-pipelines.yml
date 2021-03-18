@@ -46,18 +46,18 @@ pipelines:
           <<: *Pull-SC-Push-Img-Create-SLS-Deploy-on-ECS
           name: Deploy to Development environment
           deployment: dev
-    prod-deployment:
-      - step:
-          <<: *Pull-SC-Push-Img-Create-SLS-Deploy-on-ECS
-          name: Deploy to Production environment
-          deployment: prod
     qa-deployment:
       - step:
           <<: *Pull-SC-Push-Img-Create-SLS-Deploy-on-ECS
           name: Deploy to QA environment
           deployment: qa
-    test-deployment:
+    cohort-deployment:
       - step:
           <<: *Pull-SC-Push-Img-Create-SLS-Deploy-on-ECS
-          name: Deploy to test environment
-          deployment: test
+          name: Deploy to Cohort environment
+          deployment: cohort
+    prod-deployment:
+      - step:
+          <<: *Pull-SC-Push-Img-Create-SLS-Deploy-on-ECS
+          name: Deploy to Production environment
+          deployment: prod

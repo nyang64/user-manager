@@ -2,6 +2,9 @@ from werkzeug.exceptions import InternalServerError
 from sqlalchemy import exc
 from model.base_model import BaseModel
 from db import db
+import logging
+logger = logging.getLogger()
+logger.setLevel(logging.ERROR)
 
 
 class DbRepository:
@@ -15,6 +18,7 @@ class DbRepository:
             db.session.add(obj)
             db.session.commit()
         except exc.SQLAlchemyError as error:
+            logger.error(str(error))
             db.session.rollback()
             raise InternalServerError(str(error))
 
@@ -25,6 +29,7 @@ class DbRepository:
             db.session.add(obj)
             db.session.flush()
         except exc.SQLAlchemyError as error:
+            logger.error(str(error))
             raise InternalServerError(str(error))
 
     def commit_db(self):
@@ -33,6 +38,7 @@ class DbRepository:
         try:
             db.session.commit()
         except exc.SQLAlchemyError as error:
+            logger.error(str(error))
             db.session.rollback()
             raise InternalServerError(str(error))
 
@@ -42,6 +48,7 @@ class DbRepository:
         try:
             db.session.commit()
         except exc.SQLAlchemyError as error:
+            logger.error(str(error))
             db.session.rollback()
             raise InternalServerError(str(error))
 
@@ -52,5 +59,6 @@ class DbRepository:
             db.session.delete(obj)
             db.session.commit()
         except exc.SQLAlchemyError as error:
+            logger.error(str(error))
             db.session.rollback()
             raise InternalServerError(str(error))

@@ -35,35 +35,44 @@ class Appplication(Flask):
                                     self.__handle_internal_server_error)
 
     def __handle_unauthorized(self, error: HTTPException):
-        error_response = self.generate_response(error, f"Unauthorized: '{error.description}'.")
+        error_response = self.generate_response(
+            error, f"Unauthorized: '{error.description}'.")
         return jsonify(error_response), error.code
 
     def __handle_forbidden(self, error: HTTPException):
-        error_response = self.generate_response(error, f"Forbidden: '{error.description}'.")
+        error_response = self.generate_response(
+            error, f"Forbidden: '{error.description}'.")
         return jsonify(error_response), error.code
 
     def __handle_conflict(self, error: HTTPException):
-        error_response = self.generate_response(error, f"request has error: '{error.description}'.")
+        error_response = self.generate_response(
+            error, f"request has error: '{error.description}'.")
         return jsonify(error_response), error.code
 
     def __handle_method_not_allowed(self, error: HTTPException):
-        error_response = self.generate_response(error, f"request has error: '{error.description}'.")
+        error_response = self.generate_response(
+            error, f"request has error: '{error.description}'.")
         return jsonify(error_response), error.code
 
     def __handle_internal_server_error(self, error: HTTPException):
-        error_response = self.generate_response(error, f"request has error: '{error.description}'.")
+        error_response = self.generate_response(
+            error, f"request has error: '{error.description}'.")
         return jsonify(error_response), error.code
 
     def __handle_not_found(self, error: HTTPException):
-        error_response = self.generate_response(error, f"request has error: '{error.description}'.")
+        error_response = self.generate_response(
+            error, f"request has error: '{error.description}'.")
         return jsonify(error_response), error.code
 
     def __handle_bad_request(self, error: HTTPException):
-        error_response = self.generate_response(error, f"request has error: '{error.description}'.")
+        error_response = self.generate_response(
+            error, f"request has error: '{error.description}'.")
         return jsonify(error_response), error.code
 
     @staticmethod
-    def generate_response(error: HTTPException, detail: str)-> Dict:
+    def generate_response(
+            error: HTTPException, detail: str
+            ) -> Dict:
         return {
             'errors': [{
                 'status': str(error.code),
@@ -72,10 +81,12 @@ class Appplication(Flask):
             }]
         }
 
-    def __add_cors_request(self, response: Response)-> Response:
+    def __add_cors_request(self, response: Response) -> Response:
         response.headers.add('Access-Control-Allow-Origin', "*")
-        response.headers.add("Access-Control-Allow-Headers", "Content-Type, Authorization")
-        response.headers.add("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
+        response.headers.add(
+            "Access-Control-Allow-Headers", "Content-Type, Authorization")
+        response.headers.add(
+            "Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
         return response
 
     def register_blueprint(self, blueprint, **options):

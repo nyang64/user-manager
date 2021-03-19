@@ -1,11 +1,8 @@
-# from flask_restful import Resource
 from flask import request, jsonify
 from model.user_registration import UserRegister
-from model.users import Users
 from model.providers import Providers
 from utils.common import (
-    have_keys,
-    encPass)
+    have_keys)
 from utils.jwt import require_user_token
 from schema.patient_schema import (filter_patient_schema, patient_id_schema)
 from utils.constants import ADMIN, PROVIDER
@@ -102,7 +99,7 @@ class provider_manager():
             provider_json["phone_number"]
         )
         return {"message": "Provider Updated"}, 200
-    
+
     @require_user_token(PROVIDER)
     def get_patient_list(self, token):
         '''

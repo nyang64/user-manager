@@ -10,6 +10,10 @@ from services.repository.db_repositories import DbRepository
 from services.user_services import UserServices
 from services.auth_services import AuthServices
 from utils.constants import ADMIN
+import logging
+logger = logging.getLogger()
+logger.setLevel(logging.ERROR)
+
 
 db_obj = DbRepository()
 auth_obj = AuthServices()
@@ -72,6 +76,7 @@ def save_facility(address_id, name):
         db_obj.save_db(facility_data)
         return facility_data.id
     except SQLAlchemyError as error:
+        logger.error(error)
         db.session.rollback()
         raise InternalServerError(str(error))
 
@@ -91,6 +96,7 @@ def save_address(user_id, street_address_1,
         db_obj.save_db(address_data)
         return address_data.id
     except SQLAlchemyError as error:
+        logger.error(error)
         db.session.rollback()
         raise InternalServerError(str(error))
 
@@ -119,7 +125,9 @@ def insert_ref(provider_json):
         user_obj.assign_role(user_id, ADMIN)
         db_obj.commit_db()
     except SQLAlchemyError as error:
+        logger.error(error)
         raise InternalServerError('Error', str(error))
     except (AttributeError, NameError, TypeError) as e:
+        logger.error(e)
         raise InternalServerError('Errors', str(e))
     return user_id

@@ -6,6 +6,7 @@ from flask_migrate import Migrate
 from db import db
 from ma import ma
 
+
 @pytest.fixture
 def flask_app():
     app = Appplication(__name__, '/v1')
@@ -20,7 +21,7 @@ def flask_app():
     yield app
 
 
-class TestClass:
+class TestTestUserRegistrationModel:
     def test_base_schema_with_not_found(self, flask_app):
         with flask_app.app_context():
             UserRegister.delete_user_by_Userid(200000)

@@ -9,4 +9,4 @@ class PatientsDevicesSchema(ma.SQLAlchemyAutoSchema):
 
     id = ma.auto_field(dump_only=True)
     patient_id = ma.auto_field()
-    device_id = ma.auto_field()
+    device_serial_number = ma.auto_field()

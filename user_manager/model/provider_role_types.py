@@ -10,7 +10,7 @@ class ProviderRoleTypes(BaseModel):
 
     @classmethod
     def find_by_name(cls, _name) -> "ProviderRoleTypes":
-        return cls.query.filter_by(id=_name).first()
+        return cls.query.filter_by(name=_name).first()
 
     @classmethod
     def all(cls) -> "ProviderRoleTypes":

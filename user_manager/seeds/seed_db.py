@@ -2,7 +2,7 @@ from flask_seeder import Seeder
 from seeds import roles
 from seeds import patients
 from seeds import providers
-
+from model.providers import Providers
 import os
 
 class SeedDemo(Seeder):

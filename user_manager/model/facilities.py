@@ -13,5 +13,5 @@ class Facilities(BaseModel):
     name = db.Column('name', String(100))
 
     @classmethod
-    def find_by_id(cls, id) -> "Facilities":
-        return cls.query.filter_by(id=id).first()
+    def find_by_id(cls, _id) -> "Facilities":
+        return cls.query.filter_by(id=_id).first()

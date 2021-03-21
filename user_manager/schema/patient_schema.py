@@ -36,6 +36,7 @@ class PatientSchema(ma.SQLAlchemyAutoSchema):
 
     id = ma.auto_field(dump_only=True)
     provider_id = ma.auto_field()
+    user_id = ma.auto_field()
 
 
 class CreatePatientSchema(CreateUserSchema):

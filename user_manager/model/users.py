@@ -36,6 +36,10 @@ class Users(BaseModel):
         return cls.query.filter_by(id=user_id).first()
 
     @classmethod
+    def find_by_patient_id(cls, patient_id: str) -> "Users":
+        return cls.query.filter_by(id=patient_id).first()
+
+    @classmethod
     def check_user_exist(cls, user_id):
         return db.session.query(cls).filter_by(
             id=user_id).first()

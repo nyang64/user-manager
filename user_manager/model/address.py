@@ -18,5 +18,13 @@ class Address(BaseModel):
     postal_code = db.Column('postal_code', String(10))
 
     @classmethod
-    def find_by_id(cls, id: str) -> "Address":
-        return cls.query.filter_by(id=id).first()
+    def find_by_id(cls, _id: str) -> "Address":
+        return cls.query.filter_by(id=_id).first()
+
+    @classmethod
+    def find_by_user_id(cls, _user_id) -> "Address":
+        return cls.query.filter_by(id=_user_id).first()
+
+    def save_to_db(self) -> None:
+        db.session.add(self)
+        db.session.commit()

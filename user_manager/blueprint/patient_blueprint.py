@@ -29,4 +29,7 @@ class PatientBluePrint(Blueprint):
                           'patient device list',
                           self.patient_obj.patient_device_list,
                           methods=['GET'])
-
+        self.add_url_rule('/patients/<patient_id>/therapy_report_details',
+                          'patient therapy report details',
+                          self.patient_obj.therapy_report_details,
+                          methods=['GET'])

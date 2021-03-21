@@ -1,11 +1,22 @@
 from schema.base_schema import BaseSchema
 from marshmallow import fields, validate, ValidationError, post_load
+from model.user_registration import UserRegister
+from ma import ma
 
 
 def must_not_blank(data):
     if not data:
         NAME_NONE = "parameter is missing"
         raise ValidationError(NAME_NONE)
+
+
+class RegistrationSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = UserRegister
+        load_instance = True
+
+    id = ma.auto_field(dump_only=True)
+    password = ma.auto_field(load_only=True)
 
 
 class RegisterSchema(BaseSchema):

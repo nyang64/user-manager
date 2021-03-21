@@ -14,6 +14,8 @@ from model.salvos import Salvos
 from model.user_registration import UserRegister
 from model.users import Users
 from model.patient import Patient
+from model.providers_roles import ProviderRoles
+from model.provider_role_types import ProviderRoleTypes
 from db import db
 from collections import namedtuple
 import logging
@@ -34,23 +36,32 @@ class ProviderService(DbRepository):
             user_id, uuid = self.user_obj.save_user(user[0], user[1],
                                                     user[2], reg_id)
             self.user_obj.assign_role(user_id, PROVIDER)
-            self.add_provider(user_id, facility_id)
+            self.add_provider(user_id, facility_id, type)
             self.commit_db()
             return True
         except SQLAlchemyError as error:
             logger.error(str(error))
             raise InternalServerError(str(error))
 
-    def add_provider(self, user_id, facility_id):
+    def add_provider(self, user_id, facility_id, role_name):
         from model.facilities import Facilities
         exist_facility = Facilities.find_by_id(facility_id)
-        if bool(exist_facility) is False:
+
+        if not exist_facility:
             raise NotFound('facility id not found')
+
         provider = Providers(
             user_id=user_id,
             facility_id=facility_id
-            )
+        )
         self.flush_db(provider)
+
+        role = ProviderRoleTypes.find_by_name(role_name)
+        provider_role = ProviderRoles(provider_role_id=role.id, provider_id=provider.id)
+
+        self.flush_db(provider)
+        self.flush_db(provider_role)
+
         return provider.id
 
     def report_signed_link(self, report_id):

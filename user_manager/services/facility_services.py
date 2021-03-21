@@ -28,7 +28,6 @@ class FacilityService(DbRepository):
         try:
             addr = Address(street_address_1=address.get('street_address_1'),
                            street_address_2=address.get('street_address_2'),
-                           full_address=address.get('full_address'),
                            city=address.get('city'),
                            state=address.get('state'),
                            country=address.get('country'),
@@ -43,12 +42,13 @@ class FacilityService(DbRepository):
             logging.error('Error Occured {}'.format(str(error)))
             raise InternalServerError(str(error))
 
-    def save_facility(self, facility_name, address_id):
+    def save_facility(self, facility_name, address_id, on_call_phone):
         ''' Flush the Facility transcation'''
         logging.info('Binding Facility Data')
         try:
             facilities = Facilities(address_id=address_id,
-                                    name=facility_name)
+                                    name=facility_name,
+                                    on_call_phone=on_call_phone)
             self.flush_db(facilities)
             logging.info('Flushed the Facility data')
             if facilities.id is None:

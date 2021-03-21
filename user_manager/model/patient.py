@@ -8,9 +8,9 @@ class Patient(BaseModel):
     __tablename__ = "patients"
     __table_args__ = ({"schema": "ES"})
     user_id = db.Column('user_id', Integer,
-                        ForeignKey('ES.users.id', ondelete="CASCADE"))
+                        ForeignKey('ES.users.id', ondelete="CASCADE"), nullable=False)
     provider_id = db.Column('provider_id', Integer,
-                            ForeignKey('ES.providers.id', ondelete="CASCADE"))
+                            ForeignKey('ES.providers.id', ondelete="CASCADE"), nullable=False)
     emergency_contact_name = db.Column('emergency_contact_name',
                                        String(30),
                                        nullable=False)
@@ -20,10 +20,11 @@ class Patient(BaseModel):
     gender = db.Column('gender',
                        String(12))
     date_of_birth = db.Column('date_of_birth',
-                              String(30))
+                              String(30), nullable=False)
     enrolled_date = db.Column('enrolled_at',
                               DateTime,
                               default=db.func.now())
+    gender = db.Column('gender', String(30), nullable=False)
     users = db.relationship("Users",
                             backref=backref("users_patient", uselist=False))
 
@@ -31,3 +32,7 @@ class Patient(BaseModel):
     def find_by_id(cls, patient_id):
         return db.session.query(cls).filter_by(
             id=patient_id).first()
+
+    def save_to_db(self) -> None:
+        db.session.add(self)
+        db.session.commit()

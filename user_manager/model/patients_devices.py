@@ -25,6 +25,10 @@ class PatientsDevices(BaseModel):
     def all(cls) -> "PatientsDevices":
         return cls.query.all()
 
+    @classmethod
+    def find_by_patient_id(cls, _patient_id) -> "PatientsDevices":
+        return cls.query.filter_by(id=_patient_id).first()
+
     def save_to_db(self) -> None:
         db.session.add(self)
         db.session.commit()

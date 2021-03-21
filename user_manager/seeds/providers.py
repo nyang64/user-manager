@@ -30,7 +30,7 @@ def create_provider_and_facility(user_details):
         address_id = facility_obj.save_address(facility_address)
         message_details["address"] += f"Address with id '{address_id}' was created. "
 
-        facility_id = facility_obj.save_facility(facility["name"], address_id)
+        facility_id = facility_obj.save_facility(facility["name"], address_id, facility["on_call_phone"])
         message_details["facility"] += f"Facility with id '{facility_id}' was created. "
 
         provider_id = provider_obj.add_provider(registered_user_id, facility_id, user_details["provider"]["type"])

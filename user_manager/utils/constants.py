@@ -17,25 +17,26 @@ GET_DEVICE_STATUS_URL = read_environ_value(value, "GET_DEVICE_STATUS_URL")
 UPDATE_DEVICE_STATUS_URL = read_environ_value(value, "UPDATE_DEVICE_STATUS_URL")
 PROVIDER_OUTPATIENT = {
     "user": {
-        "first_name": "alexx",
-        "last_name": "brandao",
+        "first_name": "Alex",
+        "last_name": "Brandao",
         "phone_number": "2223332222",
         "type": PROVIDER
     },
     "register": {
-        "email": "alexxxhdi123d45fc6d7@elementsci.com",
+        "email": "a12@mail.com",
         "password": "ilovealmonds"
     },
     "provider": {
         "facility": {
-            "name": "The Healthiest Heart Hospital",
+            "name": "Happy Heart",
+            "on_call_phone": "8883339999",
             "address": {
-                "street_address_1": "sunset blvd",
-                "street_address_2": "unit 192",
+                "street_address_1": "Townsend St.",
+                "street_address_2": "",
                 "city": "San Francisco",
                 "state": "CA",
                 "country": "USA",
-                "postal_code": 94103
+                "postal_code": "94103"
             }
         },
         "type": "outpatient"
@@ -44,25 +45,26 @@ PROVIDER_OUTPATIENT = {
 
 PROVIDER_PRESCRIBING = {
     "user": {
-        "first_name": "jyothii",
-        "last_name": "jayaraman",
+        "first_name": "Jyothii",
+        "last_name": "Jayaraman",
         "phone_number": "1112223333",
         "type": PROVIDER
     },
     "register": {
-        "email": "jyothiciiiidhi1d2fd56@elementsci.com",
+        "email": "j12@mail.com",
         "password": "ilovealmonds"
     },
     "provider": {
         "facility": {
-            "name": "The Healthiest Heart Hospital",
+            "name": "Heart Hospital",
+            "on_call_phone": "8883339999",
             "address": {
-                "street_address_1": "sunset blvd",
-                "street_address_2": "unit 192",
+                "street_address_1": "Arguello Blvd",
+                "street_address_2": "",
                 "city": "San Francisco",
                 "state": "CA",
                 "country": "USA",
-                "postal_code": 94103
+                "postal_code": "94103"
             }
         },
         "type": "prescribing"
@@ -70,37 +72,55 @@ PROVIDER_PRESCRIBING = {
 }
 PATIENT_1_DICTIONARY = {
     "user": {
-        "first_name": "mattheww",
-        "last_name": "serna ruiz",
+        "first_name": "Matthew",
+        "last_name": "Serna",
         "phone_number": "4445556666",
         "type": PATIENT
     },
     "register": {
-        "email": "matthewwwwhdi12@elementsci.com",
+        "email": "m12@mail.com",
         "password": "darjikittycat"
     },
     "patient": {
         "emergency_contact_name": "Darji",
         "emergency_contact_phone": "3335554444",
-        "date_of_birth": datetime(1956, 5, 17).isoformat()
+        "date_of_birth": datetime(1956, 5, 17).isoformat(),
+        "gender": "male"
+    },
+    "address": {
+        "street_address_1": "Dolores St",
+        "street_address_2": "",
+        "city": "San Francisco",
+        "state": "CA",
+        "country": "USA",
+        "postal_code": "94103"
     }
 }
 
 PATIENT_2_DICTIONARY = {
     "user": {
-        "first_name": "lauraa",
-        "last_name": "kirby",
+        "first_name": "Laura",
+        "last_name": "Kirby",
         "phone_number": "7778889999",
         "type": PATIENT
     },
     "register": {
-        "email": "lauraaaadhi12@elementsci.com",
+        "email": "l12@mail.com",
         "password": "rosiepupdog"
     },
     "patient": {
         "emergency_contact_name": "Darji",
         "emergency_contact_phone": "33366655555",
-        "date_of_birth": datetime(1946, 1, 26).isoformat()
+        "date_of_birth": datetime(1946, 1, 26).isoformat(),
+        "gender": "female"
+    },
+    "address": {
+        "street_address_1": "Market St",
+        "street_address_2": "",
+        "city": "San Francisco",
+        "state": "CA",
+        "country": "USA",
+        "postal_code": "94103"
     }
 }
 

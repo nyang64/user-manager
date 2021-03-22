@@ -1,5 +1,5 @@
 from db import db
-from sqlalchemy import Integer, ForeignKey
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import backref
 from model.base_model import BaseModel
 

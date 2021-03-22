@@ -1,5 +1,6 @@
-from sqlalchemy.exc import SQLAlchemyError
-from werkzeug.exceptions import InternalServerError, NotFound
+from sqlalchemy.exc import SQLAlchemyError, ProgrammingError
+from werkzeug.exceptions import (InternalServerError, NotFound,
+                                 Conflict, NotAcceptable)
 from model.patient import Patient
 from model.patients_devices import PatientsDevices
 from model.users import Users
@@ -8,7 +9,11 @@ from db import db
 from services.user_services import UserServices
 from services.auth_services import AuthServices
 from services.repository.db_repositories import DbRepository
-from utils.constants import GET_DEVICE_DETAIL_URL, CHECK_DEVICE_EXIST_URL
+from utils.constants import (GET_DEVICE_DETAIL_URL,
+                             CHECK_DEVICE_EXIST_URL,
+                             UPDATE_DEVICE_STATUS_URL,
+                             GET_DEVICE_STATUS_URL,
+                             DEVICE_STATUS)
 import requests
 import logging
 logger = logging.getLogger()
@@ -26,17 +31,18 @@ class PatientServices(DbRepository):
                                                  register[1])
         user_id, user_uuid = self.user_obj.save_user(user[0], user[1],
                                                      user[2], reg_id)
-        patient_id = self.save_patient(user_id, patient[0],
-                                       patient[1], patient[2])
+        patient_id = self.save_patient(user_id, patient[0], patient[1],
+                                       patient[2], patient[3])
         self.user_obj.assign_role(user_id, PATIENT)
         self.commit_db()
         return user_id, user_uuid, patient_id
 
     def save_patient(self, user_id, emer_contact_name,
-                     emer_contact_no, date_of_birth):
+                     emer_contact_no, date_of_birth, gender):
         try:
             Users.check_user_exist(user_id)
             patient_data = Patient(user_id=user_id,
+                                   gender=gender,
                                    emergency_contact_name=emer_contact_name,
                                    emergency_contact_number=emer_contact_no,
                                    date_of_birth=date_of_birth)
@@ -48,26 +54,105 @@ class PatientServices(DbRepository):
             logger.error(error)
             raise InternalServerError(str(error))
 
-    def assign_device_to_patient(self, patient_device):
-        print('Assign to device patient started')
-        exist_patient = Patient.check_patient_exist(patient_device.patient_id)
-        payload = {'serial_number': patient_device.device_id}
-        print('payload', payload)
-        r = requests.get(CHECK_DEVICE_EXIST_URL, params=payload)
-        print('Request finished', r.status_code)
-        print('response', r.text)
-        print(r.url, 'The Called API')
-        if int(r.status_code) == 404:
-            MSG = f'Device serial number {patient_device.device_id} not found'
-            raise NotFound(MSG)
-        if bool(exist_patient) is False:
-            raise NotFound('patient record not found')
+    def count_device_assigned(self, patient_id):
+        import json
         try:
-            self.save_db(patient_device)
+            # Get the Device Assigned Detail
+            # Hit Check Device Status
+            # If device found status is in assigned count 2 then raise error
+            logging.info('Fetching List of Device Assigned to patient')
+            devices = db.session.query(PatientsDevices.device_serial_number)\
+                .filter(PatientsDevices.patient_id == patient_id).all()
+            ''' if len(devices) < 2:
+                return False '''
+            logging.info('Checking the Device Status')
+            assigned_count = 0
+            for device in devices:
+                payload = {'serial_number': device[0]}
+                logging.info('Request Payload {}'.format(payload))
+                resp = requests.get(GET_DEVICE_STATUS_URL, params=payload)
+                logging.info('Request finished with status code {}'.format(
+                    resp.status_code))
+                # print(resp.text, type(resp.text))
+                logging.info('response {}'.format(resp.text))
+                status = json.loads(resp.text).get('data')
+                logging.info('Device Status {}'.format(status))
+                logging.info('The Called API {}'.format(resp.url))
+                if 'assigned' in str(status).lower():
+                    assigned_count += 1
+            if assigned_count == 2:
+                logging.warning('2 Device is already assigned')
+                raise NotAcceptable('2 Devices is already assigned.')
+        except (ProgrammingError, SQLAlchemyError) as error:
+            raise InternalServerError(str(error))
+
+    def check_device_assigned(self, device_serial_number):
+        is_assign = PatientsDevices.check_device_assigned(
+            device_serial_number)
+        logging.info('Device Assigned to patient : {}'.format(
+            bool(is_assign)))
+        if bool(is_assign) is True:
+            logging.warning(
+                'Device {} Already assigned to patient'.format(
+                    device_serial_number))
+            raise Conflict('Device Already assigned to patient')
+
+    def check_device_number_exist(self, device_serial_number):
+        payload = {'serial_number': device_serial_number}
+        logging.info('Request payload {}'.format(payload))
+        r = requests.get(CHECK_DEVICE_EXIST_URL, params=payload)
+        logging.info('Request finished with status code {}'.format(
+            r.status_code))
+        logging.info('response {}'.format(r.text))
+        logging.info('The Called API {}'.format(r.url))
+        if int(r.status_code) == 404:
+            MSG = 'Device serial number {} not found'.format(
+                device_serial_number)
+            raise NotFound(MSG)
+
+    def update_device_status(self, device_serial_number):
+        logging.info('Updating the device status')
+        payload = {'serial_number': device_serial_number,
+                   'name': DEVICE_STATUS}
+        logging.info('Request payload {}'.format(payload))
+        resp = requests.post(UPDATE_DEVICE_STATUS_URL, json=payload)
+        logging.info('Request finished with status code {}'.format(
+            resp.status_code))
+        logging.info('response {}'.format(resp.text))
+        logging.info('The Called API {}'.format(resp.url))
+        if int(resp.status_code) != 201:
+            logging.warning('Failed to update the device status')
+            raise InternalServerError(
+                'Failed to update status. Device Not Assigned')
+        else:
+            return True
+
+    def assign_device_to_patient(self, patient_device):
+        logging.info('Assign to device patient started')
+        exist_patient = Patient.check_patient_exist(patient_device.patient_id)
+        if bool(exist_patient) is False:
+            logging.warning('Patient Record Not Found')
+            raise NotFound('patient record not found')
+        self.check_device_assigned(patient_device.device_serial_number)
+        self.count_device_assigned(patient_device.patient_id)
+        # Calling device API
+        self.check_device_number_exist(patient_device.device_serial_number)
+        try:
+            logging.info('Saving to the database')
+            self.flush_db(patient_device)
             if patient_device.id is None:
+                logging.warning('Failed to save device to database')
                 raise SQLAlchemyError('Failed to assign device')
+            logging.info('Assigned Device')
+            # Updating device status
+            updated = self.update_device_status(
+                patient_device.device_serial_number)
+            if updated is True:
+                self.commit_db()
         except SQLAlchemyError as error:
-            logger.error(str(error))
+            logging.error(
+                'Error Occured while assign device to patient {}'.format(
+                    str(error)))
             raise InternalServerError(str(error))
 
     def patient_device_list(self, token):
@@ -79,7 +164,7 @@ class PatientServices(DbRepository):
             .join(Patient, Users.id == Patient.user_id)\
             .join(PatientsDevices, Patient.id == PatientsDevices.patient_id)\
             .filter(UserRegister.email == token.get('user_email'))\
-            .with_entities(PatientsDevices.device_id)\
+            .with_entities(PatientsDevices.device_serial_number)\
             .all()
         # Count should be same as the original one
         new_keys = {'encryption_key': 'key', 'serial_number': 'serial_number'}
@@ -114,7 +199,7 @@ class PatientServices(DbRepository):
         exist_patient.emergency_contact_name = emer_contact_name
         exist_patient.emergency_contact_number = emer_contact_no
         exist_patient.date_of_birth = dob
-        Patient.update_db(exist_patient)
+        self.update_db(exist_patient)
 
     def delete_patient_data(self, patient_id):
         exist_patient = Patient.check_patient_exist(patient_id)

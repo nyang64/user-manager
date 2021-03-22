@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, String, ForeignKey, Date
+from sqlalchemy import Integer, String, ForeignKey
 from db import db
 from model.base_model import BaseModel
 
@@ -24,3 +24,5 @@ class Salvos(BaseModel):
                                  db.DateTime)
     receiver_id = db.Column('receiver_id',
                             String(20))
+    shock_count = db.Column('shock_count',
+                            Integer)

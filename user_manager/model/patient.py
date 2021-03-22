@@ -17,10 +17,13 @@ class Patient(BaseModel):
     emergency_contact_number = db.Column('emergency_contact_phone',
                                          String(12),
                                          nullable=False)
+    gender = db.Column('gender',
+                       String(12))
     date_of_birth = db.Column('date_of_birth',
                               String(30))
     enrolled_date = db.Column('enrolled_at',
-                              DateTime)
+                              DateTime,
+                              default=db.func.now())
     users = db.relationship("Users",
                             backref=backref("users_patient", uselist=False))
 

@@ -2,7 +2,7 @@ from typing import Dict
 from flask import Flask, jsonify, Response
 from werkzeug.exceptions import BadRequest, HTTPException, Unauthorized,\
                     NotFound, Conflict, InternalServerError, MethodNotAllowed,\
-                    Forbidden
+                    Forbidden, NotAcceptable
 
 
 class Appplication(Flask):
@@ -29,10 +29,16 @@ class Appplication(Flask):
         self.register_error_handler(NotFound, self.__handle_not_found)
         self.register_error_handler(Unauthorized, self.__handle_unauthorized)
         self.register_error_handler(Forbidden, self.__handle_forbidden)
+        self.register_error_handler(NotAcceptable, self.__handle_not_accept)
         self.register_error_handler(MethodNotAllowed,
                                     self.__handle_method_not_allowed)
         self.register_error_handler(InternalServerError,
                                     self.__handle_internal_server_error)
+
+    def __handle_not_accept(self, error: HTTPException):
+        error_response = self.generate_response(
+            error, f"Not Acceptable: '{error.description}'.")
+        return jsonify(error_response), error.code
 
     def __handle_unauthorized(self, error: HTTPException):
         error_response = self.generate_response(
@@ -83,10 +89,10 @@ class Appplication(Flask):
 
     def __add_cors_request(self, response: Response) -> Response:
         response.headers.add('Access-Control-Allow-Origin', "*")
-        response.headers.add(
-            "Access-Control-Allow-Headers", "Content-Type, Authorization")
-        response.headers.add(
-            "Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
+        response.headers.add("Access-Control-Allow-Headers",
+                             "Content-Type, Authorization")
+        response.headers.add("Access-Control-Allow-Methods",
+                             "GET, POST, OPTIONS, PUT, DELETE")
         return response
 
     def register_blueprint(self, blueprint, **options):

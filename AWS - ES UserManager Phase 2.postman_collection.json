@@ -141,7 +141,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"patient_id\":7,\r\n    \"device_id\":1\r\n}"
+									"raw": "{\r\n    \"patient_id\":7,\r\n    \"device_serial_number\":1\r\n}"
 								},
 								"url": {
 									"raw": "https://38x6g00oz5.execute-api.us-west-1.amazonaws.com/test/v1/patients/add/device",

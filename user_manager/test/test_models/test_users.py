@@ -1,5 +1,5 @@
 import pytest
-from model.user_otp import UserOTPModel
+from model.users import Users
 from application import Appplication
 from config import get_connection_url
 from flask_migrate import Migrate
@@ -21,19 +21,19 @@ def flask_app():
     yield app
 
 
-class TestUserOtpModel:
-    def test_user_otp_schema(self, flask_app):
+class TestUsersModel:
+    def test_user_get_by_id_none(self, flask_app):
         with flask_app.app_context():
-            UserOTPModel.matchOTP(None, None)
+            with pytest.raises(Exception) as e:
+                assert Users.getUserById(None)
+            assert "500 Internal Server Error" in str(e.value)
 
-    def test_user_otp_delete(self, flask_app):
+    def test_user_get_by_id(self, flask_app):
         with flask_app.app_context():
-            UserOTPModel.deleteAll_OTP(None)
+            Users.getUserById(1)
 
-    def test_user_otp_find_by_id(self, flask_app):
+    def test_user_find_by_email(self, flask_app):
         with flask_app.app_context():
-            UserOTPModel.find_by_user_id(None)
-
-    def test_user_otp_find_list_by_id(self, flask_app):
-        with flask_app.app_context():
-            UserOTPModel.find_list_by_user_id(None)
+            with pytest.raises(Exception) as e:
+                Users.find_by_email(None)
+            assert "has no property" in str(e.value)

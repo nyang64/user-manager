@@ -4,8 +4,11 @@ from email.mime.text import MIMEText
 from werkzeug.exceptions import InternalServerError
 from config import read_environ_value
 import os
-
+import logging
 value = os.environ.get('user-manager-secrets')
+
+logger = logging.getLogger()
+logger.setLevel(logging.ERROR)
 
 
 def send_otp(
@@ -50,6 +53,7 @@ def send_otp(
         server.quit()
         return True
     except Exception as e:
+        logger.error(e)
         raise InternalServerError("Something went wrong. {0}".format(e))
         return False
 
@@ -97,5 +101,6 @@ def send_registration_email(
         server.quit()
         return True
     except Exception as e:
+        logger.error(e)
         raise InternalServerError("Something went wrong. {0}".format(e))
         return False

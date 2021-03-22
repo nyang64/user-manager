@@ -2,7 +2,7 @@ import pytest
 from schema.base_schema import validate_number
 
 
-class TestClass:
+class TestBaseSchema:
     def test_base_schema_with_none(self):
         with pytest.raises(Exception) as e:
             assert validate_number(None)

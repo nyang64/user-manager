@@ -4,31 +4,14 @@ from config import get_connection_url
 import pytest
 from db import db
 from flask_migrate import Migrate
-from utils.constants import ADMIN
-from utils import jwt
 from services.auth_services import AuthServices
 from model.user_registration import UserRegister
 from model.user_otp import UserOTPModel
 from utils.common import have_keys
 
 
-def mock_require_user_token(*args):
-    def require_user_token_validator(func):
-        def inner(jsonT):
-            print("jsc")
-            decrypted = {"user_role": ADMIN}
-            return func(jsonT, decrypted)
-        return inner
-    return require_user_token_validator
-
-
-def init_require_user_toke():
-    jwt.require_user_token = mock_require_user_token
-
-
 @pytest.fixture
 def flask_app():
-    init_require_user_toke()
     app = Appplication(__name__, '/v1')
     app.config["SQLALCHEMY_DATABASE_URI"] = get_connection_url()
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
@@ -71,15 +54,8 @@ def otp_existing_object():
     yield otp_mdl
 
 
-class TestClass:
+class TestAuthenticationService:
     # Test Cases For User_login Start
-
-    def test_User_login_with_no_data(
-            self, flask_app, auth_object, authdata_object):
-        with flask_app.app_context():
-            with pytest.raises(Exception) as e:
-                assert auth_object.User_login(authdata_object)
-            assert str(e.value) == "404 Not Found: No Such User Exist"
 
     def test_User_login_with_unregisterd_user(
             self, flask_app, auth_object, authdata_object):
@@ -115,6 +91,13 @@ class TestClass:
                 'isFirstTimeLogin',
                 'message',
                 'refresh_token') is True
+
+    def test_User_login_with_no_data(
+            self, flask_app, auth_object, authdata_object):
+        with flask_app.app_context():
+            with pytest.raises(Exception) as e:
+                assert auth_object.User_login(authdata_object)
+            assert str(e.value) == "404 Not Found: No Such User Exist"
 
     # Test Cases For User_login End
 

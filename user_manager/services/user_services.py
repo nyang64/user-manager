@@ -7,6 +7,9 @@ from db import db
 from utils.common import generate_uuid
 from utils.constants import ESUSER
 from services.repository.db_repositories import DbRepository
+import logging
+logger = logging.getLogger()
+logger.setLevel(logging.ERROR)
 
 
 class UserServices(DbRepository):
@@ -34,6 +37,7 @@ class UserServices(DbRepository):
                 raise SQLAlchemyError('User data not inserted')
             return user_data.id, user_data.uuid
         except SQLAlchemyError as error:
+            logger.error(error)
             raise InternalServerError(str(error))
 
     def update_user_byid(self, user_id, first_name, last_name, phone_number):
@@ -46,6 +50,7 @@ class UserServices(DbRepository):
             exist_user.phone_number = phone_number
             self.update_db(exist_user)
         except (TypeError, AttributeError) as error:
+            logger.error(error)
             raise InternalServerError(str(error))
 
     def list_users(self):
@@ -57,6 +62,7 @@ class UserServices(DbRepository):
                           for user in users_list]
             return users_data
         except SQLAlchemyError as error:
+            logger.error(error)
             raise InternalServerError(error)
 
     def delete_user_byid(self, user_id):
@@ -77,8 +83,9 @@ class UserServices(DbRepository):
             if user_role.id is None:
                 raise SQLAlchemyError('Roles not updated')
         except SQLAlchemyError as error:
+            logger.error(str(error))
             raise InternalServerError(str(error))
-        
+
     def get_detail_by_email(self, email):
         ''' Get the detail of logged in user by email id'''
         from model.user_registration import UserRegister
@@ -93,6 +100,7 @@ class UserServices(DbRepository):
                 raise NotFound('user detail not found')
             return user
         except SQLAlchemyError as error:
+            logger.error(str(error))
             raise InternalServerError(str(error))
 
     @classmethod
@@ -103,5 +111,6 @@ class UserServices(DbRepository):
             if user_data is None:
                 raise NotFound("User Details Not Found")
             return user_data
-        except Exception:
+        except Exception as error:
+            logger.error(str(error))
             raise InternalServerError("Something Went Wrong")

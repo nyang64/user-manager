@@ -3,6 +3,9 @@ from sqlalchemy import Integer, String, ForeignKey
 from werkzeug.exceptions import NotFound, InternalServerError
 import uuid
 from model.base_model import BaseModel
+import logging
+logger = logging.getLogger()
+logger.setLevel(logging.ERROR)
 
 
 class Users(BaseModel):
@@ -36,7 +39,7 @@ class Users(BaseModel):
     def check_user_exist(cls, user_id):
         return db.session.query(cls).filter_by(
             id=user_id).first()
-        
+
     @classmethod
     def getUserById(cls, user_reg_id):
         try:
@@ -45,5 +48,6 @@ class Users(BaseModel):
             if user is None:
                 raise NotFound("User Details Not Found")
             return user
-        except Exception:
+        except Exception as e:
+            logger.error(e)
             raise InternalServerError("Something Went Wrong")

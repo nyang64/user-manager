@@ -76,7 +76,9 @@ class Appplication(Flask):
         return jsonify(error_response), error.code
 
     @staticmethod
-    def generate_response(error: HTTPException, detail: str) -> Dict:
+    def generate_response(
+            error: HTTPException, detail: str
+            ) -> Dict:
         return {
             'errors': [{
                 'status': str(error.code),

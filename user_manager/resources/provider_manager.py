@@ -1,4 +1,3 @@
-# from flask_restful import Resource
 from flask import request, jsonify
 from model.providers import Providers
 from utils.common import (
@@ -13,6 +12,7 @@ from schema.report_schema import report_id_schema
 from schema.patient_schema import patient_detail_schema
 from schema.report_schema import patient_reports_schema
 import http
+import logging
 
 
 class provider_manager():
@@ -155,3 +155,18 @@ class provider_manager():
         msg, code = self.provider_obj.update_uploaded_ts(report_id)
         return {"message": msg,
                 "status_code": code}, code
+
+    def add_facility(self):
+        ''' Add address, Facility and assign address id to facility table '''
+        from schema.facility_schema import add_facility_schema
+        from services.facility_services import FacilityService
+        logging.info('Request Received to add facility')
+        request_data = validate_request()
+        address, facility_name = add_facility_schema.load(request_data)
+        logging.info('Facility Name: {}'.format(facility_name))
+        logging.info('Address Info: {}'.format(address))
+        facility_obj = FacilityService()
+        aid, fid = facility_obj.register_facility(address, facility_name)
+        return {'address_id': aid,
+                'facility_id': fid,
+                'status_code': http.client.CREATED}, http.client.CREATED

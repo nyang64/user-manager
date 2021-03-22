@@ -4,6 +4,9 @@ from werkzeug.exceptions import BadRequest
 from marshmallow_sqlalchemy import ModelSchema
 from sqlalchemy.orm import sessionmaker, scoped_session
 from db import db
+import logging
+logger = logging.getLogger()
+logger.setLevel(logging.ERROR)
 
 
 class UserUpdateSchema(ModelSchema):
@@ -30,6 +33,7 @@ class UserUpdateSchema(ModelSchema):
             else:
                 return data
         except Exception as e:
+            logger.error(e)
             raise BadRequest(e)
 
 

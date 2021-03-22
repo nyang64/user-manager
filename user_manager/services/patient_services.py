@@ -16,6 +16,8 @@ from utils.constants import (GET_DEVICE_DETAIL_URL,
                              DEVICE_STATUS)
 import requests
 import logging
+logger = logging.getLogger()
+logger.setLevel(logging.ERROR)
 
 
 class PatientServices(DbRepository):
@@ -49,6 +51,7 @@ class PatientServices(DbRepository):
                 raise SQLAlchemyError('error while adding patient')
             return patient_data.id
         except SQLAlchemyError as error:
+            logger.error(error)
             raise InternalServerError(str(error))
 
     def count_device_assigned(self, patient_id):
@@ -182,7 +185,8 @@ class PatientServices(DbRepository):
                 device = response['data'] if 'data' in response else None
                 try:
                     device_info = rename_keys(device, new_keys)
-                except AttributeError:
+                except AttributeError as e:
+                    logger.error(e)
                     device_info = {}
                 devices.append(device_info)
         return devices

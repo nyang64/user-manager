@@ -65,3 +65,5 @@ class PatientManager():
         device_list = self.patient_obj.patient_device_list(token)
         resp = {'devices': device_list}
         return jsonify(resp), http.client.OK
+
+    

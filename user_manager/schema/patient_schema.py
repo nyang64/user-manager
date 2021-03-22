@@ -1,8 +1,12 @@
 from schema.user_schema import CreateUserSchema
 from schema.base_schema import validate_number, BaseSchema
-from model.patients_devices import PatientsDevices 
+from model.patients_devices import PatientsDevices
 from marshmallow import fields, ValidationError, post_load
 from ma import ma
+import logging
+logger = logging.getLogger()
+logger.setLevel(logging.ERROR)
+
 
 ENAME_MISSING = "emergenct_contact_name parameter is missing"
 ENUMBER_MISSING = "emergenct_contact_number parameter is missing"
@@ -57,7 +61,7 @@ class UpdatePatientSchema(BaseSchema):
                                           validate=validate_number)
     date_of_birth = fields.Str(required=True,
                                validate=must_not_blank)
-    
+
     @post_load
     def make_post_dump_object(self, data, **kwargs):
         emergency_contact_name = data.get('emergency_contact_name')
@@ -110,7 +114,7 @@ class FilterPatientSchema(BaseSchema):
     last_name = fields.Str(load_only=True)
     date_of_birth = fields.Str(load_only=True)
     report_id = fields.Int(load_only=True)
-    
+
     @post_load
     def post_data(self, data, **kwargs):
         first_name = data.get('first_name', None)
@@ -120,7 +124,8 @@ class FilterPatientSchema(BaseSchema):
             page_number = int(data.get('page_number', 0))
             record_per_page = int(data.get('record_per_page', 10))
             report_id = int(data.get('report_id', 0))
-        except ValueError:
+        except ValueError as e:
+            logger.error(e)
             page_number = 0
             record_per_page = 10
             report_id = 0

@@ -6,6 +6,9 @@ from model.user_roles import UserRoles
 from model.roles import Roles
 from model.users import Users
 from db import db
+import logging
+logger = logging.getLogger()
+logger.setLevel(logging.ERROR)
 
 
 class UserRegister(BaseModel):
@@ -40,4 +43,18 @@ class UserRegister(BaseModel):
                 return False
             return role_name_data
         except Exception as error:
+            logger.error(error)
+            raise InternalServerError(str(error))
+
+    @classmethod
+    def delete_user_by_Userid(cls, user_id) -> None:
+        try:
+            users_data = Users.find_by_user_id(user_id=user_id)
+            if users_data is not None:
+                user_registration_data = cls.query.filter_by(
+                        id=users_data.registration_id
+                    ).first()
+                cls.delete_obj(user_registration_data)
+        except SQLAlchemyError as error:
+            logger.error(error)
             raise InternalServerError(str(error))

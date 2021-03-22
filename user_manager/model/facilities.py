@@ -16,4 +16,3 @@ class Facilities(BaseModel):
     @classmethod
     def find_by_id(cls, id) -> "Facilities":
         return cls.query.filter_by(id=id).first()
-

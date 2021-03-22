@@ -1,5 +1,6 @@
 from sqlalchemy.exc import SQLAlchemyError, ProgrammingError
-from werkzeug.exceptions import InternalServerError, NotFound, Conflict,NotAcceptable
+from werkzeug.exceptions import (InternalServerError, NotFound,
+                                 Conflict, NotAcceptable)
 from model.patient import Patient
 from model.patients_devices import PatientsDevices
 from model.users import Users

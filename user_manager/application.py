@@ -39,7 +39,7 @@ class Appplication(Flask):
         error_response = self.generate_response(
             error, f"Not Acceptable: '{error.description}'.")
         return jsonify(error_response), error.code
-    
+
     def __handle_unauthorized(self, error: HTTPException):
         error_response = self.generate_response(
             error, f"Unauthorized: '{error.description}'.")
@@ -85,10 +85,12 @@ class Appplication(Flask):
             }]
         }
 
-    def __add_cors_request(self, response: Response)-> Response:
+    def __add_cors_request(self, response: Response) -> Response:
         response.headers.add('Access-Control-Allow-Origin', "*")
-        response.headers.add("Access-Control-Allow-Headers", "Content-Type, Authorization")
-        response.headers.add("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
+        response.headers.add("Access-Control-Allow-Headers",
+                             "Content-Type, Authorization")
+        response.headers.add("Access-Control-Allow-Methods",
+                             "GET, POST, OPTIONS, PUT, DELETE")
         return response
 
     def register_blueprint(self, blueprint, **options):

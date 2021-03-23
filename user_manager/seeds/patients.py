@@ -49,7 +49,7 @@ def create_patient_device(patient_id, serial_number):
     patient_device_schema = PatientsDevicesSchema()
     patient_device_details = {
         "patient_id": patient_id,
-        "device_id": serial_number
+        "device_serial_number": serial_number
     }
 
     patient_device = patient_device_schema.load(patient_device_details)

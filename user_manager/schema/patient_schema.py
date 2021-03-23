@@ -110,7 +110,7 @@ class PatientDetailSchema(BaseSchema):
     enrolled_on = fields.Str(dump_only=True)
     emergency_contact_name = fields.Str(dump_only=True)
     emergency_contact_number = fields.Str(dump_only=True)
-    address = fields.Str(attribute='full_address', dump_only=True)
+    # address = fields.Str(attribute='full_address', dump_only=True)
     status = fields.Str(attribute='name', dump_only=True)
 
 

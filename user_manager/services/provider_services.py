@@ -95,7 +95,7 @@ class ProviderService(DbRepository):
                 Patient.id, Users.id, UserRegister.email, Users.first_name,
                 Users.last_name, Users.phone_number, Patient.date_of_birth,
                 Patient.enrolled_date, Patient.emergency_contact_name,
-                Patient.emergency_contact_number, Address.full_address,
+                Patient.emergency_contact_number, Address.street_address_1,
                 UserStatusType.name).first()
         if patient_data is None:
             return {}, []

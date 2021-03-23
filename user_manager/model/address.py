@@ -11,7 +11,7 @@ class Address(BaseModel):
                         ForeignKey('ES.users.id', ondelete="CASCADE"))
     street_address_1 = db.Column('street_address_1', String(100))
     street_address_2 = db.Column('street_address_2', String(100))
-    full_address = column_property(street_address_1 + " " + street_address_2)
+    # full_address = column_property(street_address_1 + " " + street_address_2)
     city = db.Column('city', String(100))
     state = db.Column('state', String(50))
     country = db.Column('country', String(20))

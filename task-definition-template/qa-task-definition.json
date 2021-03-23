@@ -29,7 +29,7 @@
         },
         {
           "name": "POSTGRES_DB_NAME",
-          "value": "postgres"
+          "value": "esumdb"
         },
         {
           "name": "POSTGRES_DB_PORT",

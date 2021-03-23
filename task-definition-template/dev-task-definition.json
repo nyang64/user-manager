@@ -29,7 +29,7 @@
         },
         {
           "name": "POSTGRES_DB_NAME",
-          "value": "esumdb"
+          "value": "esumdb-migration-test"
         },
         {
           "name": "POSTGRES_DB_PORT",

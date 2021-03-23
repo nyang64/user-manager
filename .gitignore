@@ -5,7 +5,6 @@ node_modules/
 env/
 .*/
 migrations_1/
-migrations/
 htmlcov/
 .DS_Store
 .env

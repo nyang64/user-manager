@@ -156,7 +156,8 @@ class provider_manager():
         return {"message": msg,
                 "status_code": code}, code
 
-    def add_facility(self):
+    @require_user_token(ADMIN)
+    def add_facility(self, decrypt):
         ''' Add address, Facility and assign address id to facility table '''
         from schema.facility_schema import add_facility_schema
         from services.facility_services import FacilityService

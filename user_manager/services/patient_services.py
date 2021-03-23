@@ -63,8 +63,8 @@ class PatientServices(DbRepository):
             logging.info('Fetching List of Device Assigned to patient')
             devices = db.session.query(PatientsDevices.device_serial_number)\
                 .filter(PatientsDevices.patient_id == patient_id).all()
-            ''' if len(devices) < 2:
-                return False '''
+            if len(devices) < 2:
+                return False
             logging.info('Checking the Device Status')
             assigned_count = 0
             for device in devices:
@@ -73,7 +73,6 @@ class PatientServices(DbRepository):
                 resp = requests.get(GET_DEVICE_STATUS_URL, params=payload)
                 logging.info('Request finished with status code {}'.format(
                     resp.status_code))
-                # print(resp.text, type(resp.text))
                 logging.info('response {}'.format(resp.text))
                 status = json.loads(resp.text).get('data')
                 logging.info('Device Status {}'.format(status))

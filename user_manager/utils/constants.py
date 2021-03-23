@@ -23,7 +23,7 @@ PROVIDER_OUTPATIENT = {
         "type": PROVIDER
     },
     "register": {
-        "email": "a12@mail.com",
+        "email": "alex@elementsci.com",
         "password": "ilovealmonds"
     },
     "provider": {
@@ -51,7 +51,7 @@ PROVIDER_PRESCRIBING = {
         "type": PROVIDER
     },
     "register": {
-        "email": "j12@mail.com",
+        "email": "jyothii@elementsci.com",
         "password": "ilovealmonds"
     },
     "provider": {
@@ -78,8 +78,8 @@ PATIENT_1_DICTIONARY = {
         "type": PATIENT
     },
     "register": {
-        "email": "m12@mail.com",
-        "password": "darjikittycat"
+        "email": "matthew@elementsci.com",
+        "password": "ilovealmonds"
     },
     "patient": {
         "emergency_contact_name": "Darji",
@@ -105,11 +105,11 @@ PATIENT_2_DICTIONARY = {
         "type": PATIENT
     },
     "register": {
-        "email": "l12@mail.com",
-        "password": "rosiepupdog"
+        "email": "laura@elementsci.com",
+        "password": "ilovealmonds"
     },
     "patient": {
-        "emergency_contact_name": "Darji",
+        "emergency_contact_name": "Rosie",
         "emergency_contact_phone": "33366655555",
         "date_of_birth": datetime(1946, 1, 26).isoformat(),
         "gender": "female"

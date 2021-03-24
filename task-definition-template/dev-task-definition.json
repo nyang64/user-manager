@@ -24,6 +24,10 @@
           "value": "http://applink"
         },
         {
+          "name": "POSTGRES_DB_USER",
+          "value": "$DB_USER"
+        },
+        {
           "name": "POSTGRES_DB_HOST",
           "value": "$DB_URL"
         },

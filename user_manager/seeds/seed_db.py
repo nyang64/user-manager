@@ -3,12 +3,17 @@ from seeds import roles
 from seeds import patients
 from seeds import providers
 from model.providers import Providers
+from seeds.admin_manager import AdminManager
 import os
 
 class SeedDemo(Seeder):
     def run(self):
         print('seeding db')
-        # result = self.seed_admin()
+
+        # Create an admin user irrespective of the env
+        admin = AdminManager()
+        result = admin.seed_db()
+
         if os.environ.get("FLASK_ENV") != "production":
             result = self.seed_dev()
 
@@ -32,5 +37,9 @@ class SeedDemo(Seeder):
 
     def seed_dev(self):
         roles.seed()
-        created_providers = providers.seed()
-        patients.seed(created_providers["outpatient"], created_providers["prescribing"])
+
+        admin = AdminManager()
+        result = admin.seed_db()
+        outpatient = Providers.find_by_id(1)
+        prescribing = Providers.find_by_id(2)
+        patients.seed(outpatient, prescribing)

@@ -40,8 +40,9 @@ app.register_blueprint(patient_blueprint)
 
 
 if __name__ == "__main__":
-    app.run(
-        host=os.environ.get("APP_HOST"),
-        port=os.environ.get("APP_PORT"),
-        debug=os.environ.get("APP_DEBUG"),
-    )
+    # app.run(
+    #     host=os.environ.get("APP_HOST"),
+    #     port=os.environ.get("APP_PORT"),
+    #     debug=os.environ.get("APP_DEBUG"),
+    # )
+    app.run(host='0.0.0.0', port=5000)

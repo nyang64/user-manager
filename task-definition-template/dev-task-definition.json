@@ -86,6 +86,18 @@
 	{
           "name": "OTP_LIMIT_MINUTES",
           "value": "0"
+        },
+  {
+          "name": "REPORT_BUCKET_NAME",
+          "value": "$DEPLOYMENT_ENVIRONMENT-therapy-reports"
+        },
+  {
+          "name": "CHECK_DEVICE_EXIST_URL",
+          "value": "https://ki0c10fwb8.execute-api.us-west-1.amazonaws.com/qa-device-manager/v1/device/exists"
+        },
+  {
+          "name": "GET_DEVICE_DETAIL_URL",
+          "value": "https://ki0c10fwb8.execute-api.us-west-1.amazonaws.com/qa-device-manager/v1/device"
         }
       ],
       "secrets": [

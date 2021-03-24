@@ -28,6 +28,10 @@
           "value": "$DB_USER"
         },
         {
+          "name": "SQLALCHEMY_DATABASE_URI",
+          "value": "$DATABASE_URI"
+        },
+        {
           "name": "POSTGRES_DB_HOST",
           "value": "$DB_URL"
         },

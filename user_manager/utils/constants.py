@@ -11,6 +11,7 @@ PATIENT = 'PATIENT'
 DEVICE_STATUS = 'Assigned'
 value = os.environ.get('user-manager-secrets')
 REPORT_BUCKET_NAME = read_environ_value(value, "REPORT_BUCKET_NAME")
+
 DEVICE_BASE_URL = os.environ.get("DEVICE_BASE_URL")
 CHECK_DEVICE_EXIST_URL = DEVICE_BASE_URL + '/device/exists'
 GET_DEVICE_DETAIL_URL = DEVICE_BASE_URL + '/device'

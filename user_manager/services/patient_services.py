@@ -13,11 +13,10 @@ from utils.constants import (GET_DEVICE_DETAIL_URL,
                              CHECK_DEVICE_EXIST_URL,
                              UPDATE_DEVICE_STATUS_URL,
                              GET_DEVICE_STATUS_URL,
-                             DEVICE_STATUS)
+                             DEVICE_STATUS,
+                             LOGIN_URL)
 import requests
 import logging
-logger = logging.getLogger()
-logger.setLevel(logging.ERROR)
 
 
 class PatientServices(DbRepository):
@@ -51,11 +50,13 @@ class PatientServices(DbRepository):
                 raise SQLAlchemyError('error while adding patient')
             return patient_data.id
         except SQLAlchemyError as error:
-            logger.error(error)
+            logging.error(error)
             raise InternalServerError(str(error))
 
     def count_device_assigned(self, patient_id):
         import json
+        auth_token = self.get_auth_token()
+        header = {'Authorization': auth_token}
         try:
             # Get the Device Assigned Detail
             # Hit Check Device Status
@@ -70,16 +71,19 @@ class PatientServices(DbRepository):
             for device in devices:
                 payload = {'serial_number': device[0]}
                 logging.info('Request Payload {}'.format(payload))
-                resp = requests.get(GET_DEVICE_STATUS_URL, params=payload)
+                resp = requests.get(GET_DEVICE_STATUS_URL,
+                                    headers=header,
+                                    params=payload)
                 logging.info('Request finished with status code {}'.format(
                     resp.status_code))
+                logging.info('Headers value {}'.format(resp.headers))
                 logging.info('response {}'.format(resp.text))
                 status = json.loads(resp.text).get('data')
                 logging.info('Device Status {}'.format(status))
                 logging.info('The Called API {}'.format(resp.url))
                 if 'assigned' in str(status).lower():
                     assigned_count += 1
-            if assigned_count == 2:
+            if assigned_count >= 2:
                 logging.warning('2 Device is already assigned')
                 raise NotAcceptable('2 Devices is already assigned.')
         except (ProgrammingError, SQLAlchemyError) as error:
@@ -97,9 +101,13 @@ class PatientServices(DbRepository):
             raise Conflict('Device Already assigned to patient')
 
     def check_device_number_exist(self, device_serial_number):
+        auth_token = self.get_auth_token()
+        header = {'Authorization': auth_token}
         payload = {'serial_number': device_serial_number}
         logging.info('Request payload {}'.format(payload))
-        r = requests.get(CHECK_DEVICE_EXIST_URL, params=payload)
+        r = requests.get(CHECK_DEVICE_EXIST_URL,
+                         headers=header,
+                         params=payload)
         logging.info('Request finished with status code {}'.format(
             r.status_code))
         logging.info('response {}'.format(r.text))
@@ -110,11 +118,15 @@ class PatientServices(DbRepository):
             raise NotFound(MSG)
 
     def update_device_status(self, device_serial_number):
+        auth_token = self.get_auth_token()
+        header = {'Authorization': auth_token}
         logging.info('Updating the device status')
         payload = {'serial_number': device_serial_number,
                    'name': DEVICE_STATUS}
         logging.info('Request payload {}'.format(payload))
-        resp = requests.post(UPDATE_DEVICE_STATUS_URL, json=payload)
+        resp = requests.post(UPDATE_DEVICE_STATUS_URL,
+                             headers=header,
+                             json=payload)
         logging.info('Request finished with status code {}'.format(
             resp.status_code))
         logging.info('response {}'.format(resp.text))
@@ -157,6 +169,8 @@ class PatientServices(DbRepository):
     def patient_device_list(self, token):
         from utils.common import rename_keys
         import json
+        auth_token = self.get_auth_token()
+        header = {'Authorization': auth_token}
         print("In Patient Device list of patient services")
         device_serial_numbers = db.session.query(UserRegister, Users)\
             .join(Users, UserRegister.id == Users.registration_id)\
@@ -174,6 +188,7 @@ class PatientServices(DbRepository):
             print('API calling', GET_DEVICE_DETAIL_URL)
             print('payload', payload)
             r = requests.get(GET_DEVICE_DETAIL_URL,
+                             headers=header,
                              params=payload)
             print('Request finished', r.status_code)
             print('response', r.text)
@@ -185,7 +200,7 @@ class PatientServices(DbRepository):
                 try:
                     device_info = rename_keys(device, new_keys)
                 except AttributeError as e:
-                    logger.error(e)
+                    logging.error(e)
                     device_info = {}
                 devices.append(device_info)
         return devices
@@ -206,5 +221,13 @@ class PatientServices(DbRepository):
             raise NotFound('patient record not found')
         self.user_obj.delete_user_byid(exist_patient.user_id)
 
-    def find_by_id(self, patient_id):
-        return Patient.find_by_id(patient_id)
+    def get_auth_token(self):
+        import json
+        DEVICE_EMAIL = "deviceadmin@elementsci.com"
+        DEVICE_PASSWORD = "device12345"
+        data = {"email": DEVICE_EMAIL, "password": DEVICE_PASSWORD}
+        resp = requests.post(LOGIN_URL, json=data)
+        if resp.status_code == 200:
+            return json.loads(resp.text).get('id_token')
+        else:
+            return None

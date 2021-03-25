@@ -69,7 +69,7 @@ class TestAuthenticationService:
     def test_User_login_with_invalid_credentials(
             self, flask_app, auth_object, authdata_object):
         with flask_app.app_context():
-            authdata_object.email = "yogendra.rai@infostretch.com"
+            authdata_object.email = "esadmin@elementsci.com"
             authdata_object.password = "1234511"
             with pytest.raises(Exception) as e:
                 assert auth_object.User_login(authdata_object)
@@ -78,8 +78,8 @@ class TestAuthenticationService:
     def test_User_login_with_valid_credentials(
             self, flask_app, auth_object, authdata_object):
         with flask_app.app_context():
-            authdata_object.email = "yogendra.rai@infostretch.com"
-            authdata_object.password = "12345"
+            authdata_object.email = "esadmin@elementsci.com"
+            authdata_object.password = "EleM3nTSci"
             response_obj = auth_object.User_login(authdata_object)
             assert type(response_obj) is dict
             assert have_keys(

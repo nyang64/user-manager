@@ -23,12 +23,12 @@ def email_var():
 
 class TestSendEmail:
     # Test Cases For Send OTP
-    def test_send_otp_with_parameter(self, email_var_otp):
-        assert send_otp(
-            email_var_otp[0],
-            email_var_otp[1],
-            email_var_otp[2],
-            email_var_otp[3]) is True
+    # def test_send_otp_with_parameter(self, email_var_otp):
+    #     assert send_otp(
+    #         email_var_otp[0],
+    #         email_var_otp[1],
+    #         email_var_otp[2],
+    #         email_var_otp[3]) is True
 
     def test_send_otp_with_invalid_parameter(self, email_var_otp):
         with pytest.raises(Exception) as e:
@@ -39,13 +39,13 @@ class TestSendEmail:
                 email_var_otp[3])
         assert "500 Internal Server Error" in str(e.value)
 
-    def test_send_registration_with_parameter(self, email_var):
-        assert send_registration_email(
-            email_var[0],
-            email_var[1],
-            email_var[2],
-            email_var[3],
-            email_var[4]) is True
+    # def test_send_registration_with_parameter(self, email_var):
+    #     assert send_registration_email(
+    #         email_var[0],
+    #         email_var[1],
+    #         email_var[2],
+    #         email_var[3],
+    #         email_var[4]) is True
 
     def test_send_registration_with_invalid_parameter(self, email_var):
         with pytest.raises(Exception) as e:

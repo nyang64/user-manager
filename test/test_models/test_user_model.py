@@ -2,7 +2,7 @@ import pytest
 from model.users import Users
 
 
-class TestClass:
+class TestUserModel:
     def test_base_schema_with_none(self):
         with pytest.raises(Exception) as e:
             assert Users.getUserById(None)

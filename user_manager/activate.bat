@@ -33,9 +33,9 @@ set OTP_LIMIT_MINUTES=1
 
 
 
-python user_manager/app.py
+@REM python user_manager/app.py
 @REM pytest -s -v -p no:warnings 
-@REM pytest -s -v -p no:warnings --cov=./user_manager --cov-report=html
-@REM pytest ./user_manager/test/test_blueprints -s -v -p no:warnings
+pytest -s -v -p no:warnings --cov=./user_manager --cov-report=html
+@REM pytest ./test/ -s -v -p no:warnings
 @REM py.test --cov=./user_manager --cov-report=html ALTERNET
 @REM https://dba.stackexchange.com/questions/44586/forgotten-postgresql-windows-password

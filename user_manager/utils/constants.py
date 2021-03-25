@@ -11,10 +11,12 @@ PATIENT = 'PATIENT'
 DEVICE_STATUS = 'Assigned'
 value = os.environ.get('user-manager-secrets')
 REPORT_BUCKET_NAME = read_environ_value(value, "REPORT_BUCKET_NAME")
-CHECK_DEVICE_EXIST_URL = read_environ_value(value, "CHECK_DEVICE_EXIST_URL")
-GET_DEVICE_DETAIL_URL = read_environ_value(value, "GET_DEVICE_DETAIL_URL")
-GET_DEVICE_STATUS_URL = read_environ_value(value, "GET_DEVICE_STATUS_URL")
-UPDATE_DEVICE_STATUS_URL = read_environ_value(value, "UPDATE_DEVICE_STATUS_URL")
+DEVICE_BASE_URL = os.environ.get("DEVICE_BASE_URL")
+CHECK_DEVICE_EXIST_URL = DEVICE_BASE_URL + '/device/exists'
+GET_DEVICE_DETAIL_URL = DEVICE_BASE_URL + '/device'
+UPDATE_DEVICE_STATUS_URL = DEVICE_BASE_URL + '/update/device/status'
+GET_DEVICE_STATUS_URL = DEVICE_BASE_URL + '/get/device/status'
+LOGIN_URL = DEVICE_BASE_URL + '/login'
 PROVIDER_OUTPATIENT = {
     "user": {
         "first_name": "Alex",
@@ -138,3 +140,4 @@ ADMIN_USER = {
 }
 
 PATIENTS = [PATIENT_1_DICTIONARY, PATIENT_2_DICTIONARY]
+

@@ -11,6 +11,8 @@ from blueprint.auth_blueprint import AuthenticationBlueprint
 from blueprint.user_blueprint import UserBluePrint
 from blueprint.patient_blueprint import PatientBluePrint
 from blueprint.provider_blueprint import ProviderBlueprint
+import os
+from werkzeug.datastructures import Headers
 
 
 def mock_require_user_token(*args):
@@ -94,8 +96,13 @@ class TestAuthenticationBluePrint:
                     email='esadmin@elementsci.com',
                     password='EleM3nTSci'
                 ), follow_redirects=True)
+                os.environ["test_token"] = resp.json["id_token"]
+                os.environ["test_refresh_token"] = resp.json["refresh_token"]
                 assert resp.status_code == 200
 
+    # Test Cases For User_login End
+
+    # Test Cases For User_Reset_Password Start
     def test_User_reset_password_exist(
             self, flask_app, mocker: MockerFixture):
         with flask_app.app_context():
@@ -143,3 +150,60 @@ class TestAuthenticationBluePrint:
                       password='12345678'
                 ), follow_redirects=True)
                 assert resp.status_code == 404
+
+    # Test Cases For User_Reset_Password End
+
+    # Test Cases For User_Refresh_Token Start
+    def test_User_refresh_token(
+            self, flask_app, mocker: MockerFixture):
+        with flask_app.app_context():
+            test_token = os.environ["test_refresh_token"]
+            header = Headers(
+                {
+                    'Authorization': test_token
+                })
+            with flask_app.test_client() as client:
+                resp = client.post(
+                    '/v1/refresh',
+                    headers=header,
+                    follow_redirects=True)
+                assert resp.status_code == 200
+
+    # Test Cases For User_Refresh_Token End
+
+    def test_update_password_with_valid_data(
+            self, flask_app, mocker: MockerFixture):
+        with flask_app.app_context():
+            test_token = os.environ["test_token"]
+            header = Headers(
+                {
+                    'Authorization': test_token
+                })
+            with flask_app.test_client() as client:
+                resp = client.put(
+                    '/v1/updatepassword',
+                    headers=header,
+                    follow_redirects=True,
+                    json=dict(
+                        email='esadmin@elementsci.com',
+                        newpassword="EleM3nTSci"
+                        ))
+                assert resp.status_code == 200
+
+    def test_update_password_with_invalid_data(
+            self, flask_app, mocker: MockerFixture):
+        with flask_app.app_context():
+            test_token = os.environ["test_token"]
+            header = Headers(
+                {
+                    'Authorization': test_token
+                })
+            with flask_app.test_client() as client:
+                resp = client.put(
+                    '/v1/updatepassword',
+                    headers=header,
+                    follow_redirects=True,
+                    json=dict(
+                        email='esadmin@elementsci.com'
+                        ))
+                assert resp.status_code == 500

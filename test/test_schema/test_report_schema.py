@@ -2,7 +2,7 @@ import pytest
 from schema.report_schema import report_id_schema, must_not_blank
 
 
-class TestClass:
+class TestReportSchema:
     def test_report_schema_with_none(self):
         with pytest.raises(Exception) as e:
             assert report_id_schema.load(None)

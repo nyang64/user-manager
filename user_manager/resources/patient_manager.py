@@ -109,7 +109,7 @@ class PatientManager():
         # outpatient_provider
         outpatient_role_id = 1
         out_patient_provider = PatientsProviders.find_by_patient_and_role_id(patient.id, outpatient_role_id)
-        outpatient_provider = Providers.find_by_id(out_patient_provider.id)
+        outpatient_provider = Providers.find_by_id(out_patient_provider.provider_id)
         outpatient_provider_user = Users.find_by_id(outpatient_provider.user_id)
         outpatient_facility = Facilities.find_by_id(outpatient_provider.facility_id)
         outpatient_address = Address.find_by_id(outpatient_facility.address_id)
@@ -118,7 +118,7 @@ class PatientManager():
         # prescribing provider
         prescribing_role_id = 2
         pre_patient_provider = PatientsProviders.find_by_patient_and_role_id(patient.id, prescribing_role_id)
-        prescribing_provider = Providers.find_by_id(pre_patient_provider.id)
+        prescribing_provider = Providers.find_by_id(pre_patient_provider.provider_id)
         prescribing_provider_user = Users.find_by_id(prescribing_provider.user_id)
         prescribing_facility = Facilities.find_by_id(prescribing_provider.facility_id)
         prescribing_address = Address.find_by_id(prescribing_facility.address_id)

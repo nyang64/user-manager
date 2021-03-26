@@ -102,7 +102,7 @@ class ProviderService(DbRepository):
             .join(TherapyReport, Patient.id == TherapyReport.patient_id,
                   isouter=True) \
             .with_entities(
-                Patient.id, Users.id, UserRegister.email, Users.first_name,
+                Patient.id, UserRegister.email, Users.first_name,
                 Users.last_name, Users.phone_number, Patient.date_of_birth,
                 Patient.enrolled_date, Patient.emergency_contact_name,
                 Patient.emergency_contact_number, Address.street_address_1,
@@ -117,7 +117,7 @@ class ProviderService(DbRepository):
                                    Salvos.clinician_verified_at)\
                     .filter(TherapyReport.patient_id == patient_data[0])\
                     .order_by(Salvos.id).all()
-        print(reports)
+        # print(reports)
         return patient_data, reports
 
     def patients_list(self, provider_id, page_number, record_per_page, first_name,
@@ -130,7 +130,7 @@ class ProviderService(DbRepository):
 
         base_query = self._base_query(provider_id)
         base_query = base_query.with_entities(
-            Patient.id, Users.id, UserRegister.email, Users.first_name,
+            Patient.id, UserRegister.email, Users.first_name,
             Users.last_name, Users.phone_number, Patient.date_of_birth,
             UserStatusType.name)
         filter_query = self._filter_query(base_query, first_name, last_name,
@@ -140,11 +140,10 @@ class ProviderService(DbRepository):
             page_number + 1, record_per_page).items
         lists = []
         for data in query_data:
-
             reports = db.session.query(TherapyReport.id).filter(
                 TherapyReport.patient_id == data[0]).all()
             reports = [report[0] for report in reports]
-            patient_data = patient_list(*data[1:], reports)
+            patient_data = patient_list(*data, reports)
             lists.append(patient_data._asdict())
         return lists, data_count
 

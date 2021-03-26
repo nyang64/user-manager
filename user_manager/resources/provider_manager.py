@@ -168,7 +168,6 @@ class provider_manager():
         return: patient detail in dict format
         '''
         request_data = request.args
-        provider = Providers.find_by_email(token['user_email'])
         patient_id = patient_id_schema.load(request_data).get('patientID')
         patient_data, reports = self.provider_obj.patient_detail_byid(
             patient_id)

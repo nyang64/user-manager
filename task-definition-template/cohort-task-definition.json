@@ -92,18 +92,14 @@
           "value": "$DEPLOYMENT_ENVIRONMENT-therapy-reports"
         },
   {
-          "name": "CHECK_DEVICE_EXIST_URL",
-          "value": "https://ki0c10fwb8.execute-api.us-west-1.amazonaws.com/qa-device-manager/v1/device/exists"
-        },
-  {
-          "name": "GET_DEVICE_DETAIL_URL",
-          "value": "https://ki0c10fwb8.execute-api.us-west-1.amazonaws.com/qa-device-manager/v1/device"
+          "name": "DEVICE_BASE_URL",
+          "value": "https://ki0c10fwb8.execute-api.us-west-1.amazonaws.com/qa-device-manager/v1"
         }
       ],
       "secrets": [
         {
           "valueFrom": "$SM_ARN",
-          "name": "user-manager-secrets"
+          "name": "SECRET_MANAGER_ARN"
         }
       ],
       "volumesFrom": [],

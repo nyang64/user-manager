@@ -13,7 +13,6 @@ app = Appplication(__name__, '/')
 app.config["SQLALCHEMY_DATABASE_URI"] = get_connection_url()
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 app.config["E_EXCEPTIONS"] = True
-app.debug = Truea
 
 migrate = Migrate()
 db.init_app(app)

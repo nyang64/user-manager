@@ -2,11 +2,12 @@ from werkzeug.exceptions import BadRequest
 from flask import jsonify
 import http.client
 from services.user_services import UserServices
-from schema.user_schema import create_user_schema, update_user_schema
+from schema.user_schema import create_user_schema, update_user_schema, UserSchema
 from utils.validation import validate_request
 from utils.jwt import require_user_token
 from utils.constants import ADMIN, PROVIDER, PATIENT, ESUSER
 from flask import request
+from model.users import Users
 
 
 class UserManager():
@@ -62,6 +63,12 @@ class UserManager():
             'uuid': '1f4ea346-25ce-4e35-a19c-22da1385997b'
         }
         return jsonify(resp), http.client.OK
+
+    @require_user_token(ADMIN, PROVIDER, PATIENT, ESUSER)
+    def show(self, user_id):
+        user = Users.find_by_id(user_id)
+        user_schema = UserSchema()
+        return user_schema.dump(user)
 
     @require_user_token(ADMIN, PROVIDER, PATIENT, ESUSER)
     def get_detail_bytoken(self, decrypt):

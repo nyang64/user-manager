@@ -8,8 +8,10 @@ message_details = {
     "registration": "",
     "facility": "",
     "provider_roles": "",
-    "user_roles": ""
+    "user_roles": "",
+    "admin": ""
 }
+
 
 def print_message_details():
     print(json.dumps(message_details, indent=4))

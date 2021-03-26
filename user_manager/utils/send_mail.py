@@ -103,4 +103,3 @@ def send_registration_email(
     except Exception as e:
         logger.error(e)
         raise InternalServerError("Something went wrong. {0}".format(e))
-        return False

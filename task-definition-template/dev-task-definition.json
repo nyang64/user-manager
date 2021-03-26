@@ -91,6 +91,10 @@
           "name": "OTP_LIMIT_HOURS",
           "value": "1"
         },
+        {
+          "name": "DEVICE_BASE_URL",
+          "value": "https://ki0c10fwb8.execute-api.us-west-1.amazonaws.com/qa-device-manager/v1"
+        },
 	{
           "name": "OTP_LIMIT_MINUTES",
           "value": "0"
@@ -106,6 +110,18 @@
   {
           "name": "GET_DEVICE_DETAIL_URL",
           "value": "https://ki0c10fwb8.execute-api.us-west-1.amazonaws.com/qa-device-manager/v1/device"
+        },
+        {
+          "name": "APP_HOST",
+          "value": "0.0.0.0"
+        },
+        {
+          "name": "APP_PORT",
+          "value": "5000"
+        },
+        {
+          "name": "APP_DEBUG",
+          "value": "False"
         }
       ],
       "secrets": [

@@ -11,6 +11,7 @@ PATIENT = 'PATIENT'
 DEVICE_STATUS = 'Assigned'
 value = os.environ.get('user-manager-secrets')
 REPORT_BUCKET_NAME = read_environ_value(value, "REPORT_BUCKET_NAME")
+secrets_manager_data = os.environ.get('user-manager-secrets')
 
 DEVICE_BASE_URL = os.environ.get("DEVICE_BASE_URL")
 CHECK_DEVICE_EXIST_URL = DEVICE_BASE_URL + '/device/exists'
@@ -18,6 +19,12 @@ GET_DEVICE_DETAIL_URL = DEVICE_BASE_URL + '/device'
 UPDATE_DEVICE_STATUS_URL = DEVICE_BASE_URL + '/update/device/status'
 GET_DEVICE_STATUS_URL = DEVICE_BASE_URL + '/get/device/status'
 LOGIN_URL = DEVICE_BASE_URL + '/login'
+
+REPORT_BUCKET_NAME = read_environ_value(secrets_manager_data, "REPORT_BUCKET_NAME")
+
+ADMIN_EMAIL = read_environ_value(secrets_manager_data, "ADMIN_USERNAME")
+ADMIN_PASSWORD = read_environ_value(secrets_manager_data, "ADMIN_PASSWORD")
+
 PROVIDER_OUTPATIENT = {
     "user": {
         "first_name": "Alex",
@@ -132,13 +139,12 @@ ADMIN_USER = {
         "first_name": "admin",
         "last_name": "admin",
         "phone_number": "8097810754",
-        "type": PROVIDER
+        "type": ADMIN
     },
     "register": {
-        "email": "piggieehi12@elementsci.com",
-        "password": read_environ_value(value, "ADMIN_PASSWORD")
+        "email": ADMIN_EMAIL,
+        "password": ADMIN_PASSWORD
     }
 }
 
 PATIENTS = [PATIENT_1_DICTIONARY, PATIENT_2_DICTIONARY]
-

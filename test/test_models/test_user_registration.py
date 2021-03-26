@@ -24,4 +24,4 @@ def flask_app():
 class TestTestUserRegistrationModel:
     def test_base_schema_with_not_found(self, flask_app):
         with flask_app.app_context():
-            UserRegister.delete_user_by_Userid(200000)
+            UserRegister.delete_user_by_user_id(200000)

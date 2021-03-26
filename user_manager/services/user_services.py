@@ -71,7 +71,7 @@ class UserServices(DbRepository):
 
     def assign_role(self, user_id, role_name):
         role_id = Roles.get_roleid(role_name)
-        user_role = UserRoles(role_id=role_id, user_id=user_id)
+        user_role = UserRoles(role_id=role_id.id, user_id=user_id)
         self.flush_db(user_role)
 
     def get_detail_by_email(self, email):

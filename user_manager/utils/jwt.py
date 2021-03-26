@@ -6,7 +6,7 @@ import datetime
 from werkzeug.exceptions import Unauthorized
 import os
 
-value = os.environ.get('user-manager-secrets')
+value = os.environ.get('SECRET_MANAGER_ARN')
 
 
 def encoded_Token(

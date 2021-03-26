@@ -5,7 +5,7 @@ from werkzeug.exceptions import InternalServerError
 from config import read_environ_value
 import os
 import logging
-value = os.environ.get('user-manager-secrets')
+value = os.environ.get('SECRET_MANAGER_ARN')
 
 logger = logging.getLogger()
 logger.setLevel(logging.ERROR)

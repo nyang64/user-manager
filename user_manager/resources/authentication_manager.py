@@ -55,7 +55,7 @@ class AuthOperation():
         return {"message": "Password Updated"}, 200
 
     def reset_user_password(self):
-        value = os.environ.get('user-manager-secrets')
+        value = os.environ.get('SECRET_MANAGER_ARN')
         user_json = request.get_json()
         have_key = have_keys_NotForce(
             user_json, 'email', 'otp', 'password'

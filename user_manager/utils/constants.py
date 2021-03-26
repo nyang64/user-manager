@@ -9,9 +9,8 @@ ESUSER = 'USER'
 PROVIDER = 'PROVIDER'
 PATIENT = 'PATIENT'
 DEVICE_STATUS = 'Assigned'
-value = os.environ.get('user-manager-secrets')
+value = os.environ.get('SECRET_MANAGER_ARN')
 REPORT_BUCKET_NAME = read_environ_value(value, "REPORT_BUCKET_NAME")
-secrets_manager_data = os.environ.get('user-manager-secrets')
 
 DEVICE_BASE_URL = os.environ.get("DEVICE_BASE_URL")
 CHECK_DEVICE_EXIST_URL = DEVICE_BASE_URL + '/device/exists'
@@ -20,10 +19,8 @@ UPDATE_DEVICE_STATUS_URL = DEVICE_BASE_URL + '/update/device/status'
 GET_DEVICE_STATUS_URL = DEVICE_BASE_URL + '/get/device/status'
 LOGIN_URL = DEVICE_BASE_URL + '/login'
 
-REPORT_BUCKET_NAME = read_environ_value(secrets_manager_data, "REPORT_BUCKET_NAME")
-
-ADMIN_EMAIL = read_environ_value(secrets_manager_data, "ADMIN_USERNAME")
-ADMIN_PASSWORD = read_environ_value(secrets_manager_data, "ADMIN_PASSWORD")
+ADMIN_EMAIL = read_environ_value(value, "ADMIN_USERNAME")
+ADMIN_PASSWORD = read_environ_value(value, "ADMIN_PASSWORD")
 
 PROVIDER_OUTPATIENT = {
     "user": {

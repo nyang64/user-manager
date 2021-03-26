@@ -25,7 +25,8 @@ class PatientServices(DbRepository):
         self.auth_obj = AuthServices()
         self.user_obj = UserServices()
 
-    def register_patient(self, register, user, patient, outpatient_id, prescribing_id):
+    def register_patient(self, register, user, patient,
+                         outpatient_id, prescribing_id):
         from utils.constants import PATIENT
         reg_id = self.auth_obj.register_new_user(register[0],
                                                  register[1])
@@ -240,6 +241,11 @@ class PatientServices(DbRepository):
 
     def get_auth_token(self):
         import json
+        import os
+        from config import read_environ_value
+        value = os.environ.get('SECRET_MANAGER_ARN')
+        DEVICE_EMAIL = read_environ_value(value, 'DEVICE_EMAIL')
+        DEVICE_PASSWORD = read_environ_value(value, 'DEVICE_PASSWORD')
         DEVICE_EMAIL = "deviceadmin@elementsci.com"
         DEVICE_PASSWORD = "device12345"
         data = {"email": DEVICE_EMAIL, "password": DEVICE_PASSWORD}

@@ -20,7 +20,7 @@ def read_environ_value(value, key):
 
 
 def get_connection_url():
-    value = os.environ.get('user-manager-secrets')
+    value = os.environ.get('SECRET_MANAGER_ARN')
     host = os.environ.get('POSTGRES_DB_HOST')
     port = str(os.environ.get('POSTGRES_DB_PORT'))
     database_name = os.environ.get('POSTGRES_DB_NAME')

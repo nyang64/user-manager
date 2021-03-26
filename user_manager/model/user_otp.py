@@ -46,7 +46,7 @@ class UserOTPModel(BaseModel):
     @classmethod
     def find_list_by_user_id(cls, user_id: str) -> "UserOTPModel":
         try:
-            value = os.environ.get('user-manager-secrets')
+            value = os.environ.get('SECRET_MANAGER_ARN')
             now = datetime.now()
             d = now - timedelta(
                 hours=int(read_environ_value(

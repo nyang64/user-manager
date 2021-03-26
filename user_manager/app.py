@@ -1,7 +1,3 @@
-from dotenv import load_dotenv
-load_dotenv(".env")
-import os
-
 from db import db
 from ma import ma
 from flask_migrate import Migrate
@@ -12,13 +8,11 @@ from blueprint.user_blueprint import UserBluePrint
 from blueprint.patient_blueprint import PatientBluePrint
 from blueprint.provider_blueprint import ProviderBlueprint
 from application import Appplication
-import pdb
 
 app = Appplication(__name__, '/')
 app.config["SQLALCHEMY_DATABASE_URI"] = get_connection_url()
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 app.config["E_EXCEPTIONS"] = True
-app.debug = True
 
 migrate = Migrate()
 db.init_app(app)
@@ -47,9 +41,4 @@ if __name__ == "__main__":
     # NOTE: DO NOT change the host and port numbers while deploying to cloud. The application
     # WILL NOT work as the port is tied to ECS container. If the port is changed here, we need to
     # make changes to the ECS infrastructure.
-    # app.run(host='0.0.0.0', port=5000)
-    app.run(
-        host=os.environ.get("APP_HOST"),
-        port=os.environ.get("APP_PORT"),
-        debug=os.environ.get("APP_DEBUG"),
-    )
+    app.run(host='0.0.0.0', port=5000)

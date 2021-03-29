@@ -14,9 +14,11 @@ from model.salvos import Salvos
 from model.user_registration import UserRegister
 from model.users import Users
 from model.patient import Patient
-from model.providers_roles import ProviderRoles
+from model.facilities import Facilities
 from model.provider_role_types import ProviderRoleTypes
 from model.patients_providers import PatientsProviders
+from schema.providers_roles_schema import ProvidersRolesSchema
+from schema.providers_schema import ProvidersSchema
 from db import db
 from collections import namedtuple
 from utils.constants import PROVIDER
@@ -24,6 +26,8 @@ import logging
 logger = logging.getLogger()
 logger.setLevel(logging.ERROR)
 
+provider_role_schema = ProvidersRolesSchema()
+provider_schema = ProvidersSchema()
 
 class ProviderService(DbRepository):
     def __init__(self):
@@ -52,19 +56,28 @@ class ProviderService(DbRepository):
             raise InternalServerError(str(error))
 
     def add_provider(self, user_id, facility_id, role_name):
-        from model.facilities import Facilities
         exist_facility = Facilities.find_by_id(facility_id)
+        # raise if invalid facility id was received
         if not exist_facility:
-            raise NotFound('facility id not found')
-        provider = Providers(
-            user_id=user_id,
-            facility_id=facility_id
-        )
-        self.flush_db(provider)
+            raise NotFound(f"facility with id {facility_id} was not found")
+
+        # raise if invalid role name was received
         role = ProviderRoleTypes.find_by_name(role_name)
-        provider_role = ProviderRoles(provider_role_id=role.id, provider_id=provider.id)
-        self.flush_db(provider)
-        self.flush_db(provider_role)
+        if not role:
+            raise NotFound(f"could not find role with name {role} in provider_role_types")
+
+        # create and save provider
+        provider = provider_schema.load({"user_id": user_id, "facility_id": facility_id})
+        provider.save_to_db()
+
+        # raise if provider was not saved
+        if not provider.id:
+            raise NotFound(f"provider with user_id {user_id} and facility_id {facility_id} was not created")
+
+        # assign a provider role to the provider
+        provider_role = provider_role_schema.load({"provider_role_id": role.id, "provider_id": provider.id})
+        provider_role.save_to_db()
+
         return provider.id
 
     def report_signed_link(self, report_id):

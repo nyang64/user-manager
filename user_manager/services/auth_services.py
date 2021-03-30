@@ -10,7 +10,7 @@ from model.user_otp import UserOTPModel
 from services.repository.db_repositories import DbRepository
 import logging
 logger = logging.getLogger()
-logger.setLevel(logging.ERROR)
+logger.setLevel(logging.DEBUG)
 
 
 class AuthServices(DbRepository):
@@ -44,11 +44,14 @@ class AuthServices(DbRepository):
     def User_login(self, data: UserRegister) -> auth_response_model:
         user_data = UserRegister.find_by_email(
             str(data.email).lower())
+        logger.debug(user_data)
         if user_data is None:
             raise NotFound("No Such User Exist")
         role_name_data = UserRegister.get_role_by_id(
             user_reg_id=user_data.id)
+        logger.debug(role_name_data)
         user_detail = Users.find_by_registration_id(user_data.id)
+        logger.debug(user_detail)
         if role_name_data is None:
             raise Unauthorized("No Such User Allowed")
         if checkPass(data.password, user_data.password):

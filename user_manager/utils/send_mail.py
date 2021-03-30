@@ -80,7 +80,7 @@ def send_registration_email(
     <h1>App download instructions</h1>
     <p>
     <ul>
-        <li>Download and install the app using the link <a>{}</a>
+        <li>Download and install the app using the link {}
         <li>Install the app
         <li>Login with the credentials:<br/>
                 username: {}

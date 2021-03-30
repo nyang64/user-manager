@@ -21,7 +21,7 @@
       "environment": [
         {
           "name": "APP_LINK",
-          "value": "http://applink"
+          "value": "https://testflight.apple.com/join/BfvzYBfY"
         },
         {
           "name": "POSTGRES_DB_HOST",
@@ -93,7 +93,7 @@
         },
   {
           "name": "DEVICE_BASE_URL",
-          "value": "https://ki0c10fwb8.execute-api.us-west-1.amazonaws.com/qa-device-manager/v1"
+          "value": "https://xthqtsljcj.execute-api.us-west-2.amazonaws.com/prod/v1"
         }
       ],
       "secrets": [

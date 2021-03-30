@@ -77,6 +77,7 @@ class PatientManager():
     @require_user_token(ADMIN, PROVIDER)
     def assign_device(self, decrypt):
         request_data = validate_request()
+        print(request_data)
         patient_device = assign_device_schema.load(request_data)
         self.patient_obj.assign_device_to_patient(patient_device)
         return {'message': 'Device assigned',

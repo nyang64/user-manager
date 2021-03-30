@@ -110,7 +110,8 @@ class PatientServices(DbRepository):
     def check_device_assigned(self, device_serial_number):
         is_assign = PatientsDevices.check_device_assigned(
             device_serial_number)
-        logging.info('Device Assigned to patient : {}'.format(
+        print('Device Assigned to patient' + str(is_assign))
+        logging.debug('Device Assigned to patient : {}'.format(
             bool(is_assign)))
         if bool(is_assign) is True:
             logging.warning(
@@ -123,13 +124,15 @@ class PatientServices(DbRepository):
         header = {'Authorization': auth_token}
         payload = {'serial_number': device_serial_number}
         logging.info('Request payload {}'.format(payload))
+        print(CHECK_DEVICE_EXIST_URL)
         r = requests.get(CHECK_DEVICE_EXIST_URL,
                          headers=header,
                          params=payload)
-        logging.info('Request finished with status code {}'.format(
+        print("....." + r)
+        logging.debug('Request finished with status code {}'.format(
             r.status_code))
-        logging.info('response {}'.format(r.text))
-        logging.info('The Called API {}'.format(r.url))
+        logging.debug('response {}'.format(r.text))
+        logging.debug('The Called API {}'.format(r.url))
         if int(r.status_code) == 404:
             MSG = 'Device serial number {} not found'.format(
                 device_serial_number)
@@ -157,7 +160,8 @@ class PatientServices(DbRepository):
             return True
 
     def assign_device_to_patient(self, patient_device):
-        logging.info('Assign to device patient started')
+        logging.debug('Assign to device patient started')
+        print('Assign to device patient started')
         exist_patient = Patient.find_by_id(patient_device.patient_id)
         if bool(exist_patient) is False:
             logging.warning('Patient Record Not Found')

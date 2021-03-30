@@ -2,6 +2,7 @@ from db import db
 from ma import ma
 from flask_migrate import Migrate
 from flask_seeder import FlaskSeeder
+from flask_cors import CORS
 from config import get_connection_url
 from blueprint.auth_blueprint import AuthenticationBlueprint
 from blueprint.user_blueprint import UserBluePrint
@@ -14,6 +15,10 @@ app.config["SQLALCHEMY_DATABASE_URI"] = get_connection_url()
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 app.config["E_EXCEPTIONS"] = True
 
+# enable cors for all endpoints from any location
+# remove before moving to production
+CORS(app)
+
 migrate = Migrate()
 db.init_app(app)
 ma.init_app(app)
@@ -21,7 +26,6 @@ migrate.init_app(app, db)
 
 seeder = FlaskSeeder()
 seeder.init_app(app, db)
-
 
 auth_blueprint = AuthenticationBlueprint()
 app.register_blueprint(auth_blueprint)

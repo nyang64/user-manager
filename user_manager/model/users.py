@@ -4,7 +4,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from werkzeug.exceptions import NotFound, InternalServerError
 import uuid
 from model.base_model import BaseModel
-from model.user_registration import UserRegister
+
 import logging
 
 

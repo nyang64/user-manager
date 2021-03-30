@@ -2,6 +2,7 @@ from db import db
 from sqlalchemy import Integer, String, ForeignKey, DateTime
 from model.base_model import BaseModel
 
+
 class Patient(BaseModel):
     __tablename__ = "patients"
     __table_args__ = ({"schema": "ES"})

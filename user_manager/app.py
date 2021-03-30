@@ -24,7 +24,8 @@ logger.setLevel(logging.INFO)
 migrate = Migrate()
 db.init_app(app)
 ma.init_app(app)
-migrate = Migrate(app, db)
+migrate.init_app(app, db)
+
 seeder = FlaskSeeder()
 seeder.init_app(app, db)
 

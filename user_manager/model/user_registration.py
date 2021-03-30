@@ -1,10 +1,5 @@
-from werkzeug.exceptions import InternalServerError
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import String, Boolean
 from model.base_model import BaseModel
-from model.user_roles import UserRoles
-from model.roles import Roles
-# from model.users import Users
 from db import db
 import logging
 

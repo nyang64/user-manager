@@ -91,7 +91,6 @@ class PatientManager():
         return jsonify(resp), http.client.OK
 
     def patients(self):
-        # user_patient_schema = UserPatientSchema(many=True)
         patient_schema = PatientSchema(many=True)
         patients = Patient.all()
 

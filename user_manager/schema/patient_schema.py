@@ -35,7 +35,7 @@ class PatientSchema(ma.SQLAlchemyAutoSchema):
     id = ma.auto_field(dump_only=True)
     provider_id = ma.auto_field()
     user_id = ma.auto_field()
-    user = ma.Nested(UserSchema())
+    user = ma.Nested(UserSchema)
 
 
 class CreatePatientSchema(CreateUserSchema):

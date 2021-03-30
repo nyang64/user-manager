@@ -41,9 +41,9 @@ class UserManager:
                 'status_code': '200'}, http.client.OK
 
     def get_users(self):
-        users = Users.all()
-
-        return jsonify(users_schema.dump(users)), 200
+        user_data = self.user_obj.list_users()
+        return {'data': user_data,
+                'status_code': '200'}, http.client.OK
 
     @require_user_token(ADMIN)
     def delete_user(self, decrypt):

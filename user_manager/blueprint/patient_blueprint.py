@@ -21,6 +21,10 @@ class PatientBluePrint(Blueprint):
                           'delete patient',
                           self.patient_obj.delete_patient,
                           methods=['DELETE'])
+        self.add_url_rule('/patients',
+                          'all patients',
+                          self.patient_obj.patients,
+                          methods=['GET'])
         self.add_url_rule('/patients/add/device',
                           'assign device to patient',
                           self.patient_obj.assign_device,

@@ -9,8 +9,9 @@ from utils.constants import ADMIN, PROVIDER, PATIENT, ESUSER
 from flask import request
 from model.users import Users
 
+users_schema = UserSchema(many=True)
 
-class UserManager():
+class UserManager:
     def __init__(self):
         self.user_obj = UserServices()
 
@@ -40,9 +41,9 @@ class UserManager():
                 'status_code': '200'}, http.client.OK
 
     def get_users(self):
-        user_data = self.user_obj.list_users()
-        return {'data': user_data,
-                'status_code': '200'}, http.client.OK
+        users = Users.all()
+
+        return jsonify(users_schema.dump(users)), 200
 
     @require_user_token(ADMIN)
     def delete_user(self, decrypt):

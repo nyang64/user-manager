@@ -52,13 +52,13 @@ PROVIDER_OUTPATIENT = {
 
 PROVIDER_PRESCRIBING = {
     "user": {
-        "first_name": "Jyothii",
+        "first_name": "Jyothi",
         "last_name": "Jayaraman",
         "phone_number": "1112223333",
         "type": PROVIDER
     },
     "register": {
-        "email": "jyothii@elementsci.com",
+        "email": "jyothi@elementsci.com",
         "password": "ilovealmonds"
     },
     "provider": {

@@ -47,6 +47,7 @@ class CreatePatientSchema(CreateUserSchema):
     provider_id = fields.Int(required=True, validate=must_not_blank)
     prescribing_provider = fields.Int(required=True, validate=must_not_blank)
     outpatient_provider = fields.Int(required=True, validate=must_not_blank)
+    indication = fields.Str(required=True, validate=must_not_blank)
 
     @post_load
     def make_post_load_object(self, data, **kwargs):
@@ -56,8 +57,9 @@ class CreatePatientSchema(CreateUserSchema):
         date_of_birth = data.get('date_of_birth')
         gender = data.get('gender')
         provider_id = data.get('provider_id')
+        indication = data.get('indication')
         patient = (emergency_contact_name, emergency_contact_number,
-                   date_of_birth, gender, provider_id)
+                   date_of_birth, gender, provider_id, indication)
         return register, user, patient
 
 
@@ -112,7 +114,7 @@ class PatientDetailSchema(BaseSchema):
     emergency_contact_number = fields.Str(dump_only=True)
     # address = fields.Str(attribute='full_address', dump_only=True)
     status = fields.Str(attribute='name', dump_only=True)
-
+    indication = fields.Str(attribute='indication', dump_only=True)
 
 patient_detail_schema = PatientDetailSchema()
 

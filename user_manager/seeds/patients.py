@@ -33,7 +33,7 @@ def create_patient(patient_details, outpatient_provider, prescribing_provider):
     })
 
     patient.save_to_db()
-    message_details["patient"] += f"Patient with id '{patient.id}' created with user id {id}. "
+    message_details["patient"] += f"Patient with id '{patient.id}' created with user id {registered_user_id}. "
     create_patient_device(patient.id, "12345678")
     create_patient_provider(patient.id, prescribing_provider, 1)
     create_patient_provider(patient.id, outpatient_provider, 2)

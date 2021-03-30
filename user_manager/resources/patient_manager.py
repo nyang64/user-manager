@@ -15,7 +15,6 @@ from model.patients_devices import PatientsDevices
 from model.patients_providers import PatientsProviders
 from model.user_registration import UserRegister
 
-from schema.patient_schema import PatientSchema
 from schema.patients_devices_schema import PatientsDevicesSchema
 from schema.providers_schema import ProvidersSchema
 from schema.user_schema import UserSchema
@@ -23,7 +22,8 @@ from schema.register_schema import RegistrationSchema
 from schema.address_schema import AddressSchema
 from schema.patient_schema import (create_patient_schema,
                                    update_patient_schema,
-                                   assign_device_schema)
+                                   assign_device_schema,
+                                   PatientSchema)
 
 
 class PatientManager():
@@ -36,9 +36,11 @@ class PatientManager():
         request_data = validate_request()
         outpatient_id = request_data["outpatient_provider"]
         prescribing_id = request_data["prescribing_provider"]
+
         register, user, patient = create_patient_schema.load(request_data)
         user_id, user_uuid, patient_id = self.patient_obj.register_patient(
-            register, user, patient, outpatient_id, prescribing_id)
+            register, user, patient, outpatient_id, prescribing_id
+        )
         if user_id is not None and user_uuid is not None:
             send_registration_email(
                 user[0], register[0],

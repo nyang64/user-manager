@@ -5,6 +5,7 @@ from model.patient import Patient
 from model.patients_devices import PatientsDevices
 from model.users import Users
 from model.user_registration import UserRegister
+from model.provider_role_types import ProviderRoleTypes
 from db import db
 from services.user_services import UserServices
 from services.auth_services import AuthServices
@@ -33,28 +34,31 @@ class PatientServices(DbRepository):
         user_id, user_uuid = self.user_obj.save_user(user[0], user[1],
                                                      user[2], reg_id)
         patient_id = self.save_patient(user_id, patient[0], patient[1],
-                                       patient[2], patient[3], patient[4])
+                                       patient[2], patient[3], patient[4], patient[5])
         self.user_obj.assign_role(user_id, PATIENT)
-        # create PatientProvider
+
+        # create PatientProvider association
+        prescribing_role = ProviderRoleTypes.find_by_name("prescribing")
+        outpatient_role = ProviderRoleTypes.find_by_name("outpatient")
+
         patient_provider_schema = PatientsProvidersSchema()
         out_patient_provider = patient_provider_schema.load({
             "patient_id": patient_id,
             "provider_id": outpatient_id,
-            "provider_role_id": 2
+            "provider_role_id": outpatient_role.id
         })
         out_patient_provider.save_to_db()
         pre_patient_provider = patient_provider_schema.load({
             "patient_id": patient_id,
             "provider_id": prescribing_id,
-            "provider_role_id": 1
+            "provider_role_id": prescribing_role.id
         })
         pre_patient_provider.save_to_db()
-
         self.commit_db()
         return user_id, user_uuid, patient_id
 
     def save_patient(self, user_id, emer_contact_name,
-                     emer_contact_no, date_of_birth, gender, provider_id):
+                     emer_contact_no, date_of_birth, gender, provider_id, indication):
         try:
             Users.check_user_exist(user_id)
             patient_data = Patient(user_id=user_id,
@@ -62,7 +66,8 @@ class PatientServices(DbRepository):
                                    emergency_contact_name=emer_contact_name,
                                    emergency_contact_number=emer_contact_no,
                                    date_of_birth=date_of_birth,
-                                   provider_id=provider_id)
+                                   provider_id=provider_id,
+                                   indication=indication)
             self.flush_db(patient_data)
             if patient_data.id is None:
                 raise SQLAlchemyError('error while adding patient')

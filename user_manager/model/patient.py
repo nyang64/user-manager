@@ -25,6 +25,7 @@ class Patient(BaseModel):
                               DateTime,
                               default=db.func.now())
     gender = db.Column('gender', String(30), nullable=False)
+    indication = db.Column('indication', String(40), nullable=False)
     users = db.relationship("Users",
                             backref=backref("users_patient", uselist=False))
 

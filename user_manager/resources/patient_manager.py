@@ -90,6 +90,13 @@ class PatientManager():
         resp = {'devices': device_list}
         return jsonify(resp), http.client.OK
 
+    def patients(self):
+        # user_patient_schema = UserPatientSchema(many=True)
+        patient_schema = PatientSchema(many=True)
+        patients = Patient.all()
+
+        return jsonify(patient_schema.dump(patients))
+    
     def therapy_report_details(self, patient_id):
         # create schemas for formatting the JSON response
         address_schema = AddressSchema()

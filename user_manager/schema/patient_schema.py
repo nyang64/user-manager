@@ -1,4 +1,4 @@
-from schema.user_schema import CreateUserSchema
+from schema.user_schema import CreateUserSchema, UserSchema
 from schema.base_schema import validate_number, BaseSchema
 from model.patients_devices import PatientsDevices
 from model.patient import Patient
@@ -35,6 +35,7 @@ class PatientSchema(ma.SQLAlchemyAutoSchema):
     id = ma.auto_field(dump_only=True)
     provider_id = ma.auto_field()
     user_id = ma.auto_field()
+    user = ma.Nested(UserSchema())
 
 
 class CreatePatientSchema(CreateUserSchema):

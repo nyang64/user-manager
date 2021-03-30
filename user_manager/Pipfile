@@ -17,6 +17,7 @@ PyJWT = "==2.0.1"
 Flask-Bcrypt = "==0.7.1"
 Flask-Seeder = "*"
 flask-cors = "*"
+pytest = "*"
 
 [dev-packages]
 

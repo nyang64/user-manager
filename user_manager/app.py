@@ -16,7 +16,6 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 app.config["E_EXCEPTIONS"] = True
 
 # enable cors for all endpoints from any location
-# remove before moving to production
 CORS(app)
 
 migrate = Migrate()

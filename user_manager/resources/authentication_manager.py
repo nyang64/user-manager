@@ -55,12 +55,15 @@ class AuthOperation():
         return {"message": "Password Updated"}, 200
 
     def reset_user_password(self):
+        import pytz
+        utc = pytz.UTC
         value = os.environ.get('SECRET_MANAGER_ARN')
         user_json = request.get_json()
         have_key = have_keys_NotForce(
             user_json, 'email', 'otp', 'password'
          )
         if have_key is True:
+            print('OTP data')
             user_data = UserRegister.find_by_email(
                 email=str(user_json["email"]).lower()
                 )
@@ -78,7 +81,14 @@ class AuthOperation():
                     value, "OTP_EXPIRATION_TIME_HOURS")),
                 minutes=int(read_environ_value(
                     value, "OTP_EXPIRATION_TIME_MINUTES")))
-            if otp_data.created_at < expiration_time:
+            et = utc.localize(expiration_time)
+            print('Created', otp_data.created_at)
+            print('Expiration', expiration_time)
+            ct = otp_data.created_at.replace(tzinfo=None)
+            print('Replace Timezone', ct)
+            print('Convertion expiration TZ', et)
+            # ct = utc.localize(ct)
+            if ct < expiration_time:
                 return {"message": "OTP is Expired"}, 410
             otp_data.temp_password = encPass(user_json["password"])
             msg = self.auth_obj.update_otp_data(otp_data)

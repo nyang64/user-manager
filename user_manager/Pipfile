@@ -18,6 +18,7 @@ Flask-Bcrypt = "==0.7.1"
 Flask-Seeder = "*"
 flask-cors = "*"
 pytest = "*"
+pytest-mock = "*"
 
 [dev-packages]
 

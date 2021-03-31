@@ -26,15 +26,15 @@ class PatientServices(DbRepository):
         self.auth_obj = AuthServices()
         self.user_obj = UserServices()
 
-    def register_patient(self, register, user, patient,
-                         outpatient_id, prescribing_id):
+    def register_patient(self, register, user, patient, provider):
         from utils.constants import PATIENT
         reg_id = self.auth_obj.register_new_user(register[0],
                                                  register[1])
         user_id, user_uuid = self.user_obj.save_user(user[0], user[1],
                                                      user[2], reg_id)
         patient_id = self.save_patient(user_id, patient[0], patient[1],
-                                       patient[2], patient[3], patient[4], patient[5])
+                                       patient[2], patient[3], patient[4],
+                                       patient[5])
         self.user_obj.assign_role(user_id, PATIENT)
 
         # create PatientProvider association
@@ -44,13 +44,13 @@ class PatientServices(DbRepository):
         patient_provider_schema = PatientsProvidersSchema()
         out_patient_provider = patient_provider_schema.load({
             "patient_id": patient_id,
-            "provider_id": outpatient_id,
+            "provider_id": provider[0],
             "provider_role_id": outpatient_role.id
         })
         out_patient_provider.save_to_db()
         pre_patient_provider = patient_provider_schema.load({
             "patient_id": patient_id,
-            "provider_id": prescribing_id,
+            "provider_id": provider[1],
             "provider_role_id": prescribing_role.id
         })
         pre_patient_provider.save_to_db()
@@ -58,7 +58,8 @@ class PatientServices(DbRepository):
         return user_id, user_uuid, patient_id
 
     def save_patient(self, user_id, emer_contact_name,
-                     emer_contact_no, date_of_birth, gender, provider_id, indication):
+                     emer_contact_no, date_of_birth, gender, provider_id,
+                     indication):
         try:
             Users.check_user_exist(user_id)
             patient_data = Patient(user_id=user_id,

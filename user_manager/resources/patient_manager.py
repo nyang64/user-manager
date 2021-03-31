@@ -34,12 +34,11 @@ class PatientManager():
     def create_patient(self, decrypt):
         from utils.send_mail import send_registration_email
         request_data = validate_request()
-        outpatient_id = request_data["outpatient_provider"]
-        prescribing_id = request_data["prescribing_provider"]
 
-        register, user, patient = create_patient_schema.load(request_data)
+        register, user, patient, provider = create_patient_schema.load(
+            request_data)
         user_id, user_uuid, patient_id = self.patient_obj.register_patient(
-            register, user, patient, outpatient_id, prescribing_id
+            register, user, patient, provider
         )
         if user_id is not None and user_uuid is not None:
             send_registration_email(

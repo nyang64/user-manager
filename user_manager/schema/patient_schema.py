@@ -57,10 +57,14 @@ class CreatePatientSchema(CreateUserSchema):
         date_of_birth = data.get('date_of_birth')
         gender = data.get('gender')
         provider_id = data.get('provider_id')
+        outpatient_provider = data.get('outpatient_provider')
+        prescribing_provider = data.get('prescribing_provider')
         indication = data.get('indication')
         patient = (emergency_contact_name, emergency_contact_number,
                    date_of_birth, gender, provider_id, indication)
-        return register, user, patient
+        # 1st is oupatient 2nd is prescribing
+        provider = (outpatient_provider, prescribing_provider)
+        return register, user, patient, provider
 
 
 create_patient_schema = CreatePatientSchema()

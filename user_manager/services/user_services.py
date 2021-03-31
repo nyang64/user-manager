@@ -19,9 +19,11 @@ class UserServices(DbRepository):
         self.auth_obj = AuthServices()
 
     def register_user(self, register, user):
-        reg_id = self.auth_obj.register_new_user(register.email, register.password)
-        user_id, user_uuid = self.save_user(user.first_name, user.last_name, user.phone_number, reg_id)
-        self.assign_role(user_id, ESUSER)
+        reg_id = self.auth_obj.register_new_user(
+            register[0], register[1])
+        user_id, user_uuid = self.save_user(user[0], user[1],
+                                            user[2], reg_id)
+        self.assign_role(user_id)
         self.commit_db()
         return user_id, user_uuid
 

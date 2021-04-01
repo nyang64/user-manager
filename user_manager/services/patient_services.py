@@ -206,7 +206,7 @@ class PatientServices(DbRepository):
         b = db.session.query(UserRegister)\
             .join(Users, and_(UserRegister.id == Users.registration_id,
                               UserRegister.email == token.get('user_email')))\
-            .with_entities(PatientsDevices.device_serial_number)
+            .with_entities(UserRegister.id)
         logging.info('B b {}'.format(b))
         serial_numbers_query = db.session.query(Users)\
             .join(UserRegister,
@@ -214,7 +214,7 @@ class PatientServices(DbRepository):
                        UserRegister.email == token.get('user_email')))\
             .join(Patient, Users.id == Patient.user_id)\
             .join(PatientsDevices, Patient.id == PatientsDevices.patient_id)\
-            .with_entities(PatientsDevices.device_serial_number)
+            .with_entities(PatientsDevices.device_serial_number, Users.id)
         logging.info('QUERY {}'.format(serial_numbers_query))
         # device_serial_numbers = serial_numbers_query.all()
         # Count should be same as the original one

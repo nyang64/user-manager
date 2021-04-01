@@ -7,10 +7,9 @@ from ma import ma
 import logging
 
 
-
-ENAME_MISSING = "emergenct_contact_name parameter is missing"
-ENUMBER_MISSING = "emergenct_contact_number parameter is missing"
-DOB_MISSING = "emergenct_contact_number parameter is missing"
+ENAME_MISSING = "emergency_contact_name parameter is missing"
+ENUMBER_MISSING = "emergency_contact_number parameter is missing"
+DOB_MISSING = "emergency_contact_number parameter is missing"
 
 
 def must_not_blank(data):
@@ -40,7 +39,8 @@ class PatientSchema(ma.SQLAlchemyAutoSchema):
 
 class CreatePatientSchema(CreateUserSchema):
     emergency_contact_name = fields.Str(required=True, validate=must_not_blank)
-    emergency_contact_number = fields.Str(required=True, validate=validate_number)
+    emergency_contact_number = fields.Str(required=True,
+                                          validate=validate_number)
     date_of_birth = fields.Str(required=True, validate=must_not_blank)
     gender = fields.Str(required=True, validate=must_not_blank)
     provider_id = fields.Int(required=True, validate=must_not_blank)
@@ -118,6 +118,7 @@ class PatientDetailSchema(BaseSchema):
     # address = fields.Str(attribute='full_address', dump_only=True)
     status = fields.Str(attribute='name', dump_only=True)
     indication = fields.Str(attribute='indication', dump_only=True)
+
 
 patient_detail_schema = PatientDetailSchema()
 

@@ -8,7 +8,6 @@ from db import db
 import logging
 
 
-
 class UserLoginSchema(ModelSchema):
 
     def must_not_blank(data):

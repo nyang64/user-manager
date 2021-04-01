@@ -198,15 +198,20 @@ class PatientServices(DbRepository):
 
     def patient_device_list(self, token):
         from utils.common import rename_keys
+        from sqlalchemy import and_
         import json
         auth_token = self.get_auth_token()
         header = {'Authorization': auth_token}
-        print("In Patient Device list of patient services")
+        logging.info("In Patient Device list of patient services")
+        b = db.session.query(UserRegister)\
+            .join(Users, and_(UserRegister.id == Users.registration_id,
+                              UserRegister.email == token.get('user_email')))
+        logging.info('B b {}'.format(b))
         serial_numbers_query = db.session.query(UserRegister)\
-            .join(Users, UserRegister.id == Users.registration_id)\
+            .join(Users, and_(UserRegister.id == Users.registration_id,
+                              UserRegister.email == token.get('user_email')))\
             .join(Patient, Users.id == Patient.user_id)\
             .join(PatientsDevices, Patient.id == PatientsDevices.patient_id)\
-            .filter(UserRegister.email == token.get('user_email'))\
             .with_entities(PatientsDevices.device_serial_number)
         logging.info('QUERY {}'.format(serial_numbers_query))
         device_serial_numbers = serial_numbers_query.all()

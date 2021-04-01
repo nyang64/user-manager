@@ -205,11 +205,13 @@ class PatientServices(DbRepository):
         logging.info("In Patient Device list of patient services")
         b = db.session.query(UserRegister)\
             .join(Users, and_(UserRegister.id == Users.registration_id,
-                              UserRegister.email == token.get('user_email')))
-        logging.info('B b {}'.format(b))
-        serial_numbers_query = db.session.query(UserRegister)\
-            .join(Users, and_(UserRegister.id == Users.registration_id,
                               UserRegister.email == token.get('user_email')))\
+            .with_entities(PatientsDevices.device_serial_number)
+        logging.info('B b {}'.format(b))
+        serial_numbers_query = db.session.query(Users)\
+            .join(UserRegister,
+                  and_(UserRegister.id == Users.registration_id,
+                       UserRegister.email == token.get('user_email')))\
             .join(Patient, Users.id == Patient.user_id)\
             .join(PatientsDevices, Patient.id == PatientsDevices.patient_id)\
             .with_entities(PatientsDevices.device_serial_number)

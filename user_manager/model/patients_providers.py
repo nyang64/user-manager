@@ -34,7 +34,3 @@ class PatientsProviders(BaseModel):
     @classmethod
     def find_by_patient_and_role_id(cls, _patient_id, _role_id) -> "PatientsProviders":
         return cls.query.filter_by(patient_id=_patient_id, provider_role_id=_role_id).first()
-
-    def save_to_db(self) -> None:
-        db.session.add(self)
-        db.session.commit()

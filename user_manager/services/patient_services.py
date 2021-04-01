@@ -40,20 +40,22 @@ class PatientServices(DbRepository):
         # create PatientProvider association
         prescribing_role = ProviderRoleTypes.find_by_name("prescribing")
         outpatient_role = ProviderRoleTypes.find_by_name("outpatient")
-
+        # Check Logic of the foreign key -> PENDING
         patient_provider_schema = PatientsProvidersSchema()
         out_patient_provider = patient_provider_schema.load({
             "patient_id": patient_id,
             "provider_id": provider[0],
             "provider_role_id": outpatient_role.id
         })
-        out_patient_provider.save_to_db()
+        # Flush the transcation
+        self.flush_db(out_patient_provider)
         pre_patient_provider = patient_provider_schema.load({
             "patient_id": patient_id,
             "provider_id": provider[1],
             "provider_role_id": prescribing_role.id
         })
-        pre_patient_provider.save_to_db()
+        # Flush the transcation
+        self.flush_db(pre_patient_provider)
         self.commit_db()
         return user_id, user_uuid, patient_id
 

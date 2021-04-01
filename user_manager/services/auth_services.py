@@ -70,7 +70,7 @@ class AuthServices(DbRepository):
                 isFirstTimeLogin=user_data.isFirst
             )
             return response_model.toJsonObj()
-        otp_data = UserOTPModel.find_by_user_id(id=user_data.id)
+        otp_data = UserOTPModel.find_by_user_id(user_id=user_data.id)
         if (
             otp_data is not None and
             otp_data.temp_password is not None and

@@ -82,7 +82,6 @@ class AuthOperation():
             epoch_et = expiration_time.timestamp()
             logging.info('Created in EPCOH {}'.format(otp_data.created_at))
             logging.info('Expiration EPOCH {}'.format(expiration_time))
-            breakpoint()
             if epoch_ct < epoch_et:
                 return {"message": "OTP is Expired"}, 410
             otp_data.temp_password = encPass(user_json["password"])

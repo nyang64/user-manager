@@ -6,8 +6,11 @@ definitions:
     caches:
       - pip
     name: Pull the source code, prepare/push docker image to ECR, setup SLS and deploy new ECR image to ECS cluster service.
+    
     script:
+      - apt-get update && apt-get install -y zip
       - pip install -r user_manager/requirements.txt
+      - zip -r user-manager.zip user_manager/*
 
       - pip install awscli
 
@@ -31,7 +34,7 @@ definitions:
       - export AWS_REGION="$AWS_DEFAULT_REGION"
       - export DEPLOYMENT_ENVIRONMENT="$BITBUCKET_DEPLOYMENT_ENVIRONMENT"
       - envsubst < task-definition-template/"$BITBUCKET_DEPLOYMENT_ENVIRONMENT"-task-definition.json >  task-definition.json
-
+      
       # Update the task definition.
       - pipe: atlassian/aws-ecs-deploy:1.0.0
         variables:
@@ -41,6 +44,10 @@ definitions:
           CLUSTER_NAME: $CLUSTER_NAME
           SERVICE_NAME: $SERVICE_NAME
           TASK_DEFINITION: 'task-definition.json'
+
+    artifacts:
+      - user-manager.zip
+
 pipelines:
   custom:
     dev-deployment:

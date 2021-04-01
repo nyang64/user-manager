@@ -202,30 +202,32 @@ class PatientServices(DbRepository):
         auth_token = self.get_auth_token()
         header = {'Authorization': auth_token}
         print("In Patient Device list of patient services")
-        device_serial_numbers = db.session.query(UserRegister, Users)\
+        serial_numbers_query = db.session.query(UserRegister)\
             .join(Users, UserRegister.id == Users.registration_id)\
             .join(Patient, Users.id == Patient.user_id)\
             .join(PatientsDevices, Patient.id == PatientsDevices.patient_id)\
             .filter(UserRegister.email == token.get('user_email'))\
-            .with_entities(PatientsDevices.device_serial_number)\
-            .all()
+            .with_entities(PatientsDevices.device_serial_number)
+        logging.info('QUERY {}'.format(serial_numbers_query))
+        device_serial_numbers = serial_numbers_query.all()
         # Count should be same as the original one
         new_keys = {'encryption_key': 'key', 'serial_number': 'serial_number'}
         devices = []
+        logging.info('Device List {}'.format(device_serial_numbers))
         for d in device_serial_numbers:
-            print('Fetching the device detail')
+            logging.info('Fetching the device detail')
             payload = {'serial_number': str(d[0])}
-            print('API calling', GET_DEVICE_DETAIL_URL)
-            print('payload', payload)
+            logging.info('API calling {}'.format(GET_DEVICE_DETAIL_URL))
+            logging.info('payload {}'.format(payload))
             r = requests.get(GET_DEVICE_DETAIL_URL,
                              headers=header,
                              params=payload)
-            print('Request finished', r.status_code)
-            print('response', r.text)
-            print('The URL fetch detail', r.url)
+            logging.info('Request finished {}'.format(r.status_code))
+            logging.info('Response {}'.format(r.text))
+            logging.info('The URL fetch detail {}'.format(r.url))
             if r.status_code == 200:
                 response = json.loads(r.text)
-                print('API response', response)
+                logging.info('API response {}'.format(response))
                 device = response['data'] if 'data' in response else None
                 try:
                     device_info = rename_keys(device, new_keys)

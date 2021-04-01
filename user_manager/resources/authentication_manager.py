@@ -21,8 +21,6 @@ from model.facilities import Facilities
 
 class AuthOperation():
     def __init__(self):
-        self.logger = logging.getLogger()
-        self.logger.setLevel(logging.ERROR)
         self.auth_obj = AuthServices()
 
     def login_user(self):
@@ -43,7 +41,7 @@ class AuthOperation():
         try:
             newpassword = user_json["newpassword"]
         except Exception as ex:
-            self.logger.error(ex)
+            self.logging.error(ex)
             raise InternalServerError("Invalid Request Parameters")
         if 'user_email' not in decrypt:
             return {"Message": "Unauthorized Access"}, 401

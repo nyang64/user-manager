@@ -6,8 +6,7 @@ from marshmallow_sqlalchemy import ModelSchema
 from sqlalchemy.orm import sessionmaker, scoped_session
 from db import db
 import logging
-logger = logging.getLogger()
-logger.setLevel(logging.ERROR)
+
 
 
 class UserLoginSchema(ModelSchema):
@@ -43,7 +42,7 @@ class UserLoginSchema(ModelSchema):
             else:
                 return user_login_schema.load(data)
         except Exception as e:
-            logger.error(e)
+            logging.error(e)
             raise BadRequest(e)
 
 

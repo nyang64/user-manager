@@ -9,9 +9,9 @@ from utils.jwt import encoded_Token
 from model.user_otp import UserOTPModel
 from services.repository.db_repositories import DbRepository
 import logging
+
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
-
 
 class AuthServices(DbRepository):
     def __init__(self):
@@ -29,7 +29,7 @@ class AuthServices(DbRepository):
             self.flush_db(user_data)
             return user_data.id
         except SQLAlchemyError as error:
-            logger.error(error)
+            logging.error(error)
             raise InternalServerError(str(error))
 
     def delete_regtration(self, reg_id):

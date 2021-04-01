@@ -9,6 +9,7 @@ from blueprint.user_blueprint import UserBluePrint
 from blueprint.patient_blueprint import PatientBluePrint
 from blueprint.provider_blueprint import ProviderBlueprint
 from application import Appplication
+import logging
 
 app = Appplication(__name__, '/')
 app.config["SQLALCHEMY_DATABASE_URI"] = get_connection_url()
@@ -17,6 +18,8 @@ app.config["E_EXCEPTIONS"] = True
 
 # enable cors for all endpoints from any location
 CORS(app)
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 migrate = Migrate()
 db.init_app(app)
@@ -44,4 +47,5 @@ if __name__ == "__main__":
     # NOTE: DO NOT change the host and port numbers while deploying to cloud. The application
     # WILL NOT work as the port is tied to ECS container. If the port is changed here, we need to
     # make changes to the ECS infrastructure.
-    app.run(host='0.0.0.0', port=5000)
+    logging.info('App is up')
+    app.run(host='0.0.0.0', port=5000, debug=True)

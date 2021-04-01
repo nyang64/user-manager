@@ -23,8 +23,7 @@ from db import db
 from collections import namedtuple
 from utils.constants import PROVIDER
 import logging
-logger = logging.getLogger()
-logger.setLevel(logging.ERROR)
+
 
 provider_role_schema = ProvidersRolesSchema()
 provider_schema = ProvidersSchema()
@@ -52,7 +51,7 @@ class ProviderService(DbRepository):
             return provider_id
 
         except SQLAlchemyError as error:
-            logger.error(str(error))
+            logging.error(str(error))
             raise InternalServerError(str(error))
 
     def add_provider(self, user_id, facility_id, role_name):

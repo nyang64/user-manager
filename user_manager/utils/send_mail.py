@@ -7,8 +7,7 @@ import os
 import logging
 value = os.environ.get('SECRET_MANAGER_ARN')
 
-logger = logging.getLogger()
-logger.setLevel(logging.ERROR)
+
 
 
 def send_otp(
@@ -53,7 +52,7 @@ def send_otp(
         server.quit()
         return True
     except Exception as e:
-        logger.error(e)
+        logging.error(e)
         raise InternalServerError("Something went wrong. {0}".format(e))
         return False
 
@@ -101,5 +100,5 @@ def send_registration_email(
         server.quit()
         return True
     except Exception as e:
-        logger.error(e)
+        logging.error(e)
         raise InternalServerError("Something went wrong. {0}".format(e))

@@ -10,8 +10,7 @@ from utils.constants import ESUSER
 from services.repository.db_repositories import DbRepository
 
 import logging
-logger = logging.getLogger()
-logger.setLevel(logging.ERROR)
+
 
 
 class UserServices(DbRepository):
@@ -50,7 +49,7 @@ class UserServices(DbRepository):
             exist_user.phone_number = phone_number
             self.update_db(exist_user)
         except (TypeError, AttributeError) as error:
-            logger.error(error)
+            logging.error(error)
             raise InternalServerError(str(error))
 
     def list_users(self):
@@ -62,7 +61,7 @@ class UserServices(DbRepository):
                           for user in users_list]
             return users_data
         except SQLAlchemyError as error:
-            logger.error(error)
+            logging.error(error)
             raise InternalServerError(error)
 
     def delete_user_byid(self, user_id):
@@ -90,7 +89,7 @@ class UserServices(DbRepository):
                 raise NotFound('user detail not found')
             return user
         except SQLAlchemyError as error:
-            logger.error(str(error))
+            logging.error(str(error))
             raise InternalServerError(str(error))
 
     @classmethod
@@ -102,5 +101,5 @@ class UserServices(DbRepository):
                 raise NotFound("User Details Not Found")
             return user_data
         except Exception as error:
-            logger.error(str(error))
+            logging.error(str(error))
             raise InternalServerError("Something Went Wrong")

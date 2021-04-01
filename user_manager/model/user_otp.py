@@ -7,8 +7,7 @@ from datetime import datetime, timedelta
 import os
 from config import read_environ_value
 import logging
-logger = logging.getLogger()
-logger.setLevel(logging.ERROR)
+
 
 
 class UserOTPModel(BaseModel):
@@ -26,7 +25,7 @@ class UserOTPModel(BaseModel):
                 otp=user_otp
                 ).order_by(desc(cls.created_at)).limit(1).first()
         except SQLAlchemyError as error:
-            logger.error(error)
+            logging.error(error)
             db.session.rollback()
             raise InternalServerError(str(error))
         return user_otp
@@ -38,7 +37,7 @@ class UserOTPModel(BaseModel):
                 user_id=user_id
                 ).order_by(desc(cls.created_at)).limit(1).first()
         except SQLAlchemyError as error:
-            logger.error(error)
+            logging.error(error)
             db.session.rollback()
             raise InternalServerError(str(error))
         return user_otp
@@ -57,7 +56,7 @@ class UserOTPModel(BaseModel):
                     user_id == user_id,
                     d <= BaseModel.created_at).count()
         except SQLAlchemyError as error:
-            logger.error(error)
+            logging.error(error)
             db.session.rollback()
             raise InternalServerError(str(error))
         return user_otp_list
@@ -69,5 +68,5 @@ class UserOTPModel(BaseModel):
                 delete(synchronize_session=False)
             db.session.commit()
         except SQLAlchemyError as error:
-            logger.error(error)
+            logging.error(error)
             raise InternalServerError(str(error))

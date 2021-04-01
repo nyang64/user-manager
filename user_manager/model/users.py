@@ -5,8 +5,7 @@ from werkzeug.exceptions import NotFound, InternalServerError
 import uuid
 from model.base_model import BaseModel
 import logging
-logger = logging.getLogger()
-logger.setLevel(logging.ERROR)
+
 
 
 class Users(BaseModel):
@@ -53,7 +52,7 @@ class Users(BaseModel):
                 raise NotFound("User Details Not Found")
             return user
         except Exception as e:
-            logger.error(e)
+            logging.error(e)
             raise InternalServerError("Something Went Wrong")
 
     def save_to_db(self) -> None:

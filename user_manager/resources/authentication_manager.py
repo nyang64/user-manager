@@ -14,7 +14,6 @@ from datetime import datetime, timedelta
 import os
 from config import read_environ_value
 import logging
-
 # Do not remove used at time of migration
 from model.facilities import Facilities
 
@@ -53,25 +52,23 @@ class AuthOperation():
         return {"message": "Password Updated"}, 200
 
     def reset_user_password(self):
-        import pytz
-        utc = pytz.UTC
         value = os.environ.get('SECRET_MANAGER_ARN')
         user_json = request.get_json()
         have_key = have_keys_NotForce(
             user_json, 'email', 'otp', 'password'
          )
         if have_key is True:
-            print('OTP data')
             user_data = UserRegister.find_by_email(
                 email=str(user_json["email"]).lower()
                 )
             if user_data is None:
                 return {"message": "No Such User Exist"}, 404
             otp_data = UserOTPModel.matchOTP(
-                user_id=user_data.id,
-                user_otp=user_json["otp"]
+                user_id=user_data.id
                 )
             if otp_data is None:
+                return {"message": "OTP is Incorrect"}, 404
+            elif otp_data.otp != user_json.get("otp"):
                 return {"message": "OTP is Incorrect"}, 404
             now = datetime.now()
             expiration_time = now - timedelta(
@@ -79,14 +76,14 @@ class AuthOperation():
                     value, "OTP_EXPIRATION_TIME_HOURS")),
                 minutes=int(read_environ_value(
                     value, "OTP_EXPIRATION_TIME_MINUTES")))
-            et = utc.localize(expiration_time)
-            print('Created', otp_data.created_at)
-            print('Expiration', expiration_time)
-            ct = otp_data.created_at.replace(tzinfo=None)
-            print('Replace Timezone', ct)
-            print('Convertion expiration TZ', et)
-            # ct = utc.localize(ct)
-            if ct < expiration_time:
+            logging.info('Created', otp_data.created_at)
+            logging.info('Expiration', expiration_time)
+            epoch_ct = otp_data.created_at.timestamp()
+            epoch_et = expiration_time.timestamp()
+            logging.info('Created in EPCOH {}'.format(otp_data.created_at))
+            logging.info('Expiration EPOCH {}'.format(expiration_time))
+            breakpoint()
+            if epoch_ct < epoch_et:
                 return {"message": "OTP is Expired"}, 410
             otp_data.temp_password = encPass(user_json["password"])
             msg = self.auth_obj.update_otp_data(otp_data)

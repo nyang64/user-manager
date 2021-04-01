@@ -9,7 +9,6 @@ from config import read_environ_value
 import logging
 
 
-
 class UserOTPModel(BaseModel):
     __tablename__ = "user_otps"
     __table_args__ = ({"schema": "ES"})
@@ -18,11 +17,10 @@ class UserOTPModel(BaseModel):
     temp_password = db.Column('temp_password', String(255))
 
     @classmethod
-    def matchOTP(cls, user_id: str, user_otp: str) -> "UserOTPModel":
+    def matchOTP(cls, user_id: str) -> "UserOTPModel":
         try:
             user_otp = cls.query.filter_by(
-                user_id=user_id,
-                otp=user_otp
+                user_id=user_id
                 ).order_by(desc(cls.created_at)).limit(1).first()
         except SQLAlchemyError as error:
             logging.error(error)

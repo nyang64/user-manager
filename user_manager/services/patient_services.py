@@ -42,16 +42,20 @@ class PatientServices(DbRepository):
         outpatient_role = ProviderRoleTypes.find_by_name("outpatient")
         # Check Logic of the foreign key -> PENDING
         patient_provider_schema = PatientsProvidersSchema()
+        # passing the provider id from body param
+        # I see no use of (prescribing_provider, outpatient_provider)
+        # these param patient body param
         out_patient_provider = patient_provider_schema.load({
             "patient_id": patient_id,
-            "provider_id": provider[0],
+            "provider_id": patient[4],
             "provider_role_id": outpatient_role.id
         })
         # Flush the transcation
         self.flush_db(out_patient_provider)
+        # passing the provider id from body param
         pre_patient_provider = patient_provider_schema.load({
             "patient_id": patient_id,
-            "provider_id": provider[1],
+            "provider_id": patient[4],
             "provider_role_id": prescribing_role.id
         })
         # Flush the transcation
@@ -203,11 +207,6 @@ class PatientServices(DbRepository):
         auth_token = self.get_auth_token()
         header = {'Authorization': auth_token}
         logging.info("In Patient Device list of patient services")
-        b = db.session.query(UserRegister)\
-            .join(Users, and_(UserRegister.id == Users.registration_id,
-                              UserRegister.email == token.get('user_email')))\
-            .with_entities(UserRegister.id)
-        logging.info('B b {}'.format(b))
         serial_numbers_query = db.session.query(Users)\
             .join(UserRegister,
                   and_(UserRegister.id == Users.registration_id,
@@ -215,7 +214,6 @@ class PatientServices(DbRepository):
             .join(Patient, Users.id == Patient.user_id)\
             .join(PatientsDevices, Patient.id == PatientsDevices.patient_id)\
             .with_entities(PatientsDevices.device_serial_number, Users.id)
-        logging.info('QUERY {}'.format(serial_numbers_query))
         device_serial_numbers = serial_numbers_query.all()
         # Count should be same as the original one
         new_keys = {'encryption_key': 'key', 'serial_number': 'serial_number'}

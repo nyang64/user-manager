@@ -214,12 +214,12 @@ class PatientServices(DbRepository):
             .join(PatientsDevices, Patient.id == PatientsDevices.patient_id)\
             .with_entities(PatientsDevices.device_serial_number)
         logging.info('QUERY {}'.format(serial_numbers_query))
-        device_serial_numbers = serial_numbers_query.all()
+        # device_serial_numbers = serial_numbers_query.all()
         # Count should be same as the original one
         new_keys = {'encryption_key': 'key', 'serial_number': 'serial_number'}
         devices = []
-        logging.info('Device List {}'.format(device_serial_numbers))
-        for d in device_serial_numbers:
+        # logging.info('Device List {}'.format(device_serial_numbers))
+        ''' for d in device_serial_numbers:
             logging.info('Fetching the device detail')
             payload = {'serial_number': str(d[0])}
             logging.info('API calling {}'.format(GET_DEVICE_DETAIL_URL))
@@ -239,7 +239,7 @@ class PatientServices(DbRepository):
                 except AttributeError as e:
                     logging.error(e)
                     device_info = {}
-                devices.append(device_info)
+                devices.append(device_info) '''
         return devices
 
     def update_patient_data(self, patient_id, emer_contact_name,

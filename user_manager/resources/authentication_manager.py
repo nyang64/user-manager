@@ -36,6 +36,7 @@ class AuthOperation():
 
     @require_user_token(ADMIN, PROVIDER, PATIENT, ESUSER)
     def update_user_password(self, decrypt):
+        logging.info('Updating User Password')
         user_json = request.get_json()
         try:
             newpassword = user_json["newpassword"]
@@ -49,6 +50,7 @@ class AuthOperation():
                 "newpassword": newpassword
             })
         self.auth_obj.update_password(decrypt["user_email"], newpassword)
+        logging.info('Updated password')
         return {"message": "Password Updated"}, 200
 
     def reset_user_password(self):
@@ -67,8 +69,10 @@ class AuthOperation():
                 user_id=user_data.id
                 )
             if otp_data is None:
+                logging.warning('OTP is incorrect')
                 return {"message": "OTP is Incorrect"}, 404
             elif otp_data.otp != user_json.get("otp"):
+                logging.warning('OTP is incorrect')
                 return {"message": "OTP is Incorrect"}, 404
             now = datetime.now()
             expiration_time = now - timedelta(
@@ -76,15 +80,15 @@ class AuthOperation():
                     value, "OTP_EXPIRATION_TIME_HOURS")),
                 minutes=int(read_environ_value(
                     value, "OTP_EXPIRATION_TIME_MINUTES")))
-            logging.info('Created', otp_data.created_at)
-            logging.info('Expiration', expiration_time)
+            logging.info('Created {}'.format(otp_data.created_at))
+            logging.info('Expiration {}'.format(expiration_time))
             epoch_ct = otp_data.created_at.timestamp()
             epoch_et = expiration_time.timestamp()
             logging.info('Created in EPCOH {}'.format(otp_data.created_at))
             logging.info('Expiration EPOCH {}'.format(expiration_time))
             if epoch_ct < epoch_et:
                 return {"message": "OTP is Expired"}, 410
-            otp_data.temp_password = encPass(user_json["password"])
+            otp_data.temp_password = encPass(user_json.get("password"))
             msg = self.auth_obj.update_otp_data(otp_data)
             return {"message": msg}, 200
 
@@ -95,9 +99,11 @@ class AuthOperation():
             user_data = UserRegister.find_by_email(
                 email=str(user_json["email"]).lower())
             if user_data is None:
+                logging.warning('No such user exist')
                 return {"message": "No Such User Exist"}, 404
             otp_cnt = UserOTPModel.find_list_by_user_id(user_data.id)
             if int(otp_cnt) >= int(read_environ_value(value, "OTP_LIMIT")):
+                logging.warning('OTP Limit exceeded')
                 return {"message": "OTP Limit Reached"}, 429
             user_detail = Users.getUserById(user_reg_id=user_data.id)
             otp = generateOTP()
@@ -106,6 +112,7 @@ class AuthOperation():
                 user_data.email,
                 "Your One Time Password of Element Science App",
                 otp)
+            logging.info('OTP sent to email')
             user_otp = UserOTPModel(
                 user_id=user_data.id, otp=otp, temp_password=""
             )

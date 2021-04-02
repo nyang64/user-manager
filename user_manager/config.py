@@ -4,8 +4,6 @@ from werkzeug.exceptions import BadHost
 import logging
 
 
-
-
 def read_environ_value(value, key):
     if value is None:
         return os.environ.get(key)

@@ -1,6 +1,7 @@
 import app
 import pytest
 import os
+from werkzeug.exceptions import BadHost
 
 
 class TestApp:

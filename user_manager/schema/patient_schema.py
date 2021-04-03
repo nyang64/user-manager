@@ -1,6 +1,6 @@
 from schema.user_schema import CreateUserSchema, UserSchema
 from schema.base_schema import validate_number, BaseSchema
-from model.patients_devices import PatientsDevices
+from schema.patients_devices_schema import PatientsDevicesSchema, PatientsDevices
 from model.patient import Patient
 from marshmallow import fields, ValidationError, post_load
 from ma import ma
@@ -35,6 +35,7 @@ class PatientSchema(ma.SQLAlchemyAutoSchema):
     id = ma.auto_field(dump_only=True)
     provider_id = ma.auto_field()
     user_id = ma.auto_field()
+    devices = ma.List(ma.Nested(PatientsDevicesSchema))
     user = ma.Nested(UserSchema)
 
 
@@ -48,6 +49,7 @@ class CreatePatientSchema(CreateUserSchema):
     prescribing_provider = fields.Int(required=True, validate=must_not_blank)
     outpatient_provider = fields.Int(required=True, validate=must_not_blank)
     indication = fields.Str(required=True, validate=must_not_blank)
+    device_serial_number = fields.Str(required=False)
 
     @post_load
     def make_post_load_object(self, data, **kwargs):
@@ -62,9 +64,10 @@ class CreatePatientSchema(CreateUserSchema):
         indication = data.get('indication')
         patient = (emergency_contact_name, emergency_contact_number,
                    date_of_birth, gender, provider_id, indication)
+        device = data.get("device_serial_number")
         # 1st is oupatient 2nd is prescribing
         provider = (outpatient_provider, prescribing_provider)
-        return register, user, patient, provider
+        return register, user, patient, provider, device
 
 
 create_patient_schema = CreatePatientSchema()

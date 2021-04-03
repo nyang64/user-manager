@@ -194,6 +194,7 @@ class PatientServices(DbRepository):
                 patient_device.device_serial_number)
             if updated is True:
                 self.commit_db()
+                return patient_device
         except SQLAlchemyError as error:
             logging.error(
                 'Error Occured while assign device to patient {}'.format(

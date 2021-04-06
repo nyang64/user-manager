@@ -23,6 +23,7 @@ class Users(BaseModel):
                              nullable=False)
     uuid = db.Column(UUID(as_uuid=True), default=uuid.uuid4, unique=True)
     registration = db.relationship("UserRegister", backref="registrations")
+    roles = db.relationship("UserRoles", backref="roles", uselist=True)
 
     @classmethod
     def all(cls) -> "Users":

@@ -41,20 +41,20 @@ class PatientManager():
             register, user, patient, provider
         )
 
-        message = "Something went wrong while trying to create the user."
-        if not user_id or not user_uuid: return {"message": message}, 500
-
-        send_registration_email(
-            user[0], register[0],
-            'Welcome to Element Science',
-            register[0], register[1]
-        )
+        if user_id is not None and user_uuid is not None:
+            send_registration_email(
+                user[0], register[0],
+                'Welcome to Element Science',
+                register[0], register[1]
+            )
 
         patient_schema = PatientSchema()
         patient = Patient.find_by_id(patient_id)
-        self.assign_first_device(patient_id, device_serial_number)
 
-        return jsonify(patient_schema.dump(patient))
+        if device_serial_number:
+            self.assign_first_device(patient_id, device_serial_number)
+
+        return jsonify(patient_schema.dump(patient)), http.client.CREATED
 
     def assign_first_device(self, patient_id, device_serial_number):
         patient_device = assign_device_schema.load(
@@ -99,7 +99,8 @@ class PatientManager():
         resp = {'devices': device_list}
         return jsonify(resp), http.client.OK
 
-    def patients(self):
+    @require_user_token(ADMIN, PATIENT, PROVIDER)
+    def patients(self, token):
         patient_schema = PatientSchema(many=True)
         patients = Patient.all()
 

@@ -25,8 +25,8 @@ class Patient(BaseModel):
                               default=db.func.now())
     gender = db.Column('gender', String(30), nullable=False)
     indication = db.Column('indication', String(40), nullable=False)
-    user = db.relationship("Users", backref="users", uselist=False)
-    devices = db.relationship("PatientsDevices", backref="patients_id", uselist=True)
+    user = db.relationship("Users", backref="users", uselist=False, viewonly=True)
+    devices = db.relationship("PatientsDevices", backref="patients_id", uselist=True, viewonly=True)
 
     @classmethod
     def all(cls) -> "Patient":

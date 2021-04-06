@@ -7,7 +7,7 @@ from werkzeug.exceptions import (InternalServerError, NotFound,
 from utils.common import checkPass, auth_response_model
 from utils.jwt import encoded_Token
 from model.user_otp import UserOTPModel
-from model.user_roles import UserRoles
+from model.authentication_token import AuthenticationToken
 from services.repository.db_repositories import DbRepository
 import logging
 
@@ -51,19 +51,19 @@ class AuthServices(DbRepository):
 
         user_detail = Users.find_by_registration_id(user_data.id)
         logger.debug(user_detail)
-        user_role = UserRoles.find_by_user_id(user_detail.id)
+        user_roles = user_detail.roles
 
-        if user_role is None:
+        if user_roles is None:
             raise Unauthorized("No Such User Allowed")
 
-        role_name = user_role.name
+        role_name = user_roles[0].role.role_name
         logger.debug(role_name)
         user_detail = Users.find_by_registration_id(user_data.id)
 
         if checkPass(data.password, user_data.password):
             encoded_accessToken = encoded_Token(
                 False, str(data.email).lower(),
-                user_role.role_name)
+                role_name)
             encoded_refreshToken = encoded_Token(
                 True, str(data.email).lower(),
                 role_name)
@@ -122,3 +122,8 @@ class AuthServices(DbRepository):
     def update_otp_data(self, otp_data):
         self.update_db(otp_data)
         return 'OTP Matched'
+
+    def delete_token(self, email):
+        registration = UserRegister.find_by_email(email)
+        auth_token = AuthenticationToken.find_by_registration_id(registration.id)
+        auth_token.delete

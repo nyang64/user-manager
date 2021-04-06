@@ -13,37 +13,6 @@ class TestPatientManager(TestCase):
         super(self.__class__, self).__init__(*args, **kwargs)
         self.patient = PatientManager()
 
-    @mock.patch.object(PatientServices, 'register_patient')
-    @mock.patch('utils.validation.request', spec={})
-    def test_create_patient(self, request, mock_patient):
-        reqdata = {
-            "email": "avilasashja34@gmail.com",
-            "password": "test12345",
-            "first_name": "Preeti",
-            "last_name": "Jha",
-            "gender": "Female",
-            "phone_number": "8097810653",
-            "emergency_contact_name": "TL",
-            "emergency_contact_number": "7021177481",
-            "date_of_birth": "2019-08-08",
-            "provider_id": 21,
-            "prescribing_provider": 2,
-            "outpatient_provider": 1,
-            "indication": "TEst"
-        }
-        request.is_json = True
-        request.json = reqdata
-        expected_resp = ({'message': 'Patient created',
-                          'data': {'user_uuid': '1212',
-                                   'user_id': None,
-                                   'patient_id': '1'},
-                          'status_code': '201'}, http.client.CREATED)
-        app = create_test_app()
-        with app.test_request_context():
-            mock_patient.return_value = None, '1212', '1'
-            resp = PatientManager.create_patient.__wrapped__(self.patient, '')
-            self.assertEqual(resp, expected_resp)
-
     @mock.patch.object(PatientServices, 'delete_patient_data')
     @mock.patch('resources.patient_manager.request', spec={})
     def test_delete_patient(self, request, mock_patient):

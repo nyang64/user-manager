@@ -8,7 +8,6 @@ from model.base_model import BaseModel
 import logging
 
 
-
 class Users(BaseModel):
     __tablename__ = "users"
     __table_args__ = ({"schema": "ES"})

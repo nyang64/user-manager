@@ -136,11 +136,11 @@ class PatientServices(DbRepository):
         header = {'Authorization': auth_token}
         payload = {'serial_number': device_serial_number}
         logging.info('Request payload {}'.format(payload))
-        print(CHECK_DEVICE_EXIST_URL)
+        
         r = requests.get(CHECK_DEVICE_EXIST_URL,
                          headers=header,
                          params=payload)
-        print("....." + r)
+
         logging.debug('Request finished with status code {}'.format(
             r.status_code))
         logging.debug('response {}'.format(r.text))

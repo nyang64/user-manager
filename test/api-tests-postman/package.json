@@ -1,0 +1,17 @@
+{
+  "name": "user-manager-api-tests",
+  "version": "1.0.0",
+  "description": "Run API tests using Postman in the CLI ",
+  "main": "index.js",
+  "scripts": {
+    "integration-tests": "npm run integration-tests-local",
+    "integration-tests-local": "newman -c tests/Postman/MyApplication.postman_collection -e tests/Postman/MyApplication-local.postman_environment",
+    "integration-tests-qa": "newman -c tests/Postman/MyApplication.postman_collection -e tests/Postman/MyApplication-qa.postman_environment",
+    "integration-tests-production": "newman -c tests/Postman/MyApplication.postman_collection -e tests/Postman/MyApplication-production.postman_environment"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "newman": "^5.2.2"
+  }
+}

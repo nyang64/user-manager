@@ -16,6 +16,9 @@ Flask-Migrate = "==2.5.3"
 PyJWT = "==2.0.1"
 Flask-Bcrypt = "==0.7.1"
 Flask-Seeder = "*"
+flask-cors = "*"
+pytest = "*"
+pytest-mock = "*"
 
 [dev-packages]
 

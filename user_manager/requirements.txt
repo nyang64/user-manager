@@ -9,3 +9,6 @@ flask-bcrypt==0.7.1
 boto3==1.16.61
 flask_seeder
 requests
+flask_cors
+pytest
+coverage

@@ -11,3 +11,6 @@ class AuthenticationToken(BaseModel):
                                            ondelete='CASCADE'),
                                 nullable=False)
     key = db.Column('key', String(120), nullable=False)
+
+    def delete(self):
+        db.session.delete(self)

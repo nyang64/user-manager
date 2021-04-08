@@ -7,8 +7,7 @@ import bcrypt
 from werkzeug.exceptions import BadRequest
 import uuid
 import logging
-logger = logging.getLogger()
-logger.setLevel(logging.ERROR)
+
 
 
 def is_json(myjson):
@@ -18,7 +17,7 @@ def is_json(myjson):
         json.dumps(myjson)
         json.loads(json.dumps(myjson))
     except Exception as error:
-        logger.error(error)
+        logging.error(error)
         raise BadRequest('Invalid request. Excepted JSON')
         return False
     return True
@@ -159,7 +158,7 @@ def generate_signed_url(report_key=None):
         else:
             return "Report doesn't exists"
     except ClientError:
-        logger.error("Error while generation URL")
+        logging.error("Error while generation URL")
         return "Error while generation URL"
 
 

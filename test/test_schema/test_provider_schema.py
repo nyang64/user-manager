@@ -1,5 +1,5 @@
 import pytest
-from schema.provider_schema import (
+from schema.providers_schema import (
     CreateProviderSchema, UpdateProviderSchema, must_not_blank)
 
 

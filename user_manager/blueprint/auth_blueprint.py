@@ -23,3 +23,6 @@ class AuthenticationBlueprint(Blueprint):
         self.add_url_rule('/resetpassword', 'Reset Password',
                           self.auth_login.reset_user_password,
                           methods=['PUT'])
+        self.add_url_rule('/logout', 'Logout',
+                          self.auth_login.delete,
+                          methods=['DELETE'])

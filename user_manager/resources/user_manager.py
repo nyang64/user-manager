@@ -9,8 +9,9 @@ from utils.constants import ADMIN, PROVIDER, PATIENT, ESUSER
 from flask import request
 from model.users import Users
 
+users_schema = UserSchema(many=True)
 
-class UserManager():
+class UserManager:
     def __init__(self):
         self.user_obj = UserServices()
 

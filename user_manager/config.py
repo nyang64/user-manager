@@ -3,9 +3,6 @@ import json
 from werkzeug.exceptions import BadHost
 import logging
 
-logger = logging.getLogger()
-logger.setLevel(logging.ERROR)
-
 
 def read_environ_value(value, key):
     if value is None:
@@ -14,7 +11,7 @@ def read_environ_value(value, key):
         json_value = json.loads(value)
         return json_value.get(key, os.environ.get(key))
     except (TypeError, json.decoder.JSONDecodeError):
-        logger.error('Got Exception at Decoding')
+        logging.error('Got Exception at Decoding')
         print('Got Exception at Decoding')
         return os.environ.get(key)
 

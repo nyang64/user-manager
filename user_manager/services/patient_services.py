@@ -5,6 +5,7 @@ from model.patient import Patient
 from model.patients_devices import PatientsDevices
 from model.users import Users
 from model.user_registration import UserRegister
+from model.provider_role_types import ProviderRoleTypes
 from db import db
 from services.user_services import UserServices
 from services.auth_services import AuthServices
@@ -25,36 +26,46 @@ class PatientServices(DbRepository):
         self.auth_obj = AuthServices()
         self.user_obj = UserServices()
 
-    def register_patient(self, register, user, patient,
-                         outpatient_id, prescribing_id):
+    def register_patient(self, register, user, patient, provider):
         from utils.constants import PATIENT
         reg_id = self.auth_obj.register_new_user(register[0],
                                                  register[1])
         user_id, user_uuid = self.user_obj.save_user(user[0], user[1],
                                                      user[2], reg_id)
         patient_id = self.save_patient(user_id, patient[0], patient[1],
-                                       patient[2], patient[3], patient[4])
+                                       patient[2], patient[3], patient[4],
+                                       patient[5])
         self.user_obj.assign_role(user_id, PATIENT)
-        # create PatientProvider
+
+        # create PatientProvider association
+        prescribing_role = ProviderRoleTypes.find_by_name("prescribing")
+        outpatient_role = ProviderRoleTypes.find_by_name("outpatient")
+        # Check Logic of the foreign key -> PENDING
         patient_provider_schema = PatientsProvidersSchema()
+        # passing the provider id from body param
+        # I see no use of (prescribing_provider, outpatient_provider)
+        # these param patient body param
         out_patient_provider = patient_provider_schema.load({
             "patient_id": patient_id,
-            "provider_id": outpatient_id,
-            "provider_role_id": 2
+            "provider_id": patient[4],
+            "provider_role_id": outpatient_role.id
         })
-        out_patient_provider.save_to_db()
+        # Flush the transcation
+        self.flush_db(out_patient_provider)
+        # passing the provider id from body param
         pre_patient_provider = patient_provider_schema.load({
             "patient_id": patient_id,
-            "provider_id": prescribing_id,
-            "provider_role_id": 1
+            "provider_id": patient[4],
+            "provider_role_id": prescribing_role.id
         })
-        pre_patient_provider.save_to_db()
-
+        # Flush the transcation
+        self.flush_db(pre_patient_provider)
         self.commit_db()
         return user_id, user_uuid, patient_id
 
     def save_patient(self, user_id, emer_contact_name,
-                     emer_contact_no, date_of_birth, gender, provider_id):
+                     emer_contact_no, date_of_birth, gender, provider_id,
+                     indication):
         try:
             Users.check_user_exist(user_id)
             patient_data = Patient(user_id=user_id,
@@ -62,7 +73,8 @@ class PatientServices(DbRepository):
                                    emergency_contact_name=emer_contact_name,
                                    emergency_contact_number=emer_contact_no,
                                    date_of_birth=date_of_birth,
-                                   provider_id=provider_id)
+                                   provider_id=provider_id,
+                                   indication=indication)
             self.flush_db(patient_data)
             if patient_data.id is None:
                 raise SQLAlchemyError('error while adding patient')
@@ -124,11 +136,11 @@ class PatientServices(DbRepository):
         header = {'Authorization': auth_token}
         payload = {'serial_number': device_serial_number}
         logging.info('Request payload {}'.format(payload))
-        print(CHECK_DEVICE_EXIST_URL)
+        
         r = requests.get(CHECK_DEVICE_EXIST_URL,
                          headers=header,
                          params=payload)
-        print("....." + r)
+
         logging.debug('Request finished with status code {}'.format(
             r.status_code))
         logging.debug('response {}'.format(r.text))
@@ -182,6 +194,7 @@ class PatientServices(DbRepository):
                 patient_device.device_serial_number)
             if updated is True:
                 self.commit_db()
+                return patient_device
         except SQLAlchemyError as error:
             logging.error(
                 'Error Occured while assign device to patient {}'.format(
@@ -190,34 +203,37 @@ class PatientServices(DbRepository):
 
     def patient_device_list(self, token):
         from utils.common import rename_keys
+        from sqlalchemy import and_
         import json
         auth_token = self.get_auth_token()
         header = {'Authorization': auth_token}
-        print("In Patient Device list of patient services")
-        device_serial_numbers = db.session.query(UserRegister, Users)\
-            .join(Users, UserRegister.id == Users.registration_id)\
+        logging.info("In Patient Device list of patient services")
+        serial_numbers_query = db.session.query(Users)\
+            .join(UserRegister,
+                  and_(UserRegister.id == Users.registration_id,
+                       UserRegister.email == token.get('user_email')))\
             .join(Patient, Users.id == Patient.user_id)\
             .join(PatientsDevices, Patient.id == PatientsDevices.patient_id)\
-            .filter(UserRegister.email == token.get('user_email'))\
-            .with_entities(PatientsDevices.device_serial_number)\
-            .all()
+            .with_entities(PatientsDevices.device_serial_number, Users.id)
+        device_serial_numbers = serial_numbers_query.all()
         # Count should be same as the original one
         new_keys = {'encryption_key': 'key', 'serial_number': 'serial_number'}
         devices = []
+        logging.info('Device List {}'.format(device_serial_numbers))
         for d in device_serial_numbers:
-            print('Fetching the device detail')
+            logging.info('Fetching the device detail')
             payload = {'serial_number': str(d[0])}
-            print('API calling', GET_DEVICE_DETAIL_URL)
-            print('payload', payload)
+            logging.info('API calling {}'.format(GET_DEVICE_DETAIL_URL))
+            logging.info('payload {}'.format(payload))
             r = requests.get(GET_DEVICE_DETAIL_URL,
                              headers=header,
                              params=payload)
-            print('Request finished', r.status_code)
-            print('response', r.text)
-            print('The URL fetch detail', r.url)
+            logging.info('Request finished {}'.format(r.status_code))
+            logging.info('Response {}'.format(r.text))
+            logging.info('The URL fetch detail {}'.format(r.url))
             if r.status_code == 200:
                 response = json.loads(r.text)
-                print('API response', response)
+                logging.info('API response {}'.format(response))
                 device = response['data'] if 'data' in response else None
                 try:
                     device_info = rename_keys(device, new_keys)

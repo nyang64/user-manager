@@ -4,7 +4,7 @@ from flask import request
 
 def validate_request():
     if request.is_json:
-        request_data = request.get_json()
+        request_data = request.json
     else:
         raise BadRequest('Invalid request. Excepted JSON')
     if not isinstance(request_data, dict):

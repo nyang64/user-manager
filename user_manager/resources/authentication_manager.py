@@ -14,15 +14,12 @@ from datetime import datetime, timedelta
 import os
 from config import read_environ_value
 import logging
-
 # Do not remove used at time of migration
 from model.facilities import Facilities
 
 
 class AuthOperation():
     def __init__(self):
-        self.logger = logging.getLogger()
-        self.logger.setLevel(logging.ERROR)
         self.auth_obj = AuthServices()
 
     def login_user(self):
@@ -39,11 +36,12 @@ class AuthOperation():
 
     @require_user_token(ADMIN, PROVIDER, PATIENT, ESUSER)
     def update_user_password(self, decrypt):
+        logging.info('Updating User Password')
         user_json = request.get_json()
         try:
             newpassword = user_json["newpassword"]
         except Exception as ex:
-            self.logger.error(ex)
+            self.logging.error(ex)
             raise InternalServerError("Invalid Request Parameters")
         if 'user_email' not in decrypt:
             return {"Message": "Unauthorized Access"}, 401
@@ -52,7 +50,13 @@ class AuthOperation():
                 "newpassword": newpassword
             })
         self.auth_obj.update_password(decrypt["user_email"], newpassword)
+        logging.info('Updated password')
         return {"message": "Password Updated"}, 200
+
+    @require_user_token(ADMIN, PROVIDER, PATIENT, ESUSER)
+    def delete(self, decrypt):
+        self.auth_obj.delete_token(decrypt["user_email"])
+        return {"message": "Logged out"}, 200
 
     def reset_user_password(self):
         value = os.environ.get('SECRET_MANAGER_ARN')
@@ -67,10 +71,13 @@ class AuthOperation():
             if user_data is None:
                 return {"message": "No Such User Exist"}, 404
             otp_data = UserOTPModel.matchOTP(
-                user_id=user_data.id,
-                user_otp=user_json["otp"]
+                user_id=user_data.id
                 )
             if otp_data is None:
+                logging.warning('OTP is incorrect')
+                return {"message": "OTP is Incorrect"}, 404
+            elif otp_data.otp != user_json.get("otp"):
+                logging.warning('OTP is incorrect')
                 return {"message": "OTP is Incorrect"}, 404
             now = datetime.now()
             expiration_time = now - timedelta(
@@ -78,9 +85,15 @@ class AuthOperation():
                     value, "OTP_EXPIRATION_TIME_HOURS")),
                 minutes=int(read_environ_value(
                     value, "OTP_EXPIRATION_TIME_MINUTES")))
-            if otp_data.created_at < expiration_time:
+            logging.info('Created {}'.format(otp_data.created_at))
+            logging.info('Expiration {}'.format(expiration_time))
+            epoch_ct = otp_data.created_at.timestamp()
+            epoch_et = expiration_time.timestamp()
+            logging.info('Created in EPCOH {}'.format(otp_data.created_at))
+            logging.info('Expiration EPOCH {}'.format(expiration_time))
+            if epoch_ct < epoch_et:
                 return {"message": "OTP is Expired"}, 410
-            otp_data.temp_password = encPass(user_json["password"])
+            otp_data.temp_password = encPass(user_json.get("password"))
             msg = self.auth_obj.update_otp_data(otp_data)
             return {"message": msg}, 200
 
@@ -91,9 +104,11 @@ class AuthOperation():
             user_data = UserRegister.find_by_email(
                 email=str(user_json["email"]).lower())
             if user_data is None:
+                logging.warning('No such user exist')
                 return {"message": "No Such User Exist"}, 404
             otp_cnt = UserOTPModel.find_list_by_user_id(user_data.id)
             if int(otp_cnt) >= int(read_environ_value(value, "OTP_LIMIT")):
+                logging.warning('OTP Limit exceeded')
                 return {"message": "OTP Limit Reached"}, 429
             user_detail = Users.getUserById(user_reg_id=user_data.id)
             otp = generateOTP()
@@ -102,6 +117,7 @@ class AuthOperation():
                 user_data.email,
                 "Your One Time Password of Element Science App",
                 otp)
+            logging.info('OTP sent to email')
             user_otp = UserOTPModel(
                 user_id=user_data.id, otp=otp, temp_password=""
             )

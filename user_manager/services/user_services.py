@@ -10,8 +10,7 @@ from utils.constants import ESUSER
 from services.repository.db_repositories import DbRepository
 
 import logging
-logger = logging.getLogger()
-logger.setLevel(logging.ERROR)
+
 
 
 class UserServices(DbRepository):
@@ -19,9 +18,11 @@ class UserServices(DbRepository):
         self.auth_obj = AuthServices()
 
     def register_user(self, register, user):
-        reg_id = self.auth_obj.register_new_user(register.email, register.password)
-        user_id, user_uuid = self.save_user(user.first_name, user.last_name, user.phone_number, reg_id)
-        self.assign_role(user_id, ESUSER)
+        reg_id = self.auth_obj.register_new_user(
+            register[0], register[1])
+        user_id, user_uuid = self.save_user(user[0], user[1],
+                                            user[2], reg_id)
+        self.assign_role(user_id)
         self.commit_db()
         return user_id, user_uuid
 
@@ -48,7 +49,7 @@ class UserServices(DbRepository):
             exist_user.phone_number = phone_number
             self.update_db(exist_user)
         except (TypeError, AttributeError) as error:
-            logger.error(error)
+            logging.error(error)
             raise InternalServerError(str(error))
 
     def list_users(self):
@@ -60,7 +61,7 @@ class UserServices(DbRepository):
                           for user in users_list]
             return users_data
         except SQLAlchemyError as error:
-            logger.error(error)
+            logging.error(error)
             raise InternalServerError(error)
 
     def delete_user_byid(self, user_id):
@@ -88,7 +89,7 @@ class UserServices(DbRepository):
                 raise NotFound('user detail not found')
             return user
         except SQLAlchemyError as error:
-            logger.error(str(error))
+            logging.error(str(error))
             raise InternalServerError(str(error))
 
     @classmethod
@@ -100,5 +101,5 @@ class UserServices(DbRepository):
                 raise NotFound("User Details Not Found")
             return user_data
         except Exception as error:
-            logger.error(str(error))
+            logging.error(str(error))
             raise InternalServerError("Something Went Wrong")

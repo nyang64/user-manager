@@ -5,6 +5,9 @@ from utils.common import tokenTime
 import datetime
 from werkzeug.exceptions import Unauthorized
 import os
+import logging
+from functools import wraps
+from model.user_registration import UserRegister
 
 value = os.environ.get('SECRET_MANAGER_ARN')
 
@@ -27,21 +30,32 @@ def encoded_Token(
 
 def require_user_token(*args):
     def require_user_token_validator(func):
+        @wraps(func)
         def inner(jsonT):
-            token = (request.headers.get('Authorization'))
+            token = request.headers.get('Authorization')
+            logging.info('Token is present')
             if token is None:
-                raise Unauthorized('Token is Expired')
+                logging.warning('Header value is absent')
+                raise Unauthorized('Header value is absent')
             try:
                 decrypted = jwt.decode(
                         token, read_environ_value(value, "ACCESS_TOKEN_KEY"),
                         algorithms=["HS256"]
                     )
             except jwt.ExpiredSignatureError:
+                logging.warning('Token is Expired')
                 raise Unauthorized('Token is Expired')
-
             except Exception:
+                logging.warning('Invalid Token')
                 raise Unauthorized('Invalid Token.')
-            if decrypted["user_role"].upper() not in args:
+            logging.info('Token Decode {}'.format(decrypted))
+            user = UserRegister.find_by_email(decrypted.get('user_email', ''))
+            logging.info('User found status {}'.format(user))
+            if user is None:
+                logging.info('User not exist')
+                raise Unauthorized("User doesn't exist")
+            if decrypted.get("user_role").upper() not in args:
+                logging.warning('Not Permitted to this Resource')
                 raise Unauthorized('Not Permitted to this Resource')
             return func(jsonT, decrypted)
         return inner

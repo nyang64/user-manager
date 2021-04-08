@@ -4,9 +4,8 @@ from sqlalchemy.dialects.postgresql import UUID
 from werkzeug.exceptions import NotFound, InternalServerError
 import uuid
 from model.base_model import BaseModel
+
 import logging
-logger = logging.getLogger()
-logger.setLevel(logging.ERROR)
 
 
 class Users(BaseModel):
@@ -22,6 +21,12 @@ class Users(BaseModel):
     phone_number = db.Column('phone_number', String(12),
                              nullable=False)
     uuid = db.Column(UUID(as_uuid=True), default=uuid.uuid4, unique=True)
+    registration = db.relationship("UserRegister", backref="registrations")
+    roles = db.relationship("UserRoles", backref="roles", uselist=True)
+
+    @classmethod
+    def all(cls) -> "Users":
+        return cls.query.all()
 
     @classmethod
     def find_by_email(cls, email: str) -> "Users":
@@ -53,7 +58,7 @@ class Users(BaseModel):
                 raise NotFound("User Details Not Found")
             return user
         except Exception as e:
-            logger.error(e)
+            logging.error(e)
             raise InternalServerError("Something Went Wrong")
 
     def save_to_db(self) -> None:

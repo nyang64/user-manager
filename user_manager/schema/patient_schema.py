@@ -1,17 +1,15 @@
-from schema.user_schema import CreateUserSchema
+from schema.user_schema import CreateUserSchema, UserSchema
 from schema.base_schema import validate_number, BaseSchema
-from model.patients_devices import PatientsDevices
+from schema.patients_devices_schema import PatientsDevicesSchema, PatientsDevices
 from model.patient import Patient
 from marshmallow import fields, ValidationError, post_load
 from ma import ma
 import logging
-logger = logging.getLogger()
-logger.setLevel(logging.ERROR)
 
 
-ENAME_MISSING = "emergenct_contact_name parameter is missing"
-ENUMBER_MISSING = "emergenct_contact_number parameter is missing"
-DOB_MISSING = "emergenct_contact_number parameter is missing"
+ENAME_MISSING = "emergency_contact_name parameter is missing"
+ENUMBER_MISSING = "emergency_contact_number parameter is missing"
+DOB_MISSING = "emergency_contact_number parameter is missing"
 
 
 def must_not_blank(data):
@@ -37,16 +35,21 @@ class PatientSchema(ma.SQLAlchemyAutoSchema):
     id = ma.auto_field(dump_only=True)
     provider_id = ma.auto_field()
     user_id = ma.auto_field()
+    devices = ma.List(ma.Nested(PatientsDevicesSchema))
+    user = ma.Nested(UserSchema)
 
 
 class CreatePatientSchema(CreateUserSchema):
     emergency_contact_name = fields.Str(required=True, validate=must_not_blank)
-    emergency_contact_number = fields.Str(required=True, validate=validate_number)
+    emergency_contact_number = fields.Str(required=True,
+                                          validate=validate_number)
     date_of_birth = fields.Str(required=True, validate=must_not_blank)
     gender = fields.Str(required=True, validate=must_not_blank)
     provider_id = fields.Int(required=True, validate=must_not_blank)
     prescribing_provider = fields.Int(required=True, validate=must_not_blank)
     outpatient_provider = fields.Int(required=True, validate=must_not_blank)
+    indication = fields.Str(required=True, validate=must_not_blank)
+    device_serial_number = fields.Str(required=False)
 
     @post_load
     def make_post_load_object(self, data, **kwargs):
@@ -56,9 +59,15 @@ class CreatePatientSchema(CreateUserSchema):
         date_of_birth = data.get('date_of_birth')
         gender = data.get('gender')
         provider_id = data.get('provider_id')
+        outpatient_provider = data.get('outpatient_provider')
+        prescribing_provider = data.get('prescribing_provider')
+        indication = data.get('indication')
         patient = (emergency_contact_name, emergency_contact_number,
-                   date_of_birth, gender, provider_id)
-        return register, user, patient
+                   date_of_birth, gender, provider_id, indication)
+        device = data.get("device_serial_number")
+        # 1st is oupatient 2nd is prescribing
+        provider = (outpatient_provider, prescribing_provider)
+        return register, user, patient, provider, device
 
 
 create_patient_schema = CreatePatientSchema()
@@ -112,6 +121,7 @@ class PatientDetailSchema(BaseSchema):
     emergency_contact_number = fields.Str(dump_only=True)
     # address = fields.Str(attribute='full_address', dump_only=True)
     status = fields.Str(attribute='name', dump_only=True)
+    indication = fields.Str(attribute='indication', dump_only=True)
 
 
 patient_detail_schema = PatientDetailSchema()
@@ -136,7 +146,7 @@ class FilterPatientSchema(BaseSchema):
             record_per_page = int(data.get('record_per_page', 10))
             report_id = int(data.get('report_id', 0))
         except ValueError as e:
-            logger.error(e)
+            logging.error(e)
             page_number = 0
             record_per_page = 10
             report_id = 0

@@ -13,6 +13,7 @@ class UserRoles(BaseModel):
     user_id = db.Column('user_id', Integer,
                         ForeignKey('ES.users.id',
                                    ondelete="CASCADE"), nullable=False)
+    role = db.relationship("Roles", backref="roles", uselist=False)
 
     @classmethod
     def find_by_user_id(cls, user_id: str) -> "UserRoles":

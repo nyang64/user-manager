@@ -9,3 +9,8 @@ htmlcov/
 .DS_Store
 .env
 db.pyc
+.env.development
+.env.testing
+.env.local
+.env.qa
+.env.production

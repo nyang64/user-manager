@@ -136,11 +136,11 @@ class PatientServices(DbRepository):
         header = {'Authorization': auth_token}
         payload = {'serial_number': device_serial_number}
         logging.info('Request payload {}'.format(payload))
-        print(CHECK_DEVICE_EXIST_URL)
+        
         r = requests.get(CHECK_DEVICE_EXIST_URL,
                          headers=header,
                          params=payload)
-        print("....." + r)
+
         logging.debug('Request finished with status code {}'.format(
             r.status_code))
         logging.debug('response {}'.format(r.text))
@@ -194,6 +194,7 @@ class PatientServices(DbRepository):
                 patient_device.device_serial_number)
             if updated is True:
                 self.commit_db()
+                return patient_device
         except SQLAlchemyError as error:
             logging.error(
                 'Error Occured while assign device to patient {}'.format(

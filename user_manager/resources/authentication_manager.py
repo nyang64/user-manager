@@ -53,6 +53,11 @@ class AuthOperation():
         logging.info('Updated password')
         return {"message": "Password Updated"}, 200
 
+    @require_user_token(ADMIN, PROVIDER, PATIENT, ESUSER)
+    def delete(self, decrypt):
+        self.auth_obj.delete_token(decrypt["user_email"])
+        return {"message": "Logged out"}, 200
+
     def reset_user_password(self):
         value = os.environ.get('SECRET_MANAGER_ARN')
         user_json = request.get_json()

@@ -7,6 +7,7 @@ from werkzeug.exceptions import (InternalServerError, NotFound,
 from utils.common import checkPass, auth_response_model
 from utils.jwt import encoded_Token
 from model.user_otp import UserOTPModel
+from model.authentication_token import AuthenticationToken
 from services.repository.db_repositories import DbRepository
 import logging
 
@@ -47,20 +48,25 @@ class AuthServices(DbRepository):
         logger.debug(user_data)
         if user_data is None:
             raise NotFound("No Such User Exist")
-        role_name_data = UserRegister.get_role_by_id(
-            user_reg_id=user_data.id)
-        logger.debug(role_name_data)
+
         user_detail = Users.find_by_registration_id(user_data.id)
         logger.debug(user_detail)
-        if role_name_data is None:
+        user_roles = user_detail.roles
+
+        if user_roles is None:
             raise Unauthorized("No Such User Allowed")
+
+        role_name = user_roles[0].role.role_name
+        logger.debug(role_name)
+        user_detail = Users.find_by_registration_id(user_data.id)
+
         if checkPass(data.password, user_data.password):
             encoded_accessToken = encoded_Token(
                 False, str(data.email).lower(),
-                role_name_data.role_name)
+                role_name)
             encoded_refreshToken = encoded_Token(
                 True, str(data.email).lower(),
-                role_name_data.role_name)
+                role_name)
             response_model = auth_response_model(
                 message="Successfully Login",
                 first_name=user_detail.first_name,
@@ -79,10 +85,10 @@ class AuthServices(DbRepository):
             if checkPass(data.password, otp_data.temp_password):
                 encoded_accessToken = encoded_Token(
                     False, str(data.email).lower(),
-                    role_name_data.role_name)
+                    role_name)
                 encoded_refreshToken = encoded_Token(
                     True, str(data.email).lower(),
-                    role_name_data.role_name)
+                    role_name)
                 response_model = auth_response_model(
                     message="Successfully Login",
                     id_token=encoded_accessToken,
@@ -116,3 +122,8 @@ class AuthServices(DbRepository):
     def update_otp_data(self, otp_data):
         self.update_db(otp_data)
         return 'OTP Matched'
+
+    def delete_token(self, email):
+        registration = UserRegister.find_by_email(email)
+        auth_token = AuthenticationToken.find_by_registration_id(registration.id)
+        auth_token.delete

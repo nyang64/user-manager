@@ -35,26 +35,35 @@ class PatientManager():
         from utils.send_mail import send_registration_email
         request_data = validate_request()
 
-        register, user, patient, provider = create_patient_schema.load(
+        register, user, patient, provider, device_serial_number = create_patient_schema.load(
             request_data)
         user_id, user_uuid, patient_id = self.patient_obj.register_patient(
             register, user, patient, provider
         )
+
         if user_id is not None and user_uuid is not None:
             send_registration_email(
                 user[0], register[0],
                 'Welcome to Element Science',
                 register[0], register[1]
             )
-        return {
-                   'message': 'Patient created',
-                   'data': {
-                       'user_uuid': user_uuid,
-                       'user_id': user_id,
-                       'patient_id': patient_id
-                   },
-                   'status_code': '201'
-               }, http.client.CREATED
+
+        patient_schema = PatientSchema()
+        patient = Patient.find_by_id(patient_id)
+
+        if device_serial_number:
+            self.assign_first_device(patient_id, device_serial_number)
+
+        return jsonify(patient_schema.dump(patient)), http.client.CREATED
+
+    def assign_first_device(self, patient_id, device_serial_number):
+        patient_device = assign_device_schema.load(
+            {
+                "device_serial_number": device_serial_number,
+                "patient_id": patient_id
+            }
+        )
+        return self.patient_obj.assign_device_to_patient(patient_device)
 
     @require_user_token(ADMIN, PROVIDER)
     def update_patient(self, decrypt):
@@ -90,6 +99,13 @@ class PatientManager():
         resp = {'devices': device_list}
         return jsonify(resp), http.client.OK
 
+    @require_user_token(ADMIN, PATIENT, PROVIDER)
+    def patients(self, token):
+        patient_schema = PatientSchema(many=True)
+        patients = Patient.all()
+
+        return jsonify(patient_schema.dump(patients))
+    
     def therapy_report_details(self, patient_id):
         # create schemas for formatting the JSON response
         address_schema = AddressSchema()

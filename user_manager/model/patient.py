@@ -1,6 +1,5 @@
 from db import db
 from sqlalchemy import Integer, String, ForeignKey, DateTime
-from sqlalchemy.orm import backref
 from model.base_model import BaseModel
 
 
@@ -26,13 +25,16 @@ class Patient(BaseModel):
                               default=db.func.now())
     gender = db.Column('gender', String(30), nullable=False)
     indication = db.Column('indication', String(40), nullable=False)
-    users = db.relationship("Users",
-                            backref=backref("users_patient", uselist=False))
+    user = db.relationship("Users", backref="users", uselist=False, viewonly=True)
+    devices = db.relationship("PatientsDevices", backref="patients_id", uselist=True, viewonly=True)
+
+    @classmethod
+    def all(cls) -> "Patient":
+        return cls.query.all()
 
     @classmethod
     def find_by_id(cls, _id):
-        return db.session.query(cls).filter_by(
-            id=_id).first()
+        return db.session.query(cls).filter_by(id=_id).first()
 
     def save_to_db(self) -> None:
         db.session.add(self)

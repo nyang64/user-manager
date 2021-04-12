@@ -266,8 +266,6 @@ class PatientServices(DbRepository):
         value = os.environ.get('SECRET_MANAGER_ARN')
         DEVICE_EMAIL = read_environ_value(value, 'DEVICE_EMAIL')
         DEVICE_PASSWORD = read_environ_value(value, 'DEVICE_PASSWORD')
-        DEVICE_EMAIL = "deviceadmin@elementsci.com"
-        DEVICE_PASSWORD = "device12345"
         data = {"email": DEVICE_EMAIL, "password": DEVICE_PASSWORD}
         resp = requests.post(LOGIN_URL, json=data)
         if resp.status_code == 200:

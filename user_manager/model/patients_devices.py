@@ -16,6 +16,8 @@ class PatientsDevices(BaseModel):
     patient = db.relationship(
         "Patient", backref=backref("patient_list")
     )
+    device_metrics = db.defer(db.relationship("DeviceMetrics", backref="device_metrics"))
+    device_statuses = db.defer(db.relationship("DeviceUiStatus", backref="device_ui_statuses"))
 
     @classmethod
     def check_device_assigned(cls, device_serial_no):

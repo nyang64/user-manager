@@ -8,6 +8,7 @@ from blueprint.auth_blueprint import AuthenticationBlueprint
 from blueprint.user_blueprint import UserBluePrint
 from blueprint.patient_blueprint import PatientBluePrint
 from blueprint.provider_blueprint import ProviderBlueprint
+from blueprint.device_blueprint import DeviceBlueprint
 from application import Appplication
 import logging
 
@@ -40,6 +41,9 @@ app.register_blueprint(provider_blueprint)
 
 patient_blueprint = PatientBluePrint()
 app.register_blueprint(patient_blueprint)
+
+device_blueprint = DeviceBlueprint()
+app.register_blueprint(device_blueprint)
 
 
 if __name__ == "__main__":

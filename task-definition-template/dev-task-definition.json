@@ -29,7 +29,7 @@
         },
         {
           "name": "POSTGRES_DB_NAME",
-          "value": "esumdb-migration-test"
+          "value": "esumdb"
         },
         {
           "name": "POSTGRES_DB_PORT",
@@ -93,7 +93,7 @@
         },
   {
           "name": "DEVICE_BASE_URL",
-          "value": "https://ki0c10fwb8.execute-api.us-west-1.amazonaws.com/qa-device-manager/v1"
+          "value": "https://kqmcepc0ri.execute-api.us-west-1.amazonaws.com/dev/v1"
         }
       ],
       "secrets": [

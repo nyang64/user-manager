@@ -10,7 +10,7 @@ class DeviceMetric(BaseModel):
         db.String(50),
         nullable=False
     )
-    device_metric_id = db.Column(
+    metric_id = db.Column(
         'device_metrics_id',
         Integer,
         ForeignKey('ES.device_metrics_types.id', ondelete="CASCADE")

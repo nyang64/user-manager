@@ -10,12 +10,12 @@ class DeviceUiStatusType(BaseModel):
     ui_id = db.Column('ui_id', db.String(50))
 
     @classmethod
-    def find_by_name(cls, _name) -> "DeviceUiStatusType":
-        return cls.query.filter_by(name=_name).first()
-
-    @classmethod
     def all(cls) -> "DeviceUiStatusType":
         return cls.query.all()
+
+    @classmethod
+    def find_by_ui_id(cls, _ui_id) -> "DeviceUiStatusType":
+        return cls.query.filter_by(ui_id=_ui_id).first()
 
     def save_to_db(self) -> None:
         db.session.add(self)

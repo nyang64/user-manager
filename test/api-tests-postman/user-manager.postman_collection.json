@@ -344,6 +344,72 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Create Status Type",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "    {\n        \"name\": \"connected\",\n        \"ui_id\": \"12\"\n    }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/devices/status_types",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"devices",
+								"status_types"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Metric Type",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "    {\n        \"name\": \"button-pressed\"\n    }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/devices/metric_types",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"devices",
+								"metric_types"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -375,25 +441,13 @@
 					],
 					"request": {
 						"auth": {
-							"type": "apikey",
-							"apikey": [
-								{
-									"key": "value",
-									"value": "{{token}}",
-									"type": "string"
-								},
-								{
-									"key": "key",
-									"value": "Authentication",
-									"type": "string"
-								}
-							]
+							"type": "noauth"
 						},
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"email\":\"{{patientEmail}}\",\r\n    \"password\":\"{{patientPasswordOld}}\"\r\n}",
+							"raw": "{\r\n    \"email\":\"{{patientEmail}}\",\r\n    \"password\":\"{{patientPassword}}\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -530,6 +584,72 @@
 							],
 							"path": [
 								"resetpassword"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Device Metric",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "    {\n        \"device_serial_number\": \"12345678\",\n        \"ui_id\": \"12\",  \n        \"recorded_at\": \"{{$isoTimestamp}}\",\n        \"receiver_recorded_at\": \"{{$isoTimestamp}}\",\n        \"receiver_id\": \"mobile\"\n    }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/devices/metrics",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"devices",
+								"metrics"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Device UI Status",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "    {\n        \"device_serial_number\": \"12345678\",\n        \"ui_id\": \"12\",  \n        \"recorded_at\": \"{{$isoTimestamp}}\",\n        \"receiver_recorded_at\": \"{{$isoTimestamp}}\",\n        \"receiver_id\": \"mobile\"\n    }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/devices/statuses",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"devices",
+								"statuses"
 							]
 						}
 					},

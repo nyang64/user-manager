@@ -8,3 +8,4 @@ class DeviceUiStatusSchema(ma.SQLAlchemyAutoSchema):
         load_instance = True
 
     id = ma.auto_field(dump_only=True)
+    status_id = ma.auto_field()

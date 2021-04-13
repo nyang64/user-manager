@@ -12,6 +12,10 @@ class DeviceMetricType(BaseModel):
     def all(cls) -> "DeviceMeticType":
         return cls.query.all()
 
+    @classmethod
+    def find_by_name(cls, _name) -> "DeviceMeticType":
+        return cls.query
+
     def save_to_db(self) -> None:
         db.session.add(self)
         db.session.commit()

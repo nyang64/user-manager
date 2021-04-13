@@ -4,6 +4,8 @@ from schema.device_metric_type_schema import DeviceMetricTypeSchema
 from schema.device_ui_status_schema import DeviceUiStatusSchema
 from schema.device_ui_status_type_schema import DeviceUiStatusTypeSchema
 
+from model.device_metric_type import DeviceMetricType
+from model.device_ui_status_type import DeviceUiStatusType
 
 class DeviceManager:
     def __init__(self):
@@ -12,6 +14,11 @@ class DeviceManager:
     def create_status(self):
         print('Device status')
         status_json = request.get_json()
+
+        status = DeviceUiStatusType.find_by_ui_id(status_json["ui_id"])
+        del status_json["ui_id"]
+        status_json["status_id"] = status.id
+
         status_schema = DeviceUiStatusSchema()
         status = status_schema.load(status_json)
 
@@ -22,6 +29,7 @@ class DeviceManager:
     def create_status_type(self):
         print('Device status type')
         status_type_json = request.get_json()
+
         status_type_schema = DeviceUiStatusTypeSchema()
         status_type = status_type_schema.load(status_type_json)
 
@@ -32,6 +40,11 @@ class DeviceManager:
     def create_metric(self):
         print('Device metrics')
         metric_json = request.get_json()
+
+        metric = DeviceMetricType.find_by_name(metric_json["name"])
+        del metric_json["name"]
+        metric_json["metric_id"] = metric.id
+
         metric_schema = DeviceMetricSchema()
         metric = metric_schema.load(metric_json)
 

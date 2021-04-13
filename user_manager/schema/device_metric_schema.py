@@ -8,3 +8,4 @@ class DeviceMetricSchema(ma.SQLAlchemyAutoSchema):
         load_instance = True
 
     id = ma.auto_field(dump_only=True)
+    metric_id = ma.auto_field()

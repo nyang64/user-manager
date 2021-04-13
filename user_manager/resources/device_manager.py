@@ -32,6 +32,7 @@ class DeviceManager:
 
         return {"message": "Device Status"}, 201
 
+
     def create_metric(self):
         logging.info('Persisting UI status messages')
         metric_json = request.get_json()
@@ -48,23 +49,23 @@ class DeviceManager:
 
         return {"message": "Success"}, 201
 
-    # def create_metric_type(self):
-    #     print('Device metric type')
-    #     metric_type_json = request.get_json()
-    #     metric_type_schema = DeviceMetricTypeSchema()
-    #     metric_type = metric_type_schema.load(metric_type_json)
-    #
-    #     metric_type.save_to_db()
-    #
-    #     return metric_type_schema.dump(metric_type), 201
-    #
-    # def create_status_type(self):
-    #     print('Device status type')
-    #     status_type_json = request.get_json()
-    #
-    #     status_type_schema = DeviceUiStatusTypeSchema()
-    #     status_type = status_type_schema.load(status_type_json)
-    #
-    #     status_type.save_to_db()
-    #
-    #     return status_type_schema.dump(status_type), 201
+    def create_metric_type(self):
+        print('Device metric type')
+        metric_type_json = request.get_json()
+        metric_type_schema = DeviceMetricTypeSchema()
+        metric_type = metric_type_schema.load(metric_type_json)
+
+        metric_type.save_to_db()
+
+        return metric_type_schema.dump(metric_type), 201
+
+    def create_status_type(self):
+        print('Device status type')
+        status_type_json = request.get_json()
+
+        status_type_schema = DeviceUiStatusTypeSchema()
+        status_type = status_type_schema.load(status_type_json)
+
+        status_type.save_to_db()
+
+        return status_type_schema.dump(status_type), 201

@@ -264,9 +264,9 @@ class PatientServices(DbRepository):
         import os
         from config import read_environ_value
         value = os.environ.get('SECRET_MANAGER_ARN')
-        DEVICE_EMAIL = read_environ_value(value, 'DEVICE_EMAIL')
-        DEVICE_PASSWORD = read_environ_value(value, 'DEVICE_PASSWORD')
-        data = {"email": DEVICE_EMAIL, "password": DEVICE_PASSWORD}
+        device_email = read_environ_value(value, 'DEVICE_EMAIL')
+        device_password = read_environ_value(value, 'DEVICE_PASSWORD')
+        data = {"email": device_email, "password": device_password}
         resp = requests.post(LOGIN_URL, json=data)
         if resp.status_code == 200:
             return json.loads(resp.text).get('id_token')

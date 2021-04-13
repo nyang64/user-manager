@@ -3,28 +3,37 @@ from schema.device_metric_schema import DeviceMetricSchema
 from schema.device_metric_type_schema import DeviceMetricTypeSchema
 from schema.device_ui_status_schema import DeviceUiStatusSchema
 from schema.device_ui_status_type_schema import DeviceUiStatusTypeSchema
+from utils.validation import validate_request
 
 from model.device_metric_type import DeviceMetricType
-from model.device_ui_status_type import DeviceUiStatusType
+import logging
 
 class DeviceManager:
     def __init__(self):
-        print('Init')
+        logging.info("In Device Manager")
 
     def create_status(self):
-        print('Device status')
-        status_json = request.get_json()
+        logging.info('Persisting UI status messages')
+        status_json = validate_request()
+        logging.info(status_json)
 
-        status = DeviceUiStatusType.find_by_ui_id(status_json["ui_id"])
-        del status_json["ui_id"]
-        status_json["status_id"] = status.id
+        statuses = status_json.get('statuses')
 
-        status_schema = DeviceUiStatusSchema()
-        status = status_schema.load(status_json)
+        for status in statuses:
+            ui_status = {}
+            ui_status['device_serial_number'] = status_json.get('device_serial_number')
+            ui_status['receiver_recorded_at'] = status_json.get('received_at')
+            ui_status['receiver_id'] = status_json.get('receiver_id')
+            ui_status['recorded_at'] = status.get('recorded_at')
+            ui_status['ui_status_id'] = status.get('ui_id')
+            schema = DeviceUiStatusSchema()
+            model = schema.load(ui_status)
+            model.save_to_db()
 
-        status.save_to_db()
 
-        return status_schema.dump(status), 201
+        return {"message": "Success"}, 201
+
+
 
     def create_status_type(self):
         print('Device status type')

@@ -9,11 +9,11 @@ class DeviceMetricType(BaseModel):
     name = db.Column('name', String(30), nullable=False)
 
     @classmethod
-    def all(cls) -> "DeviceMeticType":
+    def all(cls) -> "DeviceMetricType":
         return cls.query.all()
 
     @classmethod
-    def find_by_name(cls, _name) -> "DeviceMeticType":
+    def find_by_name(cls, _name) -> "DeviceMetricType":
         return cls.query
 
     def save_to_db(self) -> None:

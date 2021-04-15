@@ -24,6 +24,7 @@ def upgrade():
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('device_serial_number', sa.String(length=50), nullable=False),
     sa.Column('device_metrics_id', sa.Integer(), nullable=True),
+    sa.Column('device_metrics_data', sa.String(length=50), nullable=False),
     sa.Column('recorded_at', sa.DateTime(), nullable=True),
     sa.Column('receiver_id', sa.String(length=50), nullable=True),
     sa.Column('receiver_recorded_at', sa.DateTime(), nullable=True),

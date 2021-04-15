@@ -30,7 +30,7 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
-    sa.Column('name', sa.String(length=30), nullable=False),
+    sa.Column('name', sa.String(length=50), nullable=False),
     sa.Column('ui_id', sa.String(length=50), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     schema='ES'

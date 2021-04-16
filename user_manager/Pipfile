@@ -20,8 +20,8 @@ flask-cors = "*"
 pytest = "*"
 pytest-mock = "*"
 pycryptodome = "==3.9.8"
-pandas = "=1.2.0"
-numpy = "=1.17.4"
+pandas = "==1.2.0"
+numpy = "==1.17.4"
 pytz = "*"
 
 [dev-packages]

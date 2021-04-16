@@ -14,7 +14,7 @@ class DeviceMetricType(BaseModel):
 
     @classmethod
     def find_by_name(cls, _name) -> "DeviceMetricType":
-        return cls.query
+        return cls.query.filter_by(name=_name).first()
 
     def save_to_db(self) -> None:
         db.session.add(self)

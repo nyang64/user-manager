@@ -85,15 +85,22 @@ class DeviceManager:
         device_metrics = parse_metrics(decrypted_hex)
 
         for metrics in device_metrics.items():
+            db_metric = {}
             metric = DeviceMetricType.find_by_name(metrics[0])
-            breakpoint()
-            metric_json["id"] = metric.id
-            metric_json["device_metric_data"] = metrics[1]
-            metric_json["recorded_at"] = recorded_at
-            metric_json["receiver_id"] = receiver_id
-            metric_schema = DeviceMetricSchema()
-            metric = metric_schema.load(metric_json)
+            print(metric)
 
+            if metric is not None:
+                db_metric["metric_id"] = metric.id
+            else:
+                logging.error("Could not find status type for {}".format(metric["id"]))
+
+            db_metric["metric_value"] = str(metrics[1])
+            db_metric["recorded_at"] = recorded_at
+            db_metric["receiver_id"] = receiver_id
+            db_metric["device_serial_number"] = device_serial_number
+
+            metric_schema = DeviceMetricSchema()
+            metric = metric_schema.load(db_metric)
             metric.save_to_db()
 
         return {"message": "Success"}, 201

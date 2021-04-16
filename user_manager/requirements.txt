@@ -12,3 +12,8 @@ requests
 flask_cors
 pytest
 coverage
+pandas
+pycryptodome==3.9.8
+pandas==1.2.0
+numpy==1.17.4
+pytz

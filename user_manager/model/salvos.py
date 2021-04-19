@@ -25,3 +25,5 @@ class Salvos(BaseModel):
                             db.String(20))
     shock_count = db.Column('shock_count',
                             db.Integer)
+    shock_duration = db.Column('shock_duration',
+                            db.Numeric)

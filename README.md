@@ -30,6 +30,25 @@
 1. Create a file called ".env"
   1. See ".env.example" for the required environment variables
 
+## Contributing
+1. Ensure your syntax is cleaned up before you commit, install [pre-commit](https://pre-commit.com/)
+    1. MacOS: Run: `brew install pre-commit`, other operating systems, see link above.
+1. Commit message format:
+
+- Format:
+
+        [STORY ID] COMMIT TITLE
+
+        - ITEM COMPLETED
+        - ANOTHER ITEM COMPLETED
+
+- Example:
+
+        ESSW-66 add endpoint for getting patients
+
+        - add test coverage to Patients resource
+        - update Patient schema to show nested attributes
+
 ## Docker
 
 1. build image (name it something short a sweet with `-t` flag)

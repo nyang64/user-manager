@@ -21,7 +21,7 @@
       "environment": [
         {
           "name": "APP_LINK",
-          "value": "http://applink"
+          "value": "https://testflight.apple.com/join/QidKZCuu"
         },
         {
           "name": "POSTGRES_DB_HOST",

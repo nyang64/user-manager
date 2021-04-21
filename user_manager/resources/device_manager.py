@@ -19,7 +19,7 @@ class DeviceManager:
         print('Init')
 
     @require_user_token(PATIENT)
-    def create_status(self):
+    def create_status(self, decrypt):
         """
            Persist device UI status sent by the mobile app in the database.
            :param: None
@@ -50,7 +50,7 @@ class DeviceManager:
         return {"message": "Device ui status persisted"}, 201
 
     @require_user_token(PATIENT)
-    def create_metric(self):
+    def create_metric(self, decrypt):
         """
         Persist device metrics sent by the mobile app
         It is assumed that the token will be only the patient token.

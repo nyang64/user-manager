@@ -26,3 +26,6 @@ class AuthenticationBlueprint(Blueprint):
         self.add_url_rule('/logout', 'Logout',
                           self.auth_login.delete,
                           methods=['DELETE'])
+        self.add_url_rule('/validate_token', 'Validate Token',
+                          self.auth_login.validate_token,
+                          methods=['POST'])

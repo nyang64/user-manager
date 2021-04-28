@@ -1,13 +1,11 @@
 from db import db
-from sqlalchemy import String, UniqueConstraint
 from model.base_model import BaseModel
-import pdb
 
 
 class Roles(BaseModel):
     __tablename__ = "role_types"
-    __table_args__ = (UniqueConstraint('role_name'), {"schema": "ES"})
-    role_name = db.Column('role_name', String(30), nullable=False)
+    __table_args__ = (db.UniqueConstraint("role_name"), {"schema": "ES"})
+    role_name = db.Column("role_name", db.String(30), nullable=False)
 
     @classmethod
     def find_by_role_id(cls, role_id: str) -> "Roles":

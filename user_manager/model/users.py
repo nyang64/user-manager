@@ -1,28 +1,32 @@
-from db import db
-from sqlalchemy import Integer, String, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
-from werkzeug.exceptions import NotFound, InternalServerError
-import uuid
-from model.base_model import BaseModel
-
 import logging
+import uuid
+
+from db import db
+from model.base_model import BaseModel
+from model.user_registration import UserRegister
+from model.user_roles import UserRoles
+from sqlalchemy import ForeignKey, Integer, String
+from sqlalchemy.dialects.postgresql import UUID
+from werkzeug.exceptions import InternalServerError, NotFound
+
+# "UserRoles" model is required so that the ORM
+# can make the 'roles' 'relationship'
 
 
 class Users(BaseModel):
     __tablename__ = "users"
-    __table_args__ = ({"schema": "ES"})
-    registration_id = db.Column('registration_id', Integer,
-                                ForeignKey('ES.registrations.id',
-                                           ondelete="CASCADE"))
-    first_name = db.Column('first_name', String(30),
-                           nullable=False)
-    last_name = db.Column('last_name', String(30),
-                          nullable=False)
-    phone_number = db.Column('phone_number', String(12),
-                             nullable=False)
+    __table_args__ = {"schema": "ES"}
+    registration_id = db.Column(
+        "registration_id",
+        Integer,
+        ForeignKey("ES.registrations.id", ondelete="CASCADE"),
+    )
+    first_name = db.Column("first_name", String(30), nullable=False)
+    last_name = db.Column("last_name", String(30), nullable=False)
+    phone_number = db.Column("phone_number", String(12), nullable=False)
     uuid = db.Column(UUID(as_uuid=True), default=uuid.uuid4, unique=True)
     registration = db.relationship("UserRegister", backref="registrations")
-    roles = db.relationship("UserRoles", backref="roles", uselist=True)
+    roles = db.relationship("UserRoles", lazy="joined", uselist=True)
 
     @classmethod
     def all(cls) -> "Users":
@@ -30,7 +34,8 @@ class Users(BaseModel):
 
     @classmethod
     def find_by_email(cls, email: str) -> "Users":
-        return cls.query.filter_by(email=email).first()
+        user_registration = UserRegister.find_by_email(email)
+        return cls.find_by_registration_id(user_registration.id)
 
     @classmethod
     def find_by_registration_id(cls, registration_id: str) -> "Users":
@@ -46,14 +51,12 @@ class Users(BaseModel):
 
     @classmethod
     def check_user_exist(cls, user_id):
-        return db.session.query(cls).filter_by(
-            id=user_id).first()
+        return db.session.query(cls).filter_by(id=user_id).first()
 
     @classmethod
     def getUserById(cls, user_reg_id):
         try:
-            user = cls.find_by_registration_id(
-                registration_id=user_reg_id)
+            user = cls.find_by_registration_id(registration_id=user_reg_id)
             if user is None:
                 raise NotFound("User Details Not Found")
             return user

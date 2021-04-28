@@ -1,16 +1,18 @@
-from sqlalchemy import Integer, ForeignKey, String
 from db import db
 from model.base_model import BaseModel
 
 
 class Facilities(BaseModel):
     __tablename__ = "facilities"
-    __table_args__ = ({"schema": "ES"})
-    address_id = db.Column('address_id', Integer,
-                           ForeignKey('ES.addresses.id', ondelete="CASCADE"),
-                           nullable=False)
-    on_call_phone = db.Column('on_call_phone', String(12), nullable=False)
-    name = db.Column('name', String(100))
+    __table_args__ = {"schema": "ES"}
+    address_id = db.Column(
+        "address_id",
+        db.Integer,
+        db.ForeignKey("ES.addresses.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    on_call_phone = db.Column("on_call_phone", db.String(12), nullable=False)
+    name = db.Column("name", db.String(100))
 
     @classmethod
     def find_by_id(cls, _id) -> "Facilities":

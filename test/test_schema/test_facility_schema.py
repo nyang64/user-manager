@@ -10,6 +10,7 @@ class TestFacilitySchema(TestCase):
 
     def test_add_facility_schema(self):
         args = {"facility_name": "FCAJ",
+                "on_call_phone": "1123451234",
                 "address": {
                     "street_address_1": "Test",
                     "street_address_2": "Te",

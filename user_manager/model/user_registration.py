@@ -1,15 +1,13 @@
-from sqlalchemy import String, Boolean
-from model.base_model import BaseModel
 from db import db
-import logging
+from model.base_model import BaseModel
 
 
 class UserRegister(BaseModel):
     __tablename__ = "registrations"
-    __table_args__ = ({"schema": "ES"})
-    email = db.Column('email', String(50), nullable=False, unique=True)
-    password = db.Column('password', String(255), nullable=False)
-    isFirst = db.Column('isFirst', Boolean, default=True)
+    __table_args__ = {"schema": "ES"}
+    email = db.Column("email", db.String(50), nullable=False, unique=True)
+    password = db.Column("password", db.String(255), nullable=False)
+    isFirst = db.Column("isFirst", db.Boolean, default=True)
 
     @classmethod
     def find_by_email(cls, email: str) -> "UserRegister":

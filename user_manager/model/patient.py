@@ -1,32 +1,31 @@
 from db import db
-from sqlalchemy import Integer, String, ForeignKey, DateTime
 from model.base_model import BaseModel
 
 
 class Patient(BaseModel):
     __tablename__ = "patients"
-    __table_args__ = ({"schema": "ES"})
-    user_id = db.Column('user_id', Integer,
-                        ForeignKey('ES.users.id', ondelete="CASCADE"), nullable=False)
-    provider_id = db.Column('provider_id', Integer,
-                            ForeignKey('ES.providers.id', ondelete="CASCADE"), nullable=False)
-    emergency_contact_name = db.Column('emergency_contact_name',
-                                       String(30),
-                                       nullable=False)
-    emergency_contact_number = db.Column('emergency_contact_phone',
-                                         String(12),
-                                         nullable=False)
-    gender = db.Column('gender',
-                       String(12))
-    date_of_birth = db.Column('date_of_birth',
-                              String(30), nullable=False)
-    enrolled_date = db.Column('enrolled_at',
-                              DateTime,
-                              default=db.func.now())
-    gender = db.Column('gender', String(30), nullable=False)
-    indication = db.Column('indication', String(40), nullable=False)
+    __table_args__ = {"schema": "ES"}
+    user_id = db.Column(
+        "user_id",
+        db.Integer,
+        db.ForeignKey("ES.users.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    emergency_contact_name = db.Column(
+        "emergency_contact_name", db.String(30), nullable=False
+    )
+    emergency_contact_number = db.Column(
+        "emergency_contact_phone", db.String(12), nullable=False
+    )
+    gender = db.Column("gender", db.String(12))
+    date_of_birth = db.Column("date_of_birth", db.String(30), nullable=False)
+    enrolled_date = db.Column("enrolled_at", db.DateTime, default=db.func.now())
+    gender = db.Column("gender", db.String(30), nullable=False)
+    indication = db.Column("indication", db.String(40), nullable=False)
     user = db.relationship("Users", backref="users", uselist=False, viewonly=True)
-    devices = db.relationship("PatientsDevices", backref="patients_id", uselist=True, viewonly=True)
+    devices = db.relationship(
+        "PatientsDevices", backref="patients_id", uselist=True, viewonly=True
+    )
 
     @classmethod
     def all(cls) -> "Patient":

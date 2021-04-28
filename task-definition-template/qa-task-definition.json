@@ -67,33 +67,41 @@
           "name": "SMTP_SERVER",
           "value": "email-smtp.$AWS_REGION.amazonaws.com"
         },
-	{
+	    {
           "name": "OTP_EXPIRATION_TIME_HOURS",
           "value": "24"
         },
-	{
+	    {
           "name": "OTP_EXPIRATION_TIME_MINUTES",
           "value": "0"
         },
-	{
+	    {
           "name": "OTP_LIMIT",
           "value": "7"
         },
-	{
+	    {
           "name": "OTP_LIMIT_HOURS",
           "value": "1"
         },
-	{
+	    {
           "name": "OTP_LIMIT_MINUTES",
           "value": "0"
         },
-  {
+        {
           "name": "REPORT_BUCKET_NAME",
           "value": "$DEPLOYMENT_ENVIRONMENT-therapy-reports"
         },
-  {
+        {
           "name": "DEVICE_BASE_URL",
           "value": "https://9qlkmbhme0.execute-api.us-west-1.amazonaws.com/qa/v1"
+        },
+        {
+          "name": "DEBUG",
+          "value": "False"
+        },
+        {
+          "name": "FLASK_ENV",
+          "value": "production"
         }
       ],
       "secrets": [

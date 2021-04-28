@@ -60,6 +60,7 @@ class TestProviderManager(TestCase):
         request.is_json = True
         request.json = {
             "facility_name": "FCAJ",
+            "on_call_phone": "3122318112",
             "address": {
                 "street_address_1": "Test",
                 "street_address_2": "Te",

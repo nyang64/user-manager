@@ -21,10 +21,11 @@ class AddressSchema(BaseSchema):
 class AddFacilitySchema(BaseSchema):
     address = fields.Nested(AddressSchema)
     facility_name = fields.Str(required=True, validate=must_not_blank)
+    on_call_phone = fields.Str(required=True, validate=must_not_blank)
 
     @post_load
     def load_data(self, data, **kwargs):
-        return data.get('address'), data.get('facility_name')
+        return data.get('address'), data.get('facility_name'), data.get('on_call_phone')
 
 
 add_facility_schema = AddFacilitySchema()

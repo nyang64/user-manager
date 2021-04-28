@@ -208,11 +208,11 @@ class provider_manager():
         from services.facility_services import FacilityService
         logging.info('Request Received to add facility')
         request_data = validate_request()
-        address, facility_name = add_facility_schema.load(request_data)
+        address, facility_name, on_call_phone = add_facility_schema.load(request_data)
         logging.info('Facility Name: {}'.format(facility_name))
         logging.info('Address Info: {}'.format(address))
         facility_obj = FacilityService()
-        aid, fid = facility_obj.register_facility(address, facility_name)
+        aid, fid = facility_obj.register_facility(address, facility_name, on_call_phone)
         return {'address_id': aid,
                 'facility_id': fid,
                 'status_code': http.client.CREATED}, http.client.CREATED

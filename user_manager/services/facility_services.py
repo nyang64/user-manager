@@ -10,12 +10,12 @@ class FacilityService(DbRepository):
     def __init__(self):
         pass
 
-    def register_facility(self, address, facility_name):
+    def register_facility(self, address, facility_name, on_call_phone):
         ''' Commit the transcation'''
         logging.info('Transcation Started.')
         try:
             address_id = self.save_address(address)
-            facility_id = self.save_facility(facility_name, address_id)
+            facility_id = self.save_facility(facility_name, address_id, on_call_phone)
             self.commit_db()
             logging.info('Transcation Completed')
             return address_id, facility_id

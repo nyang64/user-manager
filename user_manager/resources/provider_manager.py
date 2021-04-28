@@ -1,231 +1,216 @@
 import http
 import logging
-from db import db
+import json
 
 from flask import jsonify, request
 from model.address import Address
 from model.facilities import Facilities
+from model.patient import Patient
+from model.patients_devices import PatientsDevices
+from model.patients_patches import PatientsPatches
+from schema.patient_details_schema import PatientDetailsSchema
+from model.patients_providers import PatientsProviders
+from model.provider_role_types import ProviderRoleTypes
 from model.providers import Providers
-from model.providers_roles import ProviderRoles
 from model.user_registration import UserRegister
 from model.users import Users
+from model.user_status_type import UserStatusType
 from schema.address_schema import AddressSchema
 from schema.patient_schema import (
-    filter_patient_schema,
-    patient_detail_schema,
-    patient_id_schema,
+    PatientSchema,
+    assign_device_schema,
+    assign_patches_schema,
+    create_patient_schema,
+    update_patient_schema,
+    patient_list_schema,
+    deactivate_patient_schema
 )
-from schema.providers_roles_schema import ProvidersRolesSchema
-from schema.providers_schema import ProvidersSchema, UpdateProviderSchema, provider_list_schema
+from schema.patient_schema import patients_schema
+from schema.patients_devices_schema import PatientsDevicesSchema
+from schema.patient_details_schema import PatientDetails
+from schema.providers_schema import ProvidersSchema
 from schema.register_schema import RegistrationSchema
-from schema.report_schema import patient_reports_schema, report_id_schema
 from schema.user_schema import UserSchema
-from services.provider_services import ProviderService
-from services.user_services import UserServices
-from services.facility_services import FacilityService
-from utils.common import have_keys
-from utils.constants import ADMIN, PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER, STUDY_COORDINATOR
+from services.patient_services import PatientServices
+from services.material_request_services import MaterialRequestService
+from services.device_manager_api import DeviceManagerApi
+from utils.constants import ADMIN, PATIENT, PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER, ENROLLED, DISENROLLED, ASSIGNED
+from utils.common import generate_random_password, have_keys
 from utils.jwt import require_user_token
 from utils.validation import validate_request
-from utils.common import generate_random_password
-from utils.send_mail import send_provider_registration_email
 from werkzeug.exceptions import BadRequest
-
-provider_schema = ProvidersSchema()
-providers_schema = ProvidersSchema(many=True)
-providers_roles_schema = ProvidersRolesSchema(many=True)
-address_schema = AddressSchema()
-register_schema = RegistrationSchema()
-user_schema = UserSchema()
+import datetime
 
 
-class ProviderManager:
+class PatientManager:
     def __init__(self):
-        self.userObj = UserServices()
-        self.provider_obj = ProviderService()
-        self.facility_service_obj = FacilityService()
+        self.patient_obj = PatientServices()
 
-    @require_user_token(ADMIN, STUDY_MANAGER, CUSTOMER_SERVICE)
-    def register_provider(self, token):
-        provider_json = request.json
-        # TODO - Move to schema based validation
-        if (
-                have_keys(
-                    provider_json,
-                    "first_name",
-                    "last_name",
-                    "facility_id",
-                    "email",
-                    "role",
-                    "is_primary"
-                )
-                is False
-        ):
-            return {"message": "Invalid Request Parameters"}, 400
+    @require_user_token(ADMIN, STUDY_MANAGER, CUSTOMER_SERVICE, PROVIDER)
+    def create_patient(self, token):
+        from utils.send_mail import send_patient_registration_email
 
+        request_params = validate_request()
         logging.debug(
-            "User: {} with role: {} - is registering a new provider: {}::{}".format(token["user_email"],
-                                                                                    token["user_role"],
-                                                                                    provider_json["first_name"],
-                                                                                    provider_json["last_name"]))
-        pwd = generate_random_password()
-        register = (str(provider_json["email"]).lower(), pwd)
+            "User: {} with role: {} - is registering a new patient: {}::{}".format(token["user_email"],
+                                                                                   token["user_role"],
+                                                                                   request_params["first_name"],
+                                                                                   request_params["last_name"]))
 
-        phone_number = None
-        if "phone_number" in provider_json:
-            phone_number = provider_json["phone_number"]
 
-        external_user_id = None
-        if "external_user_id" in provider_json:
-            external_user_id = provider_json["external_user_id"]
+        externalid = request_params["external_user_id"][0:3]
+        month = str(datetime.date.today()).split('-')[1]
+        day = str(datetime.date.today()).split('-')[2]
+        pwd = "es" + externalid + day + month
 
-        user = (
-            provider_json["first_name"],
-            provider_json["last_name"],
-            phone_number,
-            external_user_id
-        )
-
-        facility_id = provider_json["facility_id"]
-        role_name = provider_json["role"]
-
-        # Currently this is applicable only for study coordinators
-        is_primary_provider = provider_json["is_primary"]
-        provider_id = self.provider_obj.register_provider_service(
-            register, user, facility_id, role_name, is_primary_provider
-        )
-
-        provider = Providers.find_by_id(provider_id)
-        facility = Facilities.find_by_id(int(facility_id))
-        address = Address.find_by_id(facility.address_id)
-        provider_roles = ProviderRoles.find_by_provider_id(provider_id)
-        user = Users.find_by_id(provider.user_id)
-        registration = UserRegister.find_by_id(user.registration_id)
-
-        # Do not send registration email to the study coordinator. The clinical portal does not allow study coordinators
-        # to view any patients due to the role.
-        if role_name != STUDY_COORDINATOR:
-            send_provider_registration_email(
-                first_name=user.first_name,
-                last_name=user.last_name,
-                to_address=registration.email,
-                username=registration.email,
-                password=pwd
-            )
-
-        response = {
-            "registration": register_schema.dump(registration),
-            "user": user_schema.dump(user),
-            "provider_role": providers_roles_schema.dump(provider_roles),
-            "facility": {
-                "name": facility.name,
-                "address": address_schema.dump(address),
-                "on_call_phone": facility.on_call_phone,
-            },
-        }
-        response.update(provider_schema.dump(provider))
-
-        return response, 201
-
-    @require_user_token(ADMIN, PROVIDER, STUDY_MANAGER, CUSTOMER_SERVICE)
-    def get_provider_by_id(self, decrypt):
-        provider_id = request.args.get("id")
-        provider = Providers.find_by_id(provider_id)
-        if provider is None:
-            return {"message": "No Such Provider Exist"}, 404
-        user = Users.find_by_id(provider.user_id)
-        facility = Facilities.find_by_id(provider.facility_id)
-        registration = UserRegister.find_by_id(user.registration_id)
-        provider_dict = {
-            "id": provider.id,
-            "external_id": user.external_user_id,
-            "facility_id": provider.facility_id,
-            "facility_name": facility.name,
-            "first_name": user.first_name,
-            "last_name": user.last_name,
-            "phone_number": user.phone_number,
-            "email": registration.email,
-        }
-        return {"Data": [provider_dict]}, 200
-
-    @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER, PROVIDER)
-    def get_providers(self, decrypt):
-        provider_data = Providers.find_providers()
-        if provider_data is None or provider_data == []:
-            return {"message": "No Providers Found"}, 404
-
-        providers_lst = []
-        for provider in provider_data:
-            user = Users.find_by_id(provider.user_id)
-            facility = Facilities.find_by_id(provider.facility_id)
-            patients = self.provider_obj.list_all_patients_by_provider(provider_id=provider.id)
-            provider_dict = {
-                "id": provider.id,
-                "user_id": provider.user_id,
-                "facility_id": provider.facility_id,
-                "first_name": user.first_name,
-                "last_name": user.last_name,
-                "phone_number": user.phone_number,
-                "facility_name": facility.name,
-                "patients": patients,
-            }
-            providers_lst.append(provider_dict)
-        return {"message": "Users Found", "data": providers_lst}, 200
-
-    @require_user_token(ADMIN, STUDY_MANAGER, CUSTOMER_SERVICE)
-    def delete_provider(self, decrypt):
-        provider_json = request.json
-        if have_keys(provider_json, "provider_id") is False:
-            return {"message": "Invalid Request Parameters"}, 400
-        provider_data = Providers.find_by_id(_id=provider_json["provider_id"])
-        if provider_data is None:
-            return {"message": "Unable To Delete, No Such Provider Exist"}, 404
-
-        session = db.session
-        session = self.userObj.delete_user_byid(provider_data.user_id, session)
-        session.commit()
-        return {"message": "Provider Deleted"}, 200
-
-    @require_user_token(ADMIN, STUDY_MANAGER, CUSTOMER_SERVICE)
-    def update_provider(self, token):
-        """Update a facility details"""
-        logging.debug("User: {} updating providers".format(token["user_email"]))
-
-        provider_id = request.args.get("id")
-        if provider_id is None:
-            raise BadRequest("Provider id parameter is missing")
+        request_params["password"] = pwd
+        request_params["role_name"] = "PATIENT"
 
         try:
-            request_data = validate_request()
-            req_facility_id, req_email, req_user = UpdateProviderSchema.load(request_data)
+            register_params, user_params, patient_params = create_patient_schema.load(
+                request_params
+            )
 
-            provider_data = Providers.find_by_id(_id=provider_id)
-            if provider_data is None:
-                return {"message": "No Such Provider Exist"}, 404
+            # check if the device is already assigned to a patient before registering the patient
+            device_in_use = False
+            if request_params.get("device_serial_number"):
+                device_in_use = PatientsDevices.device_in_use(request_params["device_serial_number"])
 
-            self.provider_obj.update_provider(facility_id=req_facility_id,
-                                              user=req_user,
-                                              email=req_email,
-                                              provider_from_db=provider_data)
+            if device_in_use:
+                raise Exception("Device is already assigned to another patient")
+
+            # Check device status. This is just an additional check to make sure the device is available before assigning
+            status = DeviceManagerApi.get_device_status(request_params["device_serial_number"])
+            if ASSIGNED == status:
+                raise Exception(f"Can't assign the device to a patient as the device status is {status}")
+
+            patient_id = self.patient_obj.register_patient(register_params, user_params, patient_params)
+            send_patient_registration_email(
+                user_params[0],
+                register_params[0],
+                "Setting up the Jewel App",
+                register_params[0],
+                register_params[1],
+            )
+
+            if request_params.get("device_serial_number"):
+                self.assign_first_device(patient_id, request_params["device_serial_number"])
+
+            if patient_params.get("patches") is not None:
+                self.assign_patches(patient_id, patient_params["patches"])
+
+            patient_schema = PatientSchema()
+            patient = Patient.find_by_id(patient_id)
+
+            prs = MaterialRequestService()
+            prs.send_initial_product_request(token["user_email"], patient, register_params[0])
+
+            return jsonify(patient_schema.dump(patient)), http.client.CREATED
+        except Exception as ex:
+            return {"message": str(ex)}, http.client.BAD_REQUEST
+
+
+    def assign_first_device(self, patient_id, device_serial_number):
+        """
+            Assign the first device to a patient
+        """
+        patient_device = assign_device_schema.load(
+            {"device_serial_number": device_serial_number, "patient_id": patient_id}
+        )
+        return self.patient_obj.assign_device_to_patient(patient_device)
+
+    def assign_patches(self, patient_id, patches):
+        patches_to_persist = []
+
+        applied_patch_lot_number = patches["applied_patch_lot_number"]
+        if applied_patch_lot_number is not None and len(applied_patch_lot_number) > 0:
+            patient_patch_applied = assign_patches_schema.load(
+                {
+                    "patch_lot_number": applied_patch_lot_number,
+                    "patient_id": patient_id,
+                    "is_applied": True
+                }
+            )
+            patches_to_persist.append(patient_patch_applied)
+
+        unused_patch_lot_number = patches["unused_patch_lot_number"]
+        if unused_patch_lot_number is not None and len(unused_patch_lot_number) > 0:
+            patient_patch_unused = assign_patches_schema.load(
+                {
+                    "patch_lot_number": unused_patch_lot_number,
+                    "patient_id": patient_id,
+                    "is_applied": False
+                }
+            )
+            patches_to_persist.append(patient_patch_unused)
+
+        return self.patient_obj.save_patient_patches(patches_to_persist)
+
+    @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER, PROVIDER)
+    def update_patient(self, token):
+        patient_id = request.args.get("id")
+        if patient_id is None:
+            raise BadRequest("parameter id is missing")
+        request_data = validate_request()
+
+        try:
+            patient_data_from_db = Patient.find_by_id(_id=patient_id)
+            if patient_data_from_db is None:
+                return {"message": "No such patient exist"}, 404
+            user, email, patient, patient_details = update_patient_schema.load(request_data)
+            self.patient_obj.update_patient_data(
+                user, email, patient, patient_details, patient_data_from_db
+            )
         except Exception as ex:
             return {"message": ex.description}, http.client.BAD_REQUEST
 
-        return {"message": "Successfully updated provider"}, http.client.OK
+        return {"message": "Successfully updated"}, http.client.OK
 
-    @require_user_token(PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER, ADMIN)
-    def get_patient_list(self, token):
+    @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER)
+    def delete_patient(self, token):
+        try:
+            request_data = validate_request()
+            patient_id, deactivation_reason, deactivation_notes = deactivate_patient_schema.load(request_data)
+            self.patient_obj.delete_patient_data(patient_id, deactivation_reason, deactivation_notes)
+        except Exception as e:
+            print(e)
+            return {"message": str(e)}, http.client.BAD_REQUEST
+
+        return {"message": "Patient deleted"}, http.client.OK
+
+    @require_user_token(ADMIN, PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER)
+    def assign_device(self, decrypt):
+        request_data = validate_request()
+        print(request_data)
+        patient_device = assign_device_schema.load(request_data)
+        self.patient_obj.assign_device_to_patient(patient_device)
+        return {"message": "Device assigned", "status_code": "201"}, http.client.CREATED
+
+    @require_user_token(PATIENT, ADMIN, PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER)
+    def patient_device_list(self, token):
+        device_list = self.patient_obj.patient_device_list(token)
+        resp = {"devices": device_list}
+        return jsonify(resp), http.client.OK
+
+    @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER, PROVIDER)
+    def patients(self, token):
+        patient_schema = PatientSchema(many=True)
+        patients = Patient.all()
+
+        return jsonify(patient_schema.dump(patients))
+
+    @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER, PROVIDER)
+    def patients_list(self, token):
         """
-        :param :- page_number, record_per_page, first_name,
-                  last_name, date_of_birth, report_id
+        :param :- page_number, record_per_page, name, external ID, site id, provider id, status
         :return filtered patient list
         """
-
-        provider = Providers.find_by_email(token["user_email"])
         request_data = validate_request()
-        filter_input = filter_patient_schema.load(request_data)
-        patients_list, total = self.provider_obj.patients_list(
-        provider.id, *filter_input
-        )
+        logging.debug(
+            "User: {} with role: {} - is requesting a list of patients".format(token["user_email"],
+                                                                                   token["user_role"]))
+        filter_input = patient_list_schema.load(request_data)
+        patients_list, total = self.patient_obj.get_patients_list(*filter_input)
 
         return (
             {
@@ -238,68 +223,171 @@ class ProviderManager:
             http.client.OK,
         )
 
-    @require_user_token(PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER, ADMIN)
-    def get_patient_detail_byid(self, token):
-        """
-        Fetch the patient detail by their patientid
-        param: patientID
-        return: patient detail in dict format
-        """
-        request_data = request.args
-        patient_id = patient_id_schema.load(request_data).get("patientID")
-        patient_data, reports = self.provider_obj.patient_detail_byid(patient_id)
-        patient_data = patient_detail_schema.dump(patient_data)
-        patient_data["report"] = patient_reports_schema.dump(reports)
-        return jsonify(patient_data), http.client.OK
+    @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER, PROVIDER)
+    def get_patient_by_id(self, token):
+        # TODO Add more logic to get all needed data
+        patient_id = request.args.get("id")
+        patient_data = Patient.find_by_id(patient_id)
+        if patient_id is None:
+            return {"message": "No Such Patient Exist"}, 404
 
-    @require_user_token(PROVIDER)
-    def get_report_signed_link(self, token):
-        """
-        Fetch the key by reportid from Salvos Table and get the signed url
-        param: reportId
-        return: Report Signed URL
-        """
-        request_data = request.args
-        report_id = report_id_schema.load(request_data).get("reportId")
-        signed_url, code = self.provider_obj.report_signed_link(report_id)
-        return {"report_url": signed_url}, code
+        patient_data_json = patient_data.__dict__
+        del patient_data_json["_sa_instance_state"]
+        return {"message": "Users Found", "Data": [patient_data_json]}, 200
 
-    @require_user_token(PROVIDER)
-    def update_uploaded_ts(self, token):
-        """
-        Fetch the data by reportid from Salvos Table and update \
-            the clinician_verified_at column
-        param: reportId
-        return: uploaded message
-        """
-        request_data = validate_request()
-        report_id = report_id_schema.load(request_data).get("reportId")
-        msg, code = self.provider_obj.update_uploaded_ts(report_id)
-        return {"message": msg, "status_code": code}, code
+    @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER, PROVIDER)
+    def get_patient_details_by_id(self, token):
+        patient_id = request.args.get("id")
+        patient_data = Patient.find_by_id(patient_id)
+        if patient_id is None:
+            return {"message": "No Such Patient Exist"}, 404
+
+        details = PatientDetails.find_by_patient_id(patient_id)
+        details_json = PatientDetailsSchema().dump(details)
+        patient_json = PatientSchema().dump(patient_data)
+
+        # Get the notes and deactivation reason
+        enrolled_status = UserStatusType.find_by_name(ENROLLED)
+        disenrolled_status = UserStatusType.find_by_name(DISENROLLED)
+        for status in patient_data.user.statuses:
+            if status.status_id == enrolled_status.id:
+                patient_json["enrollment_notes"] = status.notes
+            elif status.status_id == disenrolled_status.id:
+                patient_json["deactivation_reason"] = json.loads(status.deactivation_reason)
+                patient_json["deactivation_notes"] = status.notes
+
+
+        # TODO: Write a single query to get all these data from the database in one call
+        # outpatient provider
+        outpatient_role_id = ProviderRoleTypes.find_by_name(_name="outpatient").id
+        outpatient_provider = PatientsProviders.find_by_patient_and_role_id(
+            patient_data.id, outpatient_role_id
+        )
+
+        # prescribing provider
+        prescribing_role_id = ProviderRoleTypes.find_by_name(_name="prescribing").id
+        prescribing_provider = PatientsProviders.find_by_patient_and_role_id(
+            patient_data.id, prescribing_role_id
+        )
+
+        response = {
+            "patient": {
+                "patient": patient_json,
+                "outpatient_provider": outpatient_provider.provider_id,
+                "prescribing_provider": prescribing_provider.provider_id,
+                "details": details_json
+            }
+        }
+        return jsonify(response), 200
+
+    @require_user_token(ADMIN, PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER)
+    def patient_remove_device(self, token):
+        device_sn = request.args.get("device_serial_number")
+        if device_sn is None:
+            raise BadRequest("device serial number missing")
+        patient_id = self.patient_obj.remove_patient_device_association(device_sn)
+        if patient_id is None:
+            return {"message": f"Unable to find patient association with device: {device_sn}"}, http.client.NOT_FOUND
+        return {"message": f"Patient: {patient_id} disassociated with device serial number {device_sn}"}, http.client.OK
+
+
+    def therapy_report_details(self, patient_id):
+        # create schemas for formatting the JSON response
+        register_schema = RegistrationSchema()
+        patient_schema = PatientSchema()
+        address_schema = AddressSchema()
+        user_schema = UserSchema()
+        patient_device_schema = PatientsDevicesSchema()
+        provider_schema = ProvidersSchema()
+
+        # patient's personal information
+        patient = Patient.find_by_id(patient_id)
+        user = Users.find_by_patient_id(patient.user_id)
+        registration = UserRegister.find_by_id(user.registration_id)
+        # patient's current device
+        patient_device = PatientsDevices.find_by_patient_id(patient.id)
+
+        # outpatient_provider
+        outpatient_role_id = 1
+        out_patient_provider = PatientsProviders.find_by_patient_and_role_id(
+            patient.id, outpatient_role_id
+        )
+        outpatient_provider = Providers.find_by_id(out_patient_provider.provider_id)
+        outpatient_provider_user = Users.find_by_id(outpatient_provider.user_id)
+        outpatient_facility = Facilities.find_by_id(outpatient_provider.facility_id)
+        outpatient_address = Address.find_by_id(outpatient_facility.address_id)
+        outpatient_registration = UserRegister.find_by_id(
+            outpatient_provider_user.registration_id
+        )
+
+        # prescribing provider
+        prescribing_role_id = 2
+        pre_patient_provider = PatientsProviders.find_by_patient_and_role_id(
+            patient.id, prescribing_role_id
+        )
+        prescribing_provider = Providers.find_by_id(pre_patient_provider.provider_id)
+        prescribing_provider_user = Users.find_by_id(prescribing_provider.user_id)
+        prescribing_facility = Facilities.find_by_id(prescribing_provider.facility_id)
+        prescribing_address = Address.find_by_id(prescribing_facility.address_id)
+        prescribing_registration = UserRegister.find_by_id(
+            prescribing_provider_user.registration_id
+        )
+
+        # PATCH FOR THERAPY REPORT - REPORT_GENERATOR NEEDS TO BE UPDATED AND USE "PERMANENT_ADDRESS" KEY INSTEAD
+        # OF "ADDRESS" KEY IN PATIENT SCHEMA JSON
+        patient_json = patient_schema.dump(patient)
+        patient_json["address"] = patient_json.pop("permanent_address")
+
+        response = {
+            "patient": {
+                "patient": patient_json,
+                "user": user_schema.dump(user),
+                "registration": register_schema.dump(registration),
+            },
+            "device": patient_device_schema.dump(patient_device),
+            "providers": {
+                "outpatient": {
+                    "registration": register_schema.dump(outpatient_registration),
+                    "user": user_schema.dump(outpatient_provider_user),
+                    "provider": provider_schema.dump(outpatient_provider),
+                    "facility": {
+                        "name": outpatient_facility.name,
+                        "address": address_schema.dump(outpatient_address),
+                        "on_call_phone": outpatient_facility.on_call_phone,
+                    },
+                },
+                "prescribing": {
+                    "registration": register_schema.dump(prescribing_registration),
+                    "user": user_schema.dump(prescribing_provider_user),
+                    "provider": provider_schema.dump(prescribing_provider),
+                    "facility": {
+                        "name": prescribing_facility.name,
+                        "address": address_schema.dump(prescribing_address),
+                        "on_call_phone": prescribing_facility.on_call_phone,
+                    },
+                },
+            },
+        }
+
+        return jsonify(response)
+
 
 
     @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER, PROVIDER)
-    def get_providers_list(self, token):
+    def patients_download(self, token):
         """
-        :param :- page_number, record_per_page, name, external ID
-        :return filtered patient list
+        :param : None
+        :return complete patient list to be used to download to a csv file
         """
         request_data = validate_request()
         logging.debug(
-            "User: {} with role: {} - is requesting a list of patients".format(token["user_email"],
-                                                                               token["user_role"]))
-        filter_input = provider_list_schema.load(request_data)
-        providers, total = self.provider_obj.get_providers_list(*filter_input)
+            "User: {} with role: {} - is requesting a list of patients to download as a csv".format(token["user_email"],
+                                                                                   token["user_role"]))
+        patients_list = self.patient_obj.get_patients_download()
 
         return (
             {
-                "total": total,
-                "page_number": filter_input[0],
-                "record_per_page": filter_input[1],
-                "data": providers,
-                "status_code": http.client.OK,
+                "patients": patients_list,
             },
             http.client.OK,
         )
-
-

@@ -31,7 +31,7 @@ class PatientManager:
     def __init__(self):
         self.patient_obj = PatientServices()
 
-    # @require_user_token(ADMIN, PROVIDER)
+    @require_user_token(ADMIN, PROVIDER)
     def create_patient(self):
         from utils.send_mail import send_registration_email
 

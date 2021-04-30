@@ -654,6 +654,62 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Therapy Report Details",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function(){",
+									"    pm.response.to.have.status(200);",
+									"})",
+									"",
+									"pm.test(\"Auth token\"), function(){",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.id_token).to.be.a('string');",
+									"}",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"token\", jsonData.id_token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\":\"{{patientEmail}}\",\r\n    \"password\":\"{{patientPassword}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/patients/1/therapy_report_details/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"patients",
+								"1",
+								"therapy_report_details",
+								""
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -789,7 +845,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\":\"{{patientEmail}}\",\n    \"password\":\"{{patientPasswordOld}}\",\n    \"first_name\":\"sparkling\",\n    \"last_name\":\"water\",\n    \"phone_number\":\"8097865432\",\n    \"emergency_contact_name\":\"test\",\n    \"emergency_contact_number\":\"1212121212\",\n    \"date_of_birth\":\"2019-08-08\", \n    \"gender\": \"male\", \n    \"provider_id\": 6,\n    \"prescribing_provider\": 6,\n    \"outpatient_provider\": 7, \n    \"indication\": \"hello\", \n    \"device_serial_number\": \"{{patientDevice}}\"\n}\n",
+							"raw": "{\n    \"email\": \"{{patientEmail}}\",\n    \"password\": \"{{patientPasswordOld}}\",\n    \"first_name\":\"sparkling\",\n    \"last_name\":\"water\",\n    \"phone_number\":\"8097865432\",\n    \"emergency_contact_name\":\"test\",\n    \"emergency_contact_number\":\"1212121212\",\n    \"date_of_birth\":\"2019-08-08\", \n    \"gender\": \"male\", \n    \"prescribing_provider\": 1,\n    \"outpatient_provider\": 2, \n    \"indication\": \"hello\", \n    \"device_serial_number\": \"{{deviceSerialNumber}}\"\n}\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -820,7 +876,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/patient/detail?patientID=3",
+							"raw": "{{baseUrl}}/patient/detail?patientID={{patientId}}",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -831,7 +887,7 @@
 							"query": [
 								{
 									"key": "patientID",
-									"value": "3"
+									"value": "{{patientId}}"
 								}
 							]
 						}
@@ -868,6 +924,30 @@
 							],
 							"path": [
 								"patients"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Patients (clinical-port)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/patients/list",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"patients",
+								"list"
 							]
 						}
 					},
@@ -1049,7 +1129,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/patient/report?reportId=67",
+							"raw": "{{baseUrl}}/patient/report?reportId={{reportId}}",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -1060,7 +1140,7 @@
 							"query": [
 								{
 									"key": "reportId",
-									"value": "67"
+									"value": "{{reportId}}"
 								}
 							]
 						}

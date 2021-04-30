@@ -13,20 +13,18 @@ from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_seeder import FlaskSeeder
 from ma import ma
+from utils.constants import FLASK_ENV
 
 # QA and Development environments run with "FLASK_ENV = production"
 # If we need to make calls to QA or Development environments locally,
 # update the your environment variable for FLASK_ENV.
 # load environment variables when building locally.
-value = os.environ.get("SECRET_MANAGER_ARN")
-flask_env = read_environ_value(value, "FLASK_ENV")
-print("read_environ_value(value, 'FLASK_ENV')")
-print(flask_env)
+print(FLASK_ENV)
 
-if flask_env != "production" and flask_env != "test":
+if FLASK_ENV != "production" and FLASK_ENV != "test":
     from dotenv import load_dotenv
 
-    load_dotenv(f".env.{flask_env}")
+    load_dotenv(f".env.{FLASK_ENV}")
 
 app = Appplication(__name__, "/")
 print(os.getenv("SQLALCHEMY_DATABASE_URI"))

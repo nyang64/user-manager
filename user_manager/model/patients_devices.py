@@ -24,12 +24,14 @@ class PatientsDevices(BaseModel):
     )
 
     @classmethod
-    def check_device_assigned(cls, device_serial_no):
-        return (
+    def device_in_use(cls, device_serial_no):
+        device = (
             db.session.query(cls.id)
             .filter(cls.device_serial_number == device_serial_no)
             .first()
         )
+
+        return True if device else False
 
     def all(cls) -> "PatientsDevices":
         return cls.query.all()

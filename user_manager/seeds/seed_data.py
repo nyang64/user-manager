@@ -2,11 +2,9 @@ import os
 from datetime import datetime
 
 from config import read_environ_value
-from utils.constants import ADMIN, PATIENT, PROVIDER
+from utils.constants import ADMIN, FLASK_ENV, PATIENT, PROVIDER
 
-flask_env = os.getenv("FLASK_ENV")
-
-if not flask_env:
+if not FLASK_ENV:
     message = """
                 - you must assign a value to 'FLASK_ENV'.
                 - in terminal run 'export FLASK_ENV = local' or 'set FLASK_ENV = local'
@@ -16,15 +14,13 @@ if not flask_env:
               """
     raise Exception(message)
 
-if flask_env != "production":
-    from dotenv import load_dotenv
-
-    print(f".env.{flask_env}")
-    load_dotenv(f".env.{flask_env}")
+# if flask_env != "production":
+#     from dotenv import load_dotenv
+#
+#     print(f".env.{flask_env}")
+#     load_dotenv(f".env.{flask_env}")
 
 value = os.getenv("SECRET_MANAGER_ARN")
-ADMIN_EMAIL = read_environ_value(value, "ADMIN_USERNAME")
-ADMIN_PASSWORD = read_environ_value(value, "ADMIN_PASSWORD")
 
 APPLE_USER = {
     "user": {
@@ -59,8 +55,8 @@ PROVIDER_PRESCRIBING = {
         "role_name": PROVIDER,
     },
     "register": {
-        "email": "zubin@elementsci.com",
-        "password": os.getenv("PROVIDER_PASSWORD"),
+        "email": read_environ_value(value, "PROVIDER_EMAIL_ONE"),
+        "password": read_environ_value(value, "PROVIDER_PASSWORD"),
     },
     "provider": {
         "facility": {
@@ -87,8 +83,8 @@ PROVIDER_OUTPATIENT = {
         "role_name": PROVIDER,
     },
     "register": {
-        "email": "kiran@elementsci.com",
-        "password": os.getenv("PROVIDER_PASSWORD"),
+        "email": read_environ_value(value, "PROVIDER_EMAIL_TWO"),
+        "password": read_environ_value(value, "PROVIDER_PASSWORD"),
     },
     "provider": {
         "facility": {
@@ -115,8 +111,8 @@ PROVIDER_OUTPATIENT_2 = {
         "role_name": PROVIDER,
     },
     "register": {
-        "email": "alex@elementsci.com",
-        "password": os.getenv("SEED_PASSWORD"),
+        "email": read_environ_value(value, "PROVIDER_EMAIL_DEV"),
+        "password": read_environ_value(value, "SEED_PASSWORD"),
     },
     "provider": {
         "facility": {
@@ -143,8 +139,8 @@ PATIENT_1_DICTIONARY = {
         "role_name": PATIENT,
     },
     "register": {
-        "email": "matthew@elementsci.com",
-        "password": os.getenv("SEED_PASSWORD"),
+        "email": read_environ_value(value, "PATIENT_EMAIL_ONE_DEV"),
+        "password": read_environ_value(value, "SEED_PASSWORD"),
     },
     "patient": {
         "emergency_contact_name": "Darji",
@@ -171,8 +167,8 @@ PATIENT_2_DICTIONARY = {
         "role_name": PATIENT,
     },
     "register": {
-        "email": "laura@elementsci.com",
-        "password": os.getenv("SEED_PASSWORD"),
+        "email": read_environ_value(value, "PATIENT_EMAIL_TWO_DEV"),
+        "password": read_environ_value(value, "SEED_PASSWORD"),
     },
     "patient": {
         "emergency_contact_name": "Rosie",
@@ -198,7 +194,10 @@ ADMIN_USER = {
         "phone_number": "8097810754",
         "role_name": ADMIN,
     },
-    "register": {"email": "abc@elementsci.com", "password": ADMIN_PASSWORD},
+    "register": {
+        "email": read_environ_value(value, "ADMIN_EMAIL"),
+        "password": read_environ_value(value, "ADMIN_PASSWORD"),
+    },
 }
 
 PATIENTS = [PATIENT_1_DICTIONARY, PATIENT_2_DICTIONARY, APPLE_USER]

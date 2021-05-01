@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "8f97b5ab-ba11-48db-b149-1e45f6741f7b",
+		"_postman_id": "e7f5a394-e276-4ef8-b3c3-ccb27ba086c6",
 		"name": "user-manager",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -447,7 +447,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"email\":\"{{patientEmail}}\",\r\n    \"password\":\"{{patientPassword}}\"\r\n}",
+							"raw": "{\r\n    \"email\": \"{{patientEmail}}\",\r\n    \"password\": \"{{patientPassword}}\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -845,7 +845,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"{{patientEmail}}\",\n    \"password\": \"{{patientPasswordOld}}\",\n    \"first_name\":\"sparkling\",\n    \"last_name\":\"water\",\n    \"phone_number\":\"8097865432\",\n    \"emergency_contact_name\":\"test\",\n    \"emergency_contact_number\":\"1212121212\",\n    \"date_of_birth\":\"2019-08-08\", \n    \"gender\": \"male\", \n    \"prescribing_provider\": 1,\n    \"outpatient_provider\": 2, \n    \"indication\": \"hello\", \n    \"device_serial_number\": \"{{deviceSerialNumber}}\"\n}\n",
+							"raw": "{\n    \"email\":\"{{patientEmail}}\",\n    \"password\":\"{{patientPasswordOld}}\",\n    \"first_name\":\"sparkling\",\n    \"last_name\":\"water\",\n    \"phone_number\":\"8097865432\",\n    \"emergency_contact_name\":\"test\",\n    \"emergency_contact_number\":\"1212121212\",\n    \"date_of_birth\":\"2019-08-08\", \n    \"gender\": \"male\", \n    \"prescribing_provider\": 1,\n    \"outpatient_provider\": 2, \n    \"indication\": \"hello\", \n    \"device_serial_number\": \"{{patientDevice}}\",\n    \"address\":{\n        \"street_address_1\":\"40 Duke Medicine Cir\",\n        \"street_address_2\":\"\",\n        \"city\":\"Durham\",\n        \"state\":\"NC\",\n        \"country\":\"US\",\n        \"postal_code\":\"27713\"\n    }\n}\n",
 							"options": {
 								"raw": {
 									"language": "json"

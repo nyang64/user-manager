@@ -3,6 +3,7 @@ import logging
 from ma import ma
 from marshmallow import ValidationError, fields, post_load
 from model.patient import Patient
+from schema.address_schema import AddressSchema
 from schema.base_schema import BaseSchema, validate_number
 from schema.patients_devices_schema import PatientsDevices, PatientsDevicesSchema
 from schema.user_schema import CreateUserSchema, UserSchema
@@ -33,12 +34,14 @@ class PatientSchema(ma.SQLAlchemyAutoSchema):
         load_instance = True
 
     id = ma.auto_field(dump_only=True)
+    address = ma.Nested(AddressSchema)
     user_id = ma.auto_field()
     devices = ma.List(ma.Nested(PatientsDevicesSchema))
     user = ma.Nested(UserSchema)
 
 
 class CreatePatientSchema(CreateUserSchema):
+    address = fields.Nested(AddressSchema, required=False)
     emergency_contact_name = fields.Str(required=True, validate=must_not_blank)
     emergency_contact_number = fields.Str(required=True, validate=validate_number)
     date_of_birth = fields.Str(required=True, validate=must_not_blank)
@@ -58,6 +61,7 @@ class CreatePatientSchema(CreateUserSchema):
                 "date_of_birth": data.get("date_of_birth"),
                 "gender": data.get("gender"),
                 "indication": data.get("indication"),
+                "address": data.get("address"),
             },
             "providers": {
                 "prescribing_provider_id": data.get("prescribing_provider"),
@@ -65,6 +69,7 @@ class CreatePatientSchema(CreateUserSchema):
             },
             "device": {"serial_number": data.get("device_serial_number")},
         }
+
         return register, user, patient_details
 
 
@@ -114,7 +119,6 @@ class PatientDetailSchema(BaseSchema):
     enrolled_on = fields.Str(dump_only=True)
     emergency_contact_name = fields.Str(dump_only=True)
     emergency_contact_number = fields.Str(dump_only=True)
-    # address = fields.Str(attribute='full_address', dump_only=True)
     status = fields.Str(attribute="name", dump_only=True)
     indication = fields.Str(attribute="indication", dump_only=True)
 

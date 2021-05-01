@@ -52,7 +52,7 @@ class PatientManager:
         from utils.send_mail import send_patient_registration_email
 =======
     @require_user_token(ADMIN, PROVIDER)
-    def create_patient(self):
+    def create_patient(self, token):
         from utils.send_mail import send_registration_email
 >>>>>>> 2d98221 (ESSW-318 move device manager API calls to their own service)
 

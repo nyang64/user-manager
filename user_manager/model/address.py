@@ -1,8 +1,6 @@
 from db import db
 from model.base_model import BaseModel
 
-# from sqlalchemy.orm import column_property
-
 
 class Address(BaseModel):
     __tablename__ = "addresses"
@@ -12,7 +10,6 @@ class Address(BaseModel):
     )
     street_address_1 = db.Column("street_address_1", db.String(100))
     street_address_2 = db.Column("street_address_2", db.String(100))
-    # full_address = column_property(street_address_1 + " " + street_address_2)
     city = db.Column("city", db.String(100))
     state = db.Column("state", db.String(50))
     country = db.Column("country", db.String(20))

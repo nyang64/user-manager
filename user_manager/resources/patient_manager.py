@@ -32,7 +32,7 @@ class PatientManager:
         self.patient_obj = PatientServices()
 
     @require_user_token(ADMIN, PROVIDER)
-    def create_patient(self):
+    def create_patient(self, token):
         from utils.send_mail import send_registration_email
 
         request_params = validate_request()
@@ -109,7 +109,6 @@ class PatientManager:
 
     def therapy_report_details(self, patient_id):
         # create schemas for formatting the JSON response
-        address_schema = AddressSchema()
         register_schema = RegistrationSchema()
         patient_schema = PatientSchema()
         address_schema = AddressSchema()
@@ -120,7 +119,6 @@ class PatientManager:
         # patient's personal information
         patient = Patient.find_by_id(patient_id)
         user = Users.find_by_patient_id(patient.user_id)
-        address = Address.find_by_user_id(user.id)
         registration = UserRegister.find_by_id(user.registration_id)
         # patient's current device
         patient_device = PatientsDevices.find_by_patient_id(patient.id)
@@ -155,7 +153,6 @@ class PatientManager:
             "patient": {
                 "patient": patient_schema.dump(patient),
                 "user": user_schema.dump(user),
-                "address": address_schema.dump(address) if address else "",
                 "registration": register_schema.dump(registration),
             },
             "device": patient_device_schema.dump(patient_device),

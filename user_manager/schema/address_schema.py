@@ -1,5 +1,5 @@
-from model.address import Address
 from ma import ma
+from model.address import Address
 
 
 class AddressSchema(ma.SQLAlchemyAutoSchema):
@@ -8,4 +8,3 @@ class AddressSchema(ma.SQLAlchemyAutoSchema):
         load_instance = True
 
     id = ma.auto_field(dump_only=True)
-    user_id = ma.auto_field()

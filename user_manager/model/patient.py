@@ -22,6 +22,15 @@ class Patient(BaseModel):
     enrolled_date = db.Column("enrolled_at", db.DateTime, default=db.func.now())
     gender = db.Column("gender", db.String(30), nullable=False)
     indication = db.Column("indication", db.String(40), nullable=False)
+    address_id = db.Column(
+        "address_id",
+        db.Integer,
+        db.ForeignKey("ES.addresses.id", ondelete="CASCADE"),
+        nullable=True,
+    )
+    address = db.relationship(
+        "Address", backref="address", uselist=False, viewonly=True
+    )
     user = db.relationship("Users", backref="users", uselist=False, viewonly=True)
     devices = db.relationship(
         "PatientsDevices", backref="patients_id", uselist=True, viewonly=True

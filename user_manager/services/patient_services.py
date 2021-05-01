@@ -11,7 +11,6 @@ from services.auth_services import AuthServices
 from services.device_manager_api import DeviceManagerApi
 from services.repository.db_repositories import DbRepository
 from services.user_services import UserServices
-from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
 from werkzeug.exceptions import Conflict, InternalServerError, NotAcceptable, NotFound
 
 
@@ -23,6 +22,12 @@ class PatientServices(DbRepository):
     def register_patient(self, register, user, patient_details):
         user_id, user_uuid = self.user_obj.register_user(register, user)
         patient_details["patient"]["user_id"] = user_id
+
+        if patient_details["patient"]["address"]:
+            patient_details["patient"]["address_id"] = self.save_address(
+                patient_details["patient"]["address"]
+            )
+
         patient_id = self.save_patient(patient_details["patient"])
 
         self.assign_providers(
@@ -66,7 +71,14 @@ class PatientServices(DbRepository):
         patient = Patient(**patient_details)
         self.flush_db(patient)
         self.commit_db()
+
         return patient.id
+
+    def save_address(self, address):
+        self.flush_db(address)
+        self.commit_db()
+
+        return address.id
 
     def count_device_assigned(self, patient_id):
         devices = (

@@ -1,18 +1,26 @@
-from sqlalchemy import Integer, ForeignKey
 from db import db
 from model.base_model import BaseModel
+from model.roles import Roles
+
+# the "Roles" model is required so that the ORM
+# can make the 'role' 'relationship'
 
 
 class UserRoles(BaseModel):
     __tablename__ = "user_roles"
-    __table_args__ = ({"schema": "ES"})
-    role_id = db.Column('role_id', Integer,
-                        ForeignKey('ES.role_types.id',
-                                   ondelete="CASCADE"),
-                        nullable=False)
-    user_id = db.Column('user_id', Integer,
-                        ForeignKey('ES.users.id',
-                                   ondelete="CASCADE"), nullable=False)
+    __table_args__ = {"schema": "ES"}
+    role_id = db.Column(
+        "role_id",
+        db.Integer,
+        db.ForeignKey("ES.role_types.id", ondelete="CA SCADE"),
+        nullable=False,
+    )
+    user_id = db.Column(
+        "user_id",
+        db.Integer,
+        db.ForeignKey("ES.users.id", ondelete="CASCADE"),
+        nullable=False,
+    )
     role = db.relationship("Roles", backref="roles", uselist=False)
 
     @classmethod

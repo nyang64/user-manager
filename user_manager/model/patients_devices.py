@@ -1,28 +1,37 @@
 from db import db
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import backref
 from model.base_model import BaseModel
+from sqlalchemy.orm import backref
 
 
 class PatientsDevices(BaseModel):
     __tablename__ = "patients_devices"
-    __table_args__ = ({"schema": "ES"})
-    patient_id = db.Column('patient_id', db.Integer,
-                           ForeignKey('ES.patients.id', ondelete="CASCADE"),
-                           nullable=False)
-    device_serial_number = db.Column('device_serial_number',
-                                     db.String(50),
-                                     nullable=False)
-    patient = db.relationship(
-        "Patient", backref=backref("patient_list")
+    __table_args__ = {"schema": "ES"}
+    patient_id = db.Column(
+        "patient_id",
+        db.Integer,
+        db.ForeignKey("ES.patients.id", ondelete="CASCADE"),
+        nullable=False,
     )
-    device_metrics = db.defer(db.relationship("DeviceMetrics", backref="device_metrics"))
-    device_statuses = db.defer(db.relationship("DeviceUiStatus", backref="device_ui_statuses"))
+    device_serial_number = db.Column(
+        "device_serial_number", db.String(50), nullable=False
+    )
+    patient = db.relationship("Patient", backref=backref("patient_list"))
+    device_metrics = db.defer(
+        db.relationship("DeviceMetrics", backref="device_metrics")
+    )
+    device_statuses = db.defer(
+        db.relationship("DeviceUiStatus", backref="device_ui_statuses")
+    )
 
     @classmethod
-    def check_device_assigned(cls, device_serial_no):
-        return db.session.query(cls.id).filter(
-            cls.device_serial_number == device_serial_no).first()
+    def device_in_use(cls, device_serial_no):
+        device = (
+            db.session.query(cls.id)
+            .filter(cls.device_serial_number == device_serial_no)
+            .first()
+        )
+
+        return True if device else False
 
     def all(cls) -> "PatientsDevices":
         return cls.query.all()

@@ -1,84 +1,86 @@
-from flask import jsonify, request
-from werkzeug.exceptions import BadRequest
 import http
-from services.patient_services import PatientServices
-from utils.validation import validate_request
-from utils.jwt import require_user_token
-from utils.constants import ADMIN, PROVIDER, PATIENT
 
-from model.patient import Patient
-from model.users import Users
-from model.providers import Providers
-from model.facilities import Facilities
+from flask import jsonify, request
 from model.address import Address
+from model.facilities import Facilities
+from model.patient import Patient
 from model.patients_devices import PatientsDevices
 from model.patients_providers import PatientsProviders
+from model.providers import Providers
 from model.user_registration import UserRegister
-
+from model.users import Users
+from schema.address_schema import AddressSchema
+from schema.patient_schema import (
+    PatientSchema,
+    assign_device_schema,
+    create_patient_schema,
+    update_patient_schema,
+)
 from schema.patients_devices_schema import PatientsDevicesSchema
 from schema.providers_schema import ProvidersSchema
-from schema.user_schema import UserSchema
 from schema.register_schema import RegistrationSchema
-from schema.address_schema import AddressSchema
-from schema.patient_schema import (create_patient_schema,
-                                   update_patient_schema,
-                                   assign_device_schema,
-                                   PatientSchema)
+from schema.user_schema import UserSchema
+from services.patient_services import PatientServices
+from utils.constants import ADMIN, PATIENT, PROVIDER
+from utils.jwt import require_user_token
+from utils.validation import validate_request
+from werkzeug.exceptions import BadRequest
 
 
-class PatientManager():
+class PatientManager:
     def __init__(self):
         self.patient_obj = PatientServices()
 
     @require_user_token(ADMIN, PROVIDER)
-    def create_patient(self, decrypt):
+    def create_patient(self):
         from utils.send_mail import send_registration_email
-        request_data = validate_request()
 
-        register, user, patient, provider, device_serial_number = create_patient_schema.load(
-            request_data)
-        user_id, user_uuid, patient_id = self.patient_obj.register_patient(
-            register, user, patient, provider
+        request_params = validate_request()
+        request_params["role_name"] = "PATIENT"
+        register_params, user_params, patient_params = create_patient_schema.load(
+            request_params
         )
 
-        if user_id is not None and user_uuid is not None:
-            send_registration_email(
-                user[0], register[0],
-                'Welcome to Element Science',
-                register[0], register[1]
-            )
+        patient_id = self.patient_obj.register_patient(
+            register_params, user_params, patient_params
+        )
+        send_registration_email(
+            user_params[0],
+            register_params[0],
+            "Welcome to Element Science",
+            register_params[0],
+            register_params[1],
+        )
+
+        if request_params["device_serial_number"]:
+            self.assign_first_device(patient_id, request_params["device_serial_number"])
 
         patient_schema = PatientSchema()
         patient = Patient.find_by_id(patient_id)
-
-        if device_serial_number:
-            self.assign_first_device(patient_id, device_serial_number)
 
         return jsonify(patient_schema.dump(patient)), http.client.CREATED
 
     def assign_first_device(self, patient_id, device_serial_number):
         patient_device = assign_device_schema.load(
-            {
-                "device_serial_number": device_serial_number,
-                "patient_id": patient_id
-            }
+            {"device_serial_number": device_serial_number, "patient_id": patient_id}
         )
         return self.patient_obj.assign_device_to_patient(patient_device)
 
     @require_user_token(ADMIN, PROVIDER)
     def update_patient(self, decrypt):
-        patient_id = request.args.get('id')
+        patient_id = request.args.get("id")
         if patient_id is None:
             raise BadRequest("parameter id is missing")
         request_data = validate_request()
         patient = update_patient_schema.load(request_data)
-        self.patient_obj.update_patient_data(patient_id, patient[0],
-                                             patient[1], patient[2])
+        self.patient_obj.update_patient_data(
+            patient_id, patient[0], patient[1], patient[2]
+        )
         return {"message": "Sucessfully updated"}, http.client.OK
 
     @require_user_token(ADMIN, PROVIDER)
     def delete_patient(self, decrypt):
-        patient_id = request.args.get('id')
+        patient_id = request.args.get("id")
         if patient_id is None:
             raise BadRequest("parameter id is missing")
         self.patient_obj.delete_patient_data(patient_id)
@@ -90,13 +92,12 @@ class PatientManager():
         print(request_data)
         patient_device = assign_device_schema.load(request_data)
         self.patient_obj.assign_device_to_patient(patient_device)
-        return {'message': 'Device assigned',
-                'status_code': '201'}, http.client.CREATED
+        return {"message": "Device assigned", "status_code": "201"}, http.client.CREATED
 
     @require_user_token(PATIENT, ADMIN, PROVIDER)
     def patient_device_list(self, token):
         device_list = self.patient_obj.patient_device_list(token)
-        resp = {'devices': device_list}
+        resp = {"devices": device_list}
         return jsonify(resp), http.client.OK
 
     @require_user_token(ADMIN, PATIENT, PROVIDER)
@@ -105,7 +106,7 @@ class PatientManager():
         patients = Patient.all()
 
         return jsonify(patient_schema.dump(patients))
-    
+
     def therapy_report_details(self, patient_id):
         # create schemas for formatting the JSON response
         address_schema = AddressSchema()
@@ -126,28 +127,36 @@ class PatientManager():
 
         # outpatient_provider
         outpatient_role_id = 1
-        out_patient_provider = PatientsProviders.find_by_patient_and_role_id(patient.id, outpatient_role_id)
+        out_patient_provider = PatientsProviders.find_by_patient_and_role_id(
+            patient.id, outpatient_role_id
+        )
         outpatient_provider = Providers.find_by_id(out_patient_provider.provider_id)
         outpatient_provider_user = Users.find_by_id(outpatient_provider.user_id)
         outpatient_facility = Facilities.find_by_id(outpatient_provider.facility_id)
         outpatient_address = Address.find_by_id(outpatient_facility.address_id)
-        outpatient_registration = UserRegister.find_by_id(outpatient_provider_user.registration_id)
+        outpatient_registration = UserRegister.find_by_id(
+            outpatient_provider_user.registration_id
+        )
 
         # prescribing provider
         prescribing_role_id = 2
-        pre_patient_provider = PatientsProviders.find_by_patient_and_role_id(patient.id, prescribing_role_id)
+        pre_patient_provider = PatientsProviders.find_by_patient_and_role_id(
+            patient.id, prescribing_role_id
+        )
         prescribing_provider = Providers.find_by_id(pre_patient_provider.provider_id)
         prescribing_provider_user = Users.find_by_id(prescribing_provider.user_id)
         prescribing_facility = Facilities.find_by_id(prescribing_provider.facility_id)
         prescribing_address = Address.find_by_id(prescribing_facility.address_id)
-        prescribing_registration = UserRegister.find_by_id(prescribing_provider_user.registration_id)
+        prescribing_registration = UserRegister.find_by_id(
+            prescribing_provider_user.registration_id
+        )
 
         response = {
             "patient": {
                 "patient": patient_schema.dump(patient),
                 "user": user_schema.dump(user),
                 "address": address_schema.dump(address) if address else "",
-                "registration": register_schema.dump(registration)
+                "registration": register_schema.dump(registration),
             },
             "device": patient_device_schema.dump(patient_device),
             "providers": {
@@ -158,8 +167,8 @@ class PatientManager():
                     "facility": {
                         "name": outpatient_facility.name,
                         "address": address_schema.dump(outpatient_address),
-                        "on_call_phone": outpatient_facility.on_call_phone
-                    }
+                        "on_call_phone": outpatient_facility.on_call_phone,
+                    },
                 },
                 "prescribing": {
                     "registration": register_schema.dump(prescribing_registration),
@@ -168,10 +177,10 @@ class PatientManager():
                     "facility": {
                         "name": prescribing_facility.name,
                         "address": address_schema.dump(prescribing_address),
-                        "on_call_phone": prescribing_facility.on_call_phone
-                    }
-                }
-            }
+                        "on_call_phone": prescribing_facility.on_call_phone,
+                    },
+                },
+            },
         }
 
         return jsonify(response)

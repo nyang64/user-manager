@@ -9,7 +9,8 @@ message_details = {
     "facility": "",
     "provider_roles": "",
     "user_roles": "",
-    "admin": ""
+    "admin": "",
+    "user": "",
 }
 
 

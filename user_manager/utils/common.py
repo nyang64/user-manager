@@ -1,24 +1,24 @@
-import json
 import datetime
+import json
+import logging
 import math
 import random
+import uuid
 from json import JSONEncoder
+
 import bcrypt
 from werkzeug.exceptions import BadRequest
-import uuid
-import logging
-
 
 
 def is_json(myjson):
     try:
         if myjson is None:
-            raise BadRequest('Invalid request. Excepted JSON')
+            raise BadRequest("Invalid request. Excepted JSON")
         json.dumps(myjson)
         json.loads(json.dumps(myjson))
     except Exception as error:
         logging.error(error)
-        raise BadRequest('Invalid request. Excepted JSON')
+        raise BadRequest("Invalid request. Excepted JSON")
         return False
     return True
 
@@ -38,7 +38,7 @@ def have_keys(myjson, *args):
         return False
     for arg in args:
         if arg not in myjson:
-            raise BadRequest(f'Invalid request Parameter.{arg} is missing.')
+            raise BadRequest(f"Invalid request Parameter.{arg} is missing.")
             return False
     return True
 
@@ -56,8 +56,8 @@ def tokenTime(isrefreshToken: bool):
         future_date_and_time.month,
         future_date_and_time.day,
         future_date_and_time.hour,
-        future_date_and_time.minute
-        ).timestamp()
+        future_date_and_time.minute,
+    ).timestamp()
     return baseTime
 
 
@@ -79,17 +79,14 @@ def timeDiff(first_time: datetime, second_time: datetime):
 
 
 def encPass(passW: str):
-    password = bytes(passW, 'utf-8')
+    password = bytes(passW, "utf-8")
     salt = bcrypt.gensalt()
     hashed = bcrypt.hashpw(password, salt)
-    return hashed.decode('utf-8')
+    return hashed.decode("utf-8")
 
 
 def checkPass(passW: str, dbPassW: str):
-    return bcrypt.checkpw(
-        passW.encode('utf-8'),
-        dbPassW.encode('utf-8')
-        )
+    return bcrypt.checkpw(passW.encode("utf-8"), dbPassW.encode("utf-8"))
 
 
 class MyEncoder(JSONEncoder):
@@ -103,11 +100,7 @@ class toJson(JSONEncoder):
 
 
 class responseModel:
-    def __init__(
-            self,
-            status_code: str = "200",
-            data: [dict] = [],
-            message: str = ""):
+    def __init__(self, status_code: str = "200", data: [dict] = [], message: str = ""):
         self.status_code = status_code
         self.data = data
         self.message = message
@@ -118,11 +111,15 @@ class responseModel:
 
 class auth_response_model:
     def __init__(
-            self,
-            message: str, id_token: str, first_name: str = "",
-            last_name: str = "",
-            refresh_token: str = "", user_status: str = 'Provider',
-            isFirstTimeLogin: bool = False,):
+        self,
+        message: str,
+        id_token: str,
+        first_name: str = "",
+        last_name: str = "",
+        refresh_token: str = "",
+        user_status: str = "Provider",
+        isFirstTimeLogin: bool = False,
+    ):
         self.message = message
         self.id_token = id_token
         self.refresh_token = refresh_token
@@ -136,31 +133,28 @@ class auth_response_model:
 
 
 def generate_signed_url(report_key=None):
-    '''
+    """
     Verify the key and Generate the signed report url
     :param: report_key
     :return: report_signed_url
-    '''
+    """
     from utils.constants import REPORT_BUCKET_NAME
     import boto3
     from botocore.exceptions import ClientError
+
     try:
-        s3_client = boto3.client('s3')
-        resp = s3_client.list_objects_v2(Bucket=REPORT_BUCKET_NAME,
-                                         Prefix=report_key)
-        key_exists = True if 'Contents' in resp else False
+        s3_client = boto3.client("s3")
+        resp = s3_client.list_objects_v2(Bucket=REPORT_BUCKET_NAME, Prefix=report_key)
+        key_exists = True if "Contents" in resp else False
         if key_exists:
             presign_url = s3_client.generate_presigned_url(
-                    'get_object', Params={
-                        'Bucket': REPORT_BUCKET_NAME, 'Key': report_key},
-                    ExpiresIn=600)
+                "get_object",
+                Params={"Bucket": REPORT_BUCKET_NAME, "Key": report_key},
+                ExpiresIn=600,
+            )
             return presign_url
         else:
             return "Report doesn't exists"
     except ClientError:
         logging.error("Error while generation URL")
         return "Error while generation URL"
-
-
-def rename_keys(original, transform):
-    return dict([(transform.get(k), v) for k, v in original.items()])

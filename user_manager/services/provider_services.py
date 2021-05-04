@@ -11,7 +11,7 @@ from model.salvos import Salvos
 from model.therapy_reports import TherapyReport
 from model.user_registration import UserRegister
 from model.user_status_types import UserStatusType
-from model.user_statuses import UserStatUses
+from model.user_statuses import UserStatuses
 from model.users import Users
 from schema.providers_roles_schema import ProvidersRolesSchema
 from schema.providers_schema import ProvidersSchema
@@ -120,10 +120,10 @@ class ProviderService(DbRepository):
             .filter(Patient.id == patient_id)
             .join(Users, Users.id == Patient.user_id)
             .join(UserRegister, UserRegister.id == Users.id)
-            .join(UserStatUses, Users.id == UserStatUses.user_id, isouter=True)
+            .join(UserStatuses, Users.id == UserStatuses.user_id, isouter=True)
             .join(
                 UserStatusType,
-                UserStatUses.status_id == UserStatusType.id,
+                UserStatuses.status_id == UserStatusType.id,
                 isouter=True,
             )
         )
@@ -231,10 +231,10 @@ class ProviderService(DbRepository):
         base_query = (
             patient_query.join(Users, Users.id == Patient.user_id)
             .join(UserRegister, UserRegister.id == Users.registration_id)
-            .join(UserStatUses, Users.id == UserStatUses.user_id, isouter=True)
+            .join(UserStatuses, Users.id == UserStatuses.user_id, isouter=True)
             .join(
                 UserStatusType,
-                UserStatUses.status_id == UserStatusType.id,
+                UserStatuses.status_id == UserStatusType.id,
                 isouter=True,
             )
         )

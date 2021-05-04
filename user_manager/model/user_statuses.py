@@ -2,7 +2,7 @@ from db import db
 from model.base_model import BaseModel
 
 
-class UserStatUses(BaseModel):
+class UserStatuses(BaseModel):
     __tablename__ = "user_statuses"
     __table_args__ = {"schema": "ES"}
     status_id = db.Column(

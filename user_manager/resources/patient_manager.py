@@ -52,7 +52,7 @@ class PatientManager:
             register_params[1],
         )
 
-        if request_params["device_serial_number"]:
+        if request_params.get("device_serial_number"):
             self.assign_first_device(patient_id, request_params["device_serial_number"])
 
         patient_schema = PatientSchema()

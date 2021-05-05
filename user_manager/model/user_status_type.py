@@ -11,6 +11,10 @@ class UserStatusType(BaseModel):
     def all(cls):
         return cls.query.all()
 
+    @classmethod
+    def find_by_name(cls, _name):
+        return db.session.query(cls).filter_by(name=_name).first()
+
     def save_to_db(self) -> None:
         db.session.add(self)
         db.session.commit()

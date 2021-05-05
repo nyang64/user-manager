@@ -11,6 +11,7 @@ message_details = {
     "user_roles": "",
     "admin": "",
     "user": "",
+    "user_status_types": "",
 }
 
 

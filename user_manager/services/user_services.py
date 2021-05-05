@@ -3,11 +3,14 @@ import logging
 from db import db
 from model.roles import Roles
 from model.user_roles import UserRoles
+from model.user_status import UserStatus
+from model.user_status_type import UserStatusType
 from model.users import Users
 from services.auth_services import AuthServices
 from services.repository.db_repositories import DbRepository
 from sqlalchemy.exc import SQLAlchemyError
 from utils.common import generate_uuid
+from utils.constants import ENROLLED
 from werkzeug.exceptions import InternalServerError, NotFound
 
 
@@ -18,9 +21,11 @@ class UserServices(DbRepository):
     def register_user(self, register, user):
         reg_id = self.auth_obj.register_new_user(register[0], register[1])
         user_id, user_uuid = self.save_user(user[0], user[1], user[2], reg_id)
-        role = self.assign_role(user_id, role_name=user[3])
+
+        self.assign_role(user_id, role_name=user[3])
+        self.assign_status(user_id)
         self.commit_db()
-        print(f"user assigned role: {role.role_name}")
+
         return user_id, user_uuid
 
     def save_user(self, first_name, last_name, phone_number, reg_id):
@@ -32,9 +37,6 @@ class UserServices(DbRepository):
             uuid=generate_uuid(),
         )
         self.flush_db(user_data)
-
-        if user_data.id is None:
-            raise SQLAlchemyError("User data not inserted")
 
         return user_data.id, user_data.uuid
 
@@ -110,3 +112,11 @@ class UserServices(DbRepository):
         except Exception as error:
             logging.error(str(error))
             raise InternalServerError("Something Went Wrong")
+
+    def assign_status(self, user_id):
+        status_type = UserStatusType.find_by_name(ENROLLED)
+        user_status = UserStatus(status_id=status_type.id, user_id=user_id)
+
+        self.flush_db(user_status)
+
+        return user_status.status

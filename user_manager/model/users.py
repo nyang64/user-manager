@@ -5,6 +5,7 @@ from db import db
 from model.base_model import BaseModel
 from model.user_registration import UserRegister
 from model.user_roles import UserRoles
+from model.user_status import UserStatus
 from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
 from werkzeug.exceptions import InternalServerError, NotFound
@@ -27,6 +28,9 @@ class Users(BaseModel):
     uuid = db.Column(UUID(as_uuid=True), default=uuid.uuid4, unique=True)
     registration = db.relationship("UserRegister", backref="registrations")
     roles = db.relationship("UserRoles", lazy="joined", uselist=True)
+    statuses = db.relationship(
+        "UserStatus", order_by="desc(UserStatus.created_at)", lazy="dynamic"
+    )
 
     @classmethod
     def all(cls) -> "Users":
@@ -63,6 +67,9 @@ class Users(BaseModel):
         except Exception as e:
             logging.error(e)
             raise InternalServerError("Something Went Wrong")
+
+    def status(self):
+        return self.statuses.limit(1)
 
     def save_to_db(self) -> None:
         db.session.add(self)

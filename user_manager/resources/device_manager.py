@@ -6,10 +6,11 @@ from schema.device_metric_schema import DeviceMetricSchema
 from schema.device_metric_type_schema import DeviceMetricTypeSchema
 from schema.device_ui_status_schema import DeviceUiStatusSchema
 from schema.device_ui_status_type_schema import DeviceUiStatusTypeSchema
+from services.device_manager_api import DeviceManagerApi
 from utils.validation import validate_request
 from utils.constants import PATIENT
 from utils.jwt import require_user_token
-from utils.device_utils import get_encryption_key, get_metrics_data, parse_metrics
+from utils.device_utils import get_metrics_data, parse_metrics
 
 import logging
 
@@ -70,7 +71,7 @@ class DeviceManager:
             return {"message": "Missing device serial number"}, 400
 
         # Get the encryption key for the serial number
-        encryption_key = get_encryption_key(device_serial_number)
+        encryption_key = DeviceManagerApi.get_device(device_serial_number).get("key")
         if encryption_key is None:
             logging.error("Could not find encryption key for thr serial number {}"
                           .format(device_serial_number))

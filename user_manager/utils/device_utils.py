@@ -1,9 +1,5 @@
-from config import read_environ_value
 from utils import constants
-import json
-import os
 import io
-import requests
 import logging
 from Crypto.Cipher import AES
 import struct
@@ -13,46 +9,6 @@ import numpy as np
 import pandas as pd
 import pytz
 import logging
-
-
-def get_encryption_key(serial_number):
-    token = get_device_services_auth_token()
-    header = {'Authorization': token}
-    payload = {'serial_number': serial_number}
-    logging.info('API calling {}'.format(constants.GET_DEVICE_DETAIL_URL))
-    logging.info('payload {}'.format(payload))
-    try:
-        response = requests.get(constants.GET_DEVICE_DETAIL_URL,
-                         headers=header,
-                         params=payload)
-    except Exception as e:
-        logging.error(e)
-        response = None
-
-    logging.info('Request finished {}'.format(response.status_code))
-    logging.info('Response {}'.format(response.text))
-
-    if response is not None and response.status_code == 200:
-        response = json.loads(response.text)
-        logging.info('API response {}'.format(response))
-        return response['data']['encryption_key']
-    else:
-        return None
-
-
-def get_device_services_auth_token():
-    value = os.environ.get('SECRET_MANAGER_ARN')
-    device_email = read_environ_value(value, 'DEVICE_EMAIL')
-    device_password = read_environ_value(value, 'DEVICE_PASSWORD')
-    data = {"email": device_email, "password": device_password}
-
-    logging.debug("Posting data to: {}".format(constants.LOGIN_URL))
-    resp = requests.post(constants.LOGIN_URL, json=data)
-
-    if resp.status_code == 200:
-        return json.loads(resp.text).get('id_token')
-    else:
-        return None
 
 
 def get_metrics_data(packet_hex, key_hex):

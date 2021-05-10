@@ -27,7 +27,7 @@ SERIAL_NUMBER_LENGTH = 8
 ENCRYPTION_KEY_LENGTH = 16
 
 # Device-manager url
-DEVICE_BASE_URL = read_environ_value(value, "DEVICE_BASE_URL")
+DEVICE_BASE_URL = read_environ_value("DEVICE_BASE_URL")
 
 # Statuses from device-manager
 ASSIGNED = "Assigned"

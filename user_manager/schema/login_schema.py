@@ -33,15 +33,16 @@ class UserLoginSchema(ModelSchema):
 
     @classmethod
     def validate_data(cls, data) -> "UserRegister":
+        logging.debug("In login_schema:validate_data: {}".format(data))
         try:
             session = scoped_session(sessionmaker(bind=db))
             data_obj = user_login_schema.validate(data=data, session=session)
-            if(data_obj):
+            if data_obj:
                 raise BadRequest(data_obj)
             else:
                 return user_login_schema.load(data)
         except Exception as e:
-            logging.error(e)
+            logging.error("Error validating data: {}".format(e))
             raise BadRequest(e)
 
 

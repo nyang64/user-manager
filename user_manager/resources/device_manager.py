@@ -86,11 +86,12 @@ class DeviceManager:
             return {"message": "Error parsing hex data"}, 400
 
         device_metrics = parse_metrics(decrypted_hex)
+        logging.debug("Device Metrics Parsed: {}".format(device_metrics))
 
         for metrics in device_metrics.items():
             db_metric = {}
             metric = DeviceMetricType.find_by_name(metrics[0])
-            print(metric)
+            logging.info(metric)
 
             if metric is not None:
                 db_metric["metric_id"] = metric.id

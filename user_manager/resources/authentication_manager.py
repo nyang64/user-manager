@@ -24,6 +24,9 @@ class AuthOperation():
 
     def login_user(self):
         login_object = user_login_schema.validate_data(request.get_json())
+        if login_object is not None:
+            logging.debug(login_object.__dict__)
+
         return self.auth_obj.User_login(login_object)
 
     @require_refresh_token

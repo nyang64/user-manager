@@ -12,6 +12,7 @@ from datetime import timezone
 import numpy as np
 import pandas as pd
 import pytz
+import logging
 
 
 def get_encryption_key(serial_number):
@@ -44,7 +45,10 @@ def get_device_services_auth_token():
     device_email = read_environ_value(value, 'DEVICE_EMAIL')
     device_password = read_environ_value(value, 'DEVICE_PASSWORD')
     data = {"email": device_email, "password": device_password}
+
+    logging.debug("Posting data to: {}".format(constants.LOGIN_URL))
     resp = requests.post(constants.LOGIN_URL, json=data)
+
     if resp.status_code == 200:
         return json.loads(resp.text).get('id_token')
     else:

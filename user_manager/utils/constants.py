@@ -36,7 +36,12 @@ SERIAL_NUMBER_LENGTH = 8
 ENCRYPTION_KEY_LENGTH = 16
 
 # Device-manager url
-DEVICE_BASE_URL = read_environ_value(value, "DEVICE_BASE_URL")
+DEVICE_BASE_URL = os.environ.get("DEVICE_BASE_URL")
+CHECK_DEVICE_EXIST_URL = DEVICE_BASE_URL + '/device/exists'
+GET_DEVICE_DETAIL_URL = DEVICE_BASE_URL + '/device'
+UPDATE_DEVICE_STATUS_URL = DEVICE_BASE_URL + '/update/device/status'
+GET_DEVICE_STATUS_URL = DEVICE_BASE_URL + '/get/device/status'
+LOGIN_URL = DEVICE_BASE_URL + '/login'
 
 # Statuses from device-manager
 ASSIGNED = "Assigned"

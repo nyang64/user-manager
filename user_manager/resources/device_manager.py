@@ -92,7 +92,6 @@ class DeviceManager:
         for metrics in device_metrics.items():
             db_metric = {}
             metric = DeviceMetricType.find_by_name(metrics[0])
-            logging.info(metric)
 
             if metric is not None:
                 db_metric["metric_id"] = metric.id

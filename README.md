@@ -31,8 +31,23 @@
   1. See ".env.example" for the required environment variables
 
 ## Contributing
-1. Ensure your syntax is cleaned up before you commit, install [pre-commit](https://pre-commit.com/)
-    1. MacOS: Run: `brew install pre-commit`, other operating systems, see link above.
+1. Ensure your syntax is cleaned up before you commit using ["pre-commit"](https://pre-commit.com/). Complete the following two steps:
+  1. Global setup:
+    1. Pre-commit needs to be added to your machine's global packages.
+    1. MacOS: Run: `brew install pre-commit`
+    1. Other operating systems, see [pre-commit](https://pre-commit.com/) website.
+  1. Local setup:
+    1. Pre-commit needs to be added to your local .git directory within each project.
+    1. Once "pre-commit" is installed globally on your machine, you need to set it up locally for each project.
+      1. From /user-manager run `pre-commit install`.
+  1. Pre-commit hooks are linter tests that run each time you attempt to commit. If the tests pass, the commit will be made, otherwise:
+    1. Black may make syntax changes may be made on your behalf.
+      1. The files that were changes will be taken off of git's "stage" and you will need to add them back.
+    1. Read the message from "pre-commit" carefully, you may need to manually remove an unused dependency. Once, you have done this, add the file back to git's "stage" and try committing again.
+    1. Code style has been implemented using [Black](https://github.com/psf/black).
+      1. Black is a PEP 8 compliant opinionated formatter. Black reformats entire files in place. It is not configurable. It doesn't take previous formatting into account.
+      1. [Black's opinions](https://github.com/psf/black/blob/master/docs/the_black_code_style.md)
+      1. See configuration files: and Flake8. See configuration files: .isort.cfg, .pre-commit-config.yaml, pyproject.toml  and setup.cfg.
 1. Commit message format:
 
 - Format:

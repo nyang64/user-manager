@@ -35,7 +35,9 @@ app.config["E_EXCEPTIONS"] = True
 # enable cors for all endpoints from any location
 CORS(app)
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO').upper()
+print("Log level {}".format(LOG_LEVEL))
+logger.setLevel(level=LOG_LEVEL)
 
 migrate = Migrate()
 db.init_app(app)

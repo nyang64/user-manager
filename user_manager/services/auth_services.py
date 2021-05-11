@@ -42,19 +42,20 @@ class AuthServices(DbRepository):
 
     def User_login(self, data: UserRegister) -> auth_response_model:
         user_data = UserRegister.find_by_email(str(data.email).lower())
-        logger.debug(user_data)
+
         if user_data is None:
             raise NotFound("No Such User Exist")
 
+        logger.debug(user_data.__dict__)
         user_detail = Users.find_by_registration_id(user_data.id)
-        logger.debug(user_detail)
-        user_roles = user_detail.roles
 
+        user_roles = user_detail.roles
         if user_roles is None:
             raise Unauthorized("No Such User Allowed")
 
         role_name = user_roles[0].role.role_name
         logger.debug(role_name)
+
         user_detail = Users.find_by_registration_id(user_data.id)
 
         if checkPass(data.password, user_data.password):
@@ -65,7 +66,7 @@ class AuthServices(DbRepository):
                 True, str(data.email).lower(), role_name
             )
             response_model = auth_response_model(
-                message="Successfully Login",
+                message="Successfully Logged In",
                 first_name=user_detail.first_name,
                 last_name=user_detail.last_name,
                 id_token=encoded_accessToken,
@@ -73,6 +74,7 @@ class AuthServices(DbRepository):
                 isFirstTimeLogin=user_data.isFirst,
             )
             return response_model.toJsonObj()
+
         otp_data = UserOTPModel.find_by_user_id(user_id=user_data.id)
         if (
             otp_data is not None
@@ -87,7 +89,7 @@ class AuthServices(DbRepository):
                     True, str(data.email).lower(), role_name
                 )
                 response_model = auth_response_model(
-                    message="Successfully Login",
+                    message="Successfully Logged In",
                     id_token=encoded_accessToken,
                     first_name=user_detail.first_name,
                     last_name=user_detail.last_name,

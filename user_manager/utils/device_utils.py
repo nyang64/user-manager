@@ -1,14 +1,14 @@
-from utils import constants
+import datetime
 import io
 import logging
-from Crypto.Cipher import AES
 import struct
-import datetime
 from datetime import timezone
+
 import numpy as np
 import pandas as pd
 import pytz
-import logging
+from Crypto.Cipher import AES
+from utils import constants
 
 
 def get_metrics_data(packet_hex, key_hex):
@@ -29,7 +29,7 @@ def get_metrics_data(packet_hex, key_hex):
     # start with the sync byte - should start with AA
     index = 0
     packet.seek(index, 0)
-    sync = packet.read(SYNC_BYTE).hex()
+    packet.read(SYNC_BYTE).hex()
 
     index += 1
     packet.seek(index, 0)
@@ -56,7 +56,7 @@ def get_metrics_data(packet_hex, key_hex):
     length_hex = packet.read(LENGTH).hex()
 
     packet.seek(index, 0)
-    length = int.from_bytes(packet.read(LENGTH), byteorder='little')
+    length = int.from_bytes(packet.read(LENGTH), byteorder="little")
 
     index += LENGTH
     packet.seek(index, 0)
@@ -73,7 +73,7 @@ def get_metrics_data(packet_hex, key_hex):
     ciphertext = bytes.fromhex(data)
 
     associated_data = version + type + sub_type + sequence + length_hex
-    associated_data = associated_data + '000000000000000000'
+    associated_data = associated_data + "000000000000000000"
     associated_data_bytes = bytes.fromhex(associated_data)
 
     cipher = AES.new(key, AES.MODE_GCM, nonce)
@@ -89,8 +89,7 @@ def get_metrics_data(packet_hex, key_hex):
         metrics_data = plaintext.hex()
         print("\n")
     except Exception as e:
-        print(e)
-        output_message = "Packet failed decryption with error: {}".format(e)
+        print("Packet failed decryption with error: {}".format(e))
 
     return metrics_data
 
@@ -118,15 +117,19 @@ def parse_metrics(metrics_hex):
 
     index = 0
     metrics.seek(index, 0)
-    buttonPresses = metrics.read(4).hex()
-    logging.info("Device Button Press {}".format(buttonPresses))
-    metrics_data[constants.DEVICE_BUTTON_PRESS] = int(buttonPresses, 8)
+    bytes_btn_press = metrics.read(4)
+    metrics_data[constants.DEVICE_BUTTON_PRESS] = int.from_bytes(
+        bytes_btn_press, byteorder="little"
+    )
+    logging.info(f"Device Button Press {metrics_data[constants.DEVICE_BUTTON_PRESS]}")
 
     index += 4
     metrics.seek(index, 0)
     patchBattVolts = metrics.read(4).hex()
     logging.info("Patch Battery Volts {}".format(patchBattVolts))
-    metrics_data[constants.DEVICE_PATCH_BATTERY_VOLTS] = convert_to_float(patchBattVolts)
+    metrics_data[constants.DEVICE_PATCH_BATTERY_VOLTS] = convert_to_float(
+        patchBattVolts
+    )
 
     index += 4
     metrics.seek(index, 0)
@@ -159,22 +162,16 @@ def parse_metrics(metrics_hex):
 def decipher_ts(timestamp):
     new_ts = bytearray.fromhex(timestamp)
     ts = np.frombuffer(new_ts, dtype=np.uint8)
-
     bytes_per_ts = 1
     ts = ts.reshape(-1, bytes_per_ts)
-    TS_COL = ['ts_y_m_d', 'ts_hr_min_sec_ms', 'ts', 'samples']
-    df = pd.DataFrame(columns=TS_COL, index=range(len(ts)))
-    df.index.name = 'seg_num'
-
 
     try:
-        number_ms = int.from_bytes(ts, byteorder='little')
-        number_sec = number_ms/1000
+        number_ms = int.from_bytes(ts, byteorder="little")
+        number_sec = number_ms / 1000
         print("Deciphered epoch: {}".format(number_sec))
-        timestamp = datetime.datetime.utcfromtimestamp(number_sec)
-        tz = pytz.timezone('America/Los_Angeles')
-        print(tz)
-        timestamp = datetime.datetime(2000, 1, 1, tzinfo=timezone.utc) + datetime.timedelta(seconds=number_sec)
+        timestamp = datetime.datetime(
+            2000, 1, 1, tzinfo=timezone.utc
+        ) + datetime.timedelta(seconds=number_sec)
         print("Timestamp: {}".format(timestamp))
         return str(timestamp)
     except Exception as e:
@@ -186,6 +183,6 @@ def convert_to_float(hex_bytes):
     little_hex = bytearray.fromhex(hex_bytes)
     little_hex.reverse()
     print("Byte array format:", little_hex)
-    str_little = ''.join(format(x, '02x') for x in little_hex)
-    value = struct.unpack('>f', bytes.fromhex(str_little))[0]
+    str_little = "".join(format(x, "02x") for x in little_hex)
+    value = struct.unpack(">f", bytes.fromhex(str_little))[0]
     return value

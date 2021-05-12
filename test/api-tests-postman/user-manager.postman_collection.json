@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "e7f5a394-e276-4ef8-b3c3-ccb27ba086c6",
+		"_postman_id": "6a372937-00b0-4850-9f94-fb23ae1f9ff0",
 		"name": "user-manager",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -602,7 +602,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "    {\n        \"device_serial_number\": \"12345678\",\n        \"ui_id\": \"12\",  \n        \"recorded_at\": \"{{$isoTimestamp}}\",\n        \"receiver_recorded_at\": \"{{$isoTimestamp}}\",\n        \"receiver_id\": \"mobile\"\n    }",
+							"raw": "  {\n    \"device_serial_number\": \"12111211\", \n    \"receiver_id\": \"mobile\", \n    \"received_at\": \"{{$isoTimestamp}}\", \n    \"device_metrics\": \"aa2eeb08f4d7faad802dca3ae200010400002000a57a24742aaf7762d3fe3e90dd293803b2b8f790352f7e6a17b5f8b12bbf70f81e1d31e6069ba464a37618557ee5f656\",\n    \"recorded_at\": \"{{$isoTimestamp}}\"\n    }",
 							"options": {
 								"raw": {
 									"language": "json"

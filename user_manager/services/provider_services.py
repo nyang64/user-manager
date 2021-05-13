@@ -119,7 +119,7 @@ class ProviderService(DbRepository):
             db.session.query(Patient)
             .filter(Patient.id == patient_id)
             .join(Users, Users.id == Patient.user_id)
-            .join(UserRegister, UserRegister.id == Users.id)
+            .join(UserRegister, UserRegister.id == Users.registration_id)
             .join(UserStatus, Users.id == UserStatus.user_id, isouter=True)
             .join(
                 UserStatusType, UserStatus.status_id == UserStatusType.id, isouter=True,

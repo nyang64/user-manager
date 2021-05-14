@@ -149,7 +149,7 @@ def parse_metrics(metrics_hex):
     logging.info("Rolling Mean 100 {}".format(rollingMean100))
     metrics_data[constants.DEVICE_ROLLING_MEAN_100] = convert_to_float(rollingMean32)
 
-    index += 8
+    index += 4
     metrics.seek(index, 0)
     timestamp = metrics.read(8).hex()
     logging.info("Timestamp {}".format(timestamp))

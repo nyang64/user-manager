@@ -116,12 +116,17 @@ class PatientDetailSchema(BaseSchema):
     mobile = fields.Str(attribute="phone_number", dump_only=True)
     date_of_birth = fields.Str(dump_only=True)
     email = fields.Str(dump_only=True)
-    enrolled_on = fields.Str(dump_only=True)
+    enrolled_on = fields.Str(attribute="enrolled_date", dump_only=True)
     emergency_contact_name = fields.Str(dump_only=True)
     emergency_contact_number = fields.Str(dump_only=True)
     status = fields.Str(attribute="name", dump_only=True)
     indication = fields.Str(attribute="indication", dump_only=True)
-
+    street_address_1 = fields.Str(dump_only=True)
+    street_address_2 = fields.Str(dump_only=True)
+    city = fields.Str(dump_only=True)
+    state = fields.Str(dump_only=True)
+    country = fields.Str(dump_only=True)
+    postal_code = fields.Str(dump_only=True)
 
 patient_detail_schema = PatientDetailSchema()
 

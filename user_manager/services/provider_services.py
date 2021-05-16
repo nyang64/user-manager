@@ -127,7 +127,7 @@ class ProviderService(DbRepository):
         )
 
         patient_data = (
-            base_query.join(Address, Users.id == Address.user_id, isouter=True)
+            base_query.join(Address, Patient.address_id == Address.id, isouter=True)
             .join(TherapyReport, Patient.id == TherapyReport.patient_id, isouter=True)
             .with_entities(
                 Patient.id,
@@ -140,6 +140,11 @@ class ProviderService(DbRepository):
                 Patient.emergency_contact_name,
                 Patient.emergency_contact_number,
                 Address.street_address_1,
+                Address.street_address_2,
+                Address.city,
+                Address.state,
+                Address.country,
+                Address.postal_code,
                 UserStatusType.name,
             )
             .first()

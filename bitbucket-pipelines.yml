@@ -30,9 +30,7 @@ definitions:
           - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_URI
           - docker tag $BITBUCKET_COMMIT $ECR_URI/$BITBUCKET_DEPLOYMENT_ENVIRONMENT-$ECR_REPO_NAME:$BITBUCKET_COMMIT
           - docker push $ECR_URI/$BITBUCKET_DEPLOYMENT_ENVIRONMENT-$ECR_REPO_NAME:$BITBUCKET_COMMIT
-          - echo "$ECR_URI/$ECR_REPO_NAME:$BITBUCKET_COMMIT" > artifacts/image_url
-          - zip -r artifacts.zip artifacts/*
-
+         
         # Replace the docker image name in the task definition with the newly pushed image.
           - cd ..
           - pip install envsubst
@@ -85,6 +83,7 @@ definitions:
           - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_URI
           - docker tag $BITBUCKET_COMMIT $ECR_URI/$BITBUCKET_DEPLOYMENT_ENVIRONMENT-$ECR_REPO_NAME:$BITBUCKET_COMMIT
           - docker push $ECR_URI/$BITBUCKET_DEPLOYMENT_ENVIRONMENT-$ECR_REPO_NAME:$BITBUCKET_COMMIT
+          - cd ..
           - echo "$ECR_URI/$ECR_REPO_NAME:$BITBUCKET_COMMIT" > artifacts/image_url
           - zip -r artifacts.zip artifacts/*
 

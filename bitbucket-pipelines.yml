@@ -1,44 +1,37 @@
 image: "python:3.8"
 definitions:
   steps:
-    - step: &Unit-test-execution
-        name: UT Execution
-        caches:
-          - pip
-        script:
-          - apt-get update && apt-get install -y zip
-          - pip install -r user_manager/requirements.txt
-          - coverage run -m pytest
-          - coverage html
-          - zip -r user-manager-ut.zip htmlcov/*
-
-        artifacts:
-          - user-manager-ut.zip
-
-    - step: &Pull-SC-Push-Img-Create-SLS-Deploy-on-ECS
+    - step: &CICD-deployment-without-Artifact
+        name: Pull the source code, prepare/push docker image to ECR, setup SLS and deploy new ECR image to ECS cluster service.
+        
         services:
           - docker
         caches:
           - pip
-        name: Pull the source code, prepare/push docker image to ECR, setup SLS and deploy new ECR image to ECS cluster service.
-    
+          
         script:
           - apt-get update && apt-get install -y zip
+          - pip install pipenv awscli pylint
           - pip install -r user_manager/requirements.txt
-          - zip -r user-manager.zip user_manager/*
-
-          - pip install awscli
-
+          - mkdir artifacts
+          - coverage run -m pytest
+          - coverage html -d artifacts/htmlcov
+          - coverage report
+          # Flake8 returns error code to avoid that used exit 0
+          - flake8 --output-file=artifacts/flake8-report || true
+          - pylint $(git ls-files '*.py')  --output-format=text --rcfile=.pylintrc > artifacts/pylint-report || true
+           # Adding source code zip
+          - zip -r artifacts/user-manager.zip user_manager/*
+ 
           - cd user_manager
           - docker build -t $BITBUCKET_COMMIT .
-
           - aws configure set aws_access_key_id "${AWS_ACCESS_KEY_ID}"
           - aws configure set aws_secret_access_key "${AWS_SECRET_ACCESS_KEY}"
           - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_URI
           - docker tag $BITBUCKET_COMMIT $ECR_URI/$BITBUCKET_DEPLOYMENT_ENVIRONMENT-$ECR_REPO_NAME:$BITBUCKET_COMMIT
           - docker push $ECR_URI/$BITBUCKET_DEPLOYMENT_ENVIRONMENT-$ECR_REPO_NAME:$BITBUCKET_COMMIT
-
-# Replace the docker image name in the task definition with the newly pushed image.
+         
+        # Replace the docker image name in the task definition with the newly pushed image.
           - cd ..
           - pip install envsubst
           - export IMAGE_NAME="$ECR_URI/$BITBUCKET_DEPLOYMENT_ENVIRONMENT-$ECR_REPO_NAME:$BITBUCKET_COMMIT"
@@ -50,8 +43,8 @@ definitions:
           - export DEPLOYMENT_ENVIRONMENT="$BITBUCKET_DEPLOYMENT_ENVIRONMENT"
           - export LOG_LEVEL="$FLASK_LOG_LEVEL"
           - envsubst < task-definition-template/"$BITBUCKET_DEPLOYMENT_ENVIRONMENT"-task-definition.json >  task-definition.json
-        
-# Update the task definition.
+
+    # Update the task definition.
           - pipe: atlassian/aws-ecs-deploy:1.0.0
             variables:
               AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
@@ -61,31 +54,101 @@ definitions:
               SERVICE_NAME: $SERVICE_NAME
               TASK_DEFINITION: 'task-definition.json'
 
+    - step: &CICD-deployment-with-Artifact
+        name: Pull the source code, prepare/push docker image to ECR, setup SLS and deploy new ECR image to ECS cluster service.
+        
+        services:
+          - docker
+        caches:
+          - pip
+        
+        script:
+          - apt-get update && apt-get install -y zip
+          - pip install pipenv awscli pylint
+          - pip install -r user_manager/requirements.txt
+          - mkdir artifacts
+          - coverage run -m pytest
+          - coverage html -d artifacts/htmlcov
+          - coverage report
+          # Flake8 returns error code to avoid that used exit 0
+          - flake8 --output-file=artifacts/flake8-report || true
+          - pylint $(git ls-files '*.py')  --output-format=text --rcfile=.pylintrc > artifacts/pylint-report || true
+           # Adding source code zip
+          - zip -r artifacts/user-manager.zip ./*
+ 
+          - cd user_manager
+          - docker build -t $BITBUCKET_COMMIT .
+          - aws configure set aws_access_key_id "${AWS_ACCESS_KEY_ID}"
+          - aws configure set aws_secret_access_key "${AWS_SECRET_ACCESS_KEY}"
+          - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_URI
+          - docker tag $BITBUCKET_COMMIT $ECR_URI/$BITBUCKET_DEPLOYMENT_ENVIRONMENT-$ECR_REPO_NAME:$BITBUCKET_COMMIT
+          - docker push $ECR_URI/$BITBUCKET_DEPLOYMENT_ENVIRONMENT-$ECR_REPO_NAME:$BITBUCKET_COMMIT
+          - cd ..
+          - echo "$ECR_URI/$ECR_REPO_NAME:$BITBUCKET_COMMIT" > artifacts/image_url
+          - zip -r artifacts.zip artifacts/*
+
+      # Replace the docker image name in the task definition with the newly pushed image.
+          - cd ..
+          - pip install envsubst
+          - export IMAGE_NAME="$ECR_URI/$BITBUCKET_DEPLOYMENT_ENVIRONMENT-$ECR_REPO_NAME:$BITBUCKET_COMMIT"
+          - export DB_URL="$AWS_DB_URL"
+          - export DB_USER="$AWS_DB_USER"
+          - export DATABASE_URI="$AWS_DATABASE_URI"
+          - export SM_ARN="$AWS_SM_ARN"
+          - export AWS_REGION="$AWS_DEFAULT_REGION"
+          - export DEPLOYMENT_ENVIRONMENT="$BITBUCKET_DEPLOYMENT_ENVIRONMENT"
+          - export LOG_LEVEL="$FLASK_LOG_LEVEL"
+          - envsubst < task-definition-template/"$BITBUCKET_DEPLOYMENT_ENVIRONMENT"-task-definition.json >  task-definition.json
+
+          # Update the task definition.
+          - pipe: atlassian/aws-ecs-deploy:1.0.0
+            variables:
+              AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+              AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+              AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+              CLUSTER_NAME: $CLUSTER_NAME
+              SERVICE_NAME: $SERVICE_NAME
+              TASK_DEFINITION: 'task-definition.json'
+          
+          # Uploading Artifacts & Analysis reports to s3.
+          - pipe: atlassian/aws-s3-deploy:0.3.8
+            variables:
+                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+                S3_BUCKET: "${S3_BUCKET_ARTIFACTS}/${BITBUCKET_COMMIT}"
+                LOCAL_PATH: "artifacts"
+                ACL: 'public-read'
+
         artifacts:
-          - user-manager.zip
+          - "artifacts.zip"
 
 pipelines:
+  branches:
+    main:
+    - step:
+          <<: *CICD-deployment-with-Artifact
+          name: Deploy to Development environment
+          deployment: dev
   custom:
     dev-deployment:
-      - step: *Unit-test-execution
       - step:
-          <<: *Pull-SC-Push-Img-Create-SLS-Deploy-on-ECS
+          <<: *CICD-deployment-without-Artifact
           name: Deploy to Development environment
           deployment: dev
     qa-deployment:
-      - step: *Unit-test-execution
       - step:
-          <<: *Pull-SC-Push-Img-Create-SLS-Deploy-on-ECS
+          <<: *CICD-deployment-without-Artifact
           name: Deploy to QA environment
           deployment: qa
     cohort-deployment:
-      - step: *Unit-test-execution
       - step:
-          <<: *Pull-SC-Push-Img-Create-SLS-Deploy-on-ECS
+          <<: *CICD-deployment-without-Artifact
           name: Deploy to Cohort environment
           deployment: cohort
     prod-deployment:
       - step:
-          <<: *Pull-SC-Push-Img-Create-SLS-Deploy-on-ECS
+          <<: *CICD-deployment-without-Artifact
           name: Deploy to Production environment
           deployment: prod
+

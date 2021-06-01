@@ -3,17 +3,17 @@ definitions:
   steps:
     - step: &CICD-deployment-without-Artifact
         name: Pull the source code, prepare/push docker image to ECR, setup SLS and deploy new ECR image to ECS cluster service.
-		
-	services:
+        
+        services:
           - docker
         caches:
           - pip
-		  
+          
         script:
           - apt-get update && apt-get install -y zip
-	  - pip install pipenv awscli pylint
+          - pip install pipenv awscli pylint
           - pip install -r user_manager/requirements.txt
-	  - mkdir artifacts
+          - mkdir artifacts
           - coverage run -m pytest
           - coverage html -d artifacts/htmlcov
           - coverage report
@@ -30,7 +30,7 @@ definitions:
           - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_URI
           - docker tag $BITBUCKET_COMMIT $ECR_URI/$BITBUCKET_DEPLOYMENT_ENVIRONMENT-$ECR_REPO_NAME:$BITBUCKET_COMMIT
           - docker push $ECR_URI/$BITBUCKET_DEPLOYMENT_ENVIRONMENT-$ECR_REPO_NAME:$BITBUCKET_COMMIT
-	  - echo "$ECR_URI/$ECR_REPO_NAME:$BITBUCKET_COMMIT" > artifacts/image_url
+          - echo "$ECR_URI/$ECR_REPO_NAME:$BITBUCKET_COMMIT" > artifacts/image_url
           - zip -r artifacts.zip artifacts/*
 
         # Replace the docker image name in the task definition with the newly pushed image.
@@ -58,17 +58,17 @@ definitions:
 
     - step: &CICD-deployment-with-Artifact
         name: Pull the source code, prepare/push docker image to ECR, setup SLS and deploy new ECR image to ECS cluster service.
-	 	
-	services:
+        
+        services:
           - docker
         caches:
           - pip
-		  
+        
         script:
           - apt-get update && apt-get install -y zip
-	  - pip install pipenv awscli pylint
+          - pip install pipenv awscli pylint
           - pip install -r user_manager/requirements.txt
-	  - mkdir artifacts
+          - mkdir artifacts
           - coverage run -m pytest
           - coverage html -d artifacts/htmlcov
           - coverage report
@@ -85,7 +85,7 @@ definitions:
           - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_URI
           - docker tag $BITBUCKET_COMMIT $ECR_URI/$BITBUCKET_DEPLOYMENT_ENVIRONMENT-$ECR_REPO_NAME:$BITBUCKET_COMMIT
           - docker push $ECR_URI/$BITBUCKET_DEPLOYMENT_ENVIRONMENT-$ECR_REPO_NAME:$BITBUCKET_COMMIT
-	  - echo "$ECR_URI/$ECR_REPO_NAME:$BITBUCKET_COMMIT" > artifacts/image_url
+          - echo "$ECR_URI/$ECR_REPO_NAME:$BITBUCKET_COMMIT" > artifacts/image_url
           - zip -r artifacts.zip artifacts/*
 
       # Replace the docker image name in the task definition with the newly pushed image.
@@ -110,8 +110,8 @@ definitions:
               CLUSTER_NAME: $CLUSTER_NAME
               SERVICE_NAME: $SERVICE_NAME
               TASK_DEFINITION: 'task-definition.json'
-			  
-		# Uploading Artifacts & Analysis reports to s3.
+          
+          # Uploading Artifacts & Analysis reports to s3.
           - pipe: atlassian/aws-s3-deploy:0.3.8
             variables:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID

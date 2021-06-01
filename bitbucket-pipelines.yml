@@ -87,29 +87,6 @@ definitions:
           - echo "$ECR_URI/$ECR_REPO_NAME:$BITBUCKET_COMMIT" > artifacts/image_url
           - zip -r artifacts.zip artifacts/*
 
-      # Replace the docker image name in the task definition with the newly pushed image.
-          - cd ..
-          - pip install envsubst
-          - export IMAGE_NAME="$ECR_URI/$BITBUCKET_DEPLOYMENT_ENVIRONMENT-$ECR_REPO_NAME:$BITBUCKET_COMMIT"
-          - export DB_URL="$AWS_DB_URL"
-          - export DB_USER="$AWS_DB_USER"
-          - export DATABASE_URI="$AWS_DATABASE_URI"
-          - export SM_ARN="$AWS_SM_ARN"
-          - export AWS_REGION="$AWS_DEFAULT_REGION"
-          - export DEPLOYMENT_ENVIRONMENT="$BITBUCKET_DEPLOYMENT_ENVIRONMENT"
-          - export LOG_LEVEL="$FLASK_LOG_LEVEL"
-          - envsubst < task-definition-template/"$BITBUCKET_DEPLOYMENT_ENVIRONMENT"-task-definition.json >  task-definition.json
-
-          # Update the task definition.
-          - pipe: atlassian/aws-ecs-deploy:1.0.0
-            variables:
-              AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-              AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-              AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
-              CLUSTER_NAME: $CLUSTER_NAME
-              SERVICE_NAME: $SERVICE_NAME
-              TASK_DEFINITION: 'task-definition.json'
-          
           # Uploading Artifacts & Analysis reports to s3.
           - pipe: atlassian/aws-s3-deploy:0.3.8
             variables:

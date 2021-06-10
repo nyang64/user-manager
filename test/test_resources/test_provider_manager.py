@@ -3,11 +3,28 @@ from test.flask_app1 import create_test_app
 from unittest import TestCase, mock
 
 import pytest
+from model.address import Address
+from model.facilities import Facilities
+from model.providers import Providers
+from model.providers_roles import ProviderRoles
+from model.user_registration import UserRegister
+from model.users import Users
 from resources.provider_manager import ProviderManager
 from services.facility_services import FacilityService
 from services.provider_services import ProviderService
-from services.user_services import UserServices
 from werkzeug.exceptions import BadRequest
+
+
+def create_provider_req_value():
+    return {
+        "first_name": "Laura",
+        "last_name": "Kirby",
+        "facility_id": "1",
+        "phone_number": "9988776111",
+        "email": "laura@elementsci.com",
+        "password": "test12345",
+        "role": "PROVIDER",
+    }
 
 
 class TestProviderManager(TestCase):
@@ -25,8 +42,11 @@ class TestProviderManager(TestCase):
             resp = ProviderManager.get_patient_detail_byid.__wrapped__(
                 self.provider, ""
             )
-            print(resp[0].json)
+
+            # self.assertEqual(resp[0].json, {"report": {}})
+            #     self.provider, '')
             self.assertEqual(resp[0].json, {"report": {}})
+
             self.assertEqual(resp[1], http.client.OK)
 
     @mock.patch.object(ProviderService, "report_signed_link")
@@ -54,30 +74,74 @@ class TestProviderManager(TestCase):
             )
             self.assertEqual(resp[1], http.client.OK)
 
-    @mock.patch.object(FacilityService, "register_facility")
     @mock.patch("utils.validation.request", spec={})
-    def test_add_facility(self, request, mock_patient):
-        request.is_json = True
-        request.json = {
-            "facility_name": "FCAJ",
-            "on_call_phone": "3122318112",
-            "address": {
-                "street_address_1": "Test",
-                "street_address_2": "Te",
-                "city": "Kyn",
-                "state": "MH",
-                "country": "IN",
-                "postal_code": "421306",
-            },
-        }
+    def test_register_provider_incorect_param(self, mock_req):
+        mock_req.return_value = {}
         app = create_test_app()
-        mock_patient.return_value = 1, 2
-        expected = {
-            "address_id": 1,
-            "facility_id": 2,
-            "status_code": http.client.CREATED,
-        }
         with app.test_request_context():
-            resp = ProviderManager.add_facility.__wrapped__(self.provider, "")
-            self.assertEqual(resp[0], expected)
-            self.assertEqual(resp[1], http.client.CREATED)
+            with pytest.raises(BadRequest) as e:
+                self.provider.register_provider.__wrapped__(self.provider, "")
+            self.assertIsInstance(e.value, BadRequest)
+
+    @mock.patch.object(UserRegister, "find_by_id")
+    @mock.patch.object(Users, "find_by_id")
+    @mock.patch.object(ProviderRoles, "find_by_provider_id")
+    @mock.patch.object(Address, "find_by_id")
+    @mock.patch.object(Facilities, "find_by_id")
+    @mock.patch.object(Providers, "find_by_id")
+    @mock.patch.object(ProviderService, "register_provider_service")
+    @mock.patch("resources.provider_manager.request", spec={})
+    def test_register_provider(
+        self,
+        mock_req,
+        mock_service,
+        mock_provider,
+        mock_facility,
+        mock_address,
+        mock_prole,
+        mock_user,
+        mock_register,
+    ):
+        mock_req.json = create_provider_req_value()
+        mock_service.return_value = 1
+        mock_provider.return_value = Providers(id=1, user_id=1)
+        mock_facility.return_value = Facilities(id=1, address_id=1)
+        mock_address.return_value = Address(id=1)
+        mock_prole.return_value = [ProviderRoles(id=1)]
+        mock_user.return_value = Users(id=1, registration_id=1)
+        mock_register.return_value = UserRegister(id=1)
+        app = create_test_app()
+        with app.test_request_context():
+            resp = self.provider.register_provider.__wrapped__(self.provider, "")
+            self.assertIsNotNone(resp)
+            self.assertEqual(2, len(resp))
+            self.assertEqual(resp[1], 201)
+
+    @mock.patch.object(Providers, "find_providers")
+    def test_get_providers_for_none(self, mock_provider):
+        mock_provider.return_value = None
+        app = create_test_app()
+        with app.test_request_context():
+            resp = self.provider.get_providers.__wrapped__(self.provider, "")
+            self.assertIsNotNone(resp)
+            self.assertEqual(2, len(resp))
+            self.assertTupleEqual(resp, ({"message": "No Providers Found"}, 404))
+
+    @mock.patch.object(Providers, "find_providers")
+    def test_get_providers(self, mock_provider):
+        mock_provider.return_value = [Providers(id=1, user_id=1, facility_id=1)]
+        app = create_test_app()
+        with app.test_request_context():
+            resp = self.provider.get_providers.__wrapped__(self.provider, "")
+            self.assertIsNotNone(resp)
+            self.assertEqual(2, len(resp))
+            self.assertTupleEqual(
+                resp,
+                (
+                    {
+                        "message": "Users Found",
+                        "Data": [{"id": 1, "user_id": 1, "facility_id": 1}],
+                    },
+                    200,
+                ),
+            )

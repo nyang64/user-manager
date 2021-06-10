@@ -27,7 +27,7 @@ class DeviceManager:
            :return: Http response code with a message
         """
         logging.info('Saving device ui status')
-        status_json = request.get_json()
+        status_json = request.json
         logging.info(status_json)
         statuses = status_json.get('statuses')
 
@@ -113,7 +113,7 @@ class DeviceManager:
 
     def create_status_type(self):
         print('Device status type')
-        status_type_json = request.get_json()
+        status_type_json = request.json
 
         status_type_schema = DeviceUiStatusTypeSchema()
         status_type = status_type_schema.load(status_type_json)
@@ -125,7 +125,7 @@ class DeviceManager:
 
     def create_metric_type(self):
         print('Device metric type')
-        metric_type_json = request.get_json()
+        metric_type_json = request.json
         metric_type_schema = DeviceMetricTypeSchema()
         metric_type = metric_type_schema.load(metric_type_json)
 

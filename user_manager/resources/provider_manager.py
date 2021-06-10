@@ -41,7 +41,7 @@ class ProviderManager:
 
     @require_user_token(ADMIN, PROVIDER)
     def register_provider(self, device):
-        provider_json = request.get_json()
+        provider_json = request.json
 
         if (
             have_keys(
@@ -115,7 +115,7 @@ class ProviderManager:
 
     @require_user_token(ADMIN)
     def delete_provider(self, decrypt):
-        provider_json = request.get_json()
+        provider_json = request.json
         if have_keys(provider_json, "provider_id") is False:
             return {"message": "Invalid Request Parameters"}, 400
         provider_data = Providers.find_by_id(id=provider_json["provider_id"])
@@ -126,7 +126,7 @@ class ProviderManager:
 
     @require_user_token(ADMIN, PROVIDER)
     def update_provider(self, decrypt):
-        provider_json = request.get_json()
+        provider_json = request.json
         if (
             have_keys(
                 provider_json, "provider_id", "first_name", "last_name", "phone_number"

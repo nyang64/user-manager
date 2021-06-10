@@ -31,11 +31,11 @@
   1. See ".env.example" for the required environment variables
 
 ## Contributing
-1. Ensure your syntax is cleaned up before you commit using ["pre-commit"](https://pre-commit.com/). Complete the following two steps:
+1. Ensure your syntax is cleaned up before you commit, install [pre-commit](https://pre-commit.com/)
   1. Global setup:
-    1. Pre-commit needs to be added to your machine's global packages.
-    1. MacOS: Run: `brew install pre-commit`
-    1. Other operating systems, see [pre-commit](https://pre-commit.com/) website.
+        1. Pre-commit needs to be added to your machine's global packages.
+        1. MacOS: Run: `brew install pre-commit`
+        1. Other operating systems, see [pre-commit](https://pre-commit.com/) website.
   1. Local setup:
     1. Pre-commit needs to be added to your local .git directory within each project.
     1. Once "pre-commit" is installed globally on your machine, you need to set it up locally for each project.
@@ -72,3 +72,33 @@
 1. run docker image
    1. run `docker run -p 5000:5000 um`
    1. "um" below refers to the tag we created in the previous step
+
+
+ ## To Run Test Case
+
+ 1. Set the env variable mentioned below(For window replace export with set)
+  export POSTGRES_DB_PORT=5432
+  export POSTGRES_DB_USER_KEY=avilash
+  export POSTGRES_DB_PASSWORD_KEY=avilashjha
+  export POSTGRES_DB_HOST=localhost
+  export POSTGRES_TEST_DB_NAME=user_test_db
+  export ACCESS_TOKEN_KEY=C718D5FDDEC279567385BE3E52894
+  export REFRESH_TOKEN_KEY=9EA72AD96C39A87A1AFF153983592
+  export DEVICE_BASE_URL=http:/fake.com
+  export SECRET_MANAGER_ARN=value
+  export OTP_EXPIRATION_TIME_HOURS=1
+  export OTP_EXPIRATION_TIME_MINUTES=20
+  export OTP_LIMIT=1
+  export OTP_LIMIT_HOURS=1
+  export OTP_LIMIT_MINUTES=20
+2. Run command:
+    - pytest
+3. To run particular file test case
+    - pytest <file_path>
+
+## To get the code coverage
+
+1. set the env variables
+2. coverage run -m pytest
+3. coverage html (Create a html dir -> htmlcov)
+4. coverage report (Show report in console)

@@ -1,5 +1,5 @@
-from utils.send_mail import send_otp, send_registration_email
 import pytest
+from utils.send_mail import send_otp, send_registration_email
 
 
 @pytest.fixture
@@ -32,11 +32,7 @@ class TestSendEmail:
 
     def test_send_otp_with_invalid_parameter(self, email_var_otp):
         with pytest.raises(Exception) as e:
-            assert send_otp(
-                email_var_otp[0],
-                None,
-                email_var_otp[2],
-                email_var_otp[3])
+            assert send_otp(email_var_otp[0], None, email_var_otp[2], email_var_otp[3])
         assert "500 Internal Server Error" in str(e.value)
 
     # def test_send_registration_with_parameter(self, email_var):
@@ -50,9 +46,6 @@ class TestSendEmail:
     def test_send_registration_with_invalid_parameter(self, email_var):
         with pytest.raises(Exception) as e:
             assert send_registration_email(
-                email_var[0],
-                None,
-                email_var[2],
-                email_var[3],
-                email_var[4])
+                email_var[0], None, email_var[2], email_var[3], email_var[4]
+            )
         assert "500 Internal Server Error" in str(e.value)

@@ -106,6 +106,26 @@
         {
           "name": "LOG_LEVEL",
           "value": "$LOG_LEVEL"
+        },
+        {
+          "name": "TEST_POSTGRES_DB_HOST",
+          "value": "$TEST_POSTGRES_DB_HOST"
+        },
+        {
+          "name": "TEST_POSTGRES_DB_USER_KEY",
+          "value": "$TEST_POSTGRES_DB_USER_KEY"
+        },
+        {
+          "name": "TEST_POSTGRES_DB_NAME",
+          "value": "$TEST_POSTGRES_DB_NAME"
+        },
+        {
+          "name": "TEST_POSTGRES_DB_PORT",
+          "value": "$TEST_POSTGRES_DB_PORT"
+        },
+        {
+          "name": "TEST_POSTGRES_DB_PASSWORD_KEY",
+          "value": "$TEST_POSTGRES_DB_PASSWORD_KEY"
         }
       ],
       "secrets": [

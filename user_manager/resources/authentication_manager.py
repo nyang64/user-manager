@@ -23,7 +23,7 @@ class AuthOperation():
         self.auth_obj = AuthServices()
 
     def login_user(self):
-        login_object = user_login_schema.validate_data(request.get_json())
+        login_object = user_login_schema.validate_data(request.json)
         return self.auth_obj.User_login(login_object)
 
     @require_refresh_token
@@ -37,11 +37,11 @@ class AuthOperation():
     @require_user_token(ADMIN, PROVIDER, PATIENT, ESUSER)
     def update_user_password(self, decrypt):
         logging.info('Updating User Password')
-        user_json = request.get_json()
+        user_json = request.json
         try:
             newpassword = user_json["newpassword"]
         except Exception as ex:
-            self.logging.error(ex)
+            logging.error(ex)
             raise InternalServerError("Invalid Request Parameters")
         if 'user_email' not in decrypt:
             return {"Message": "Unauthorized Access"}, 401
@@ -64,7 +64,7 @@ class AuthOperation():
 
     def reset_user_password(self):
         value = os.environ.get('SECRET_MANAGER_ARN')
-        user_json = request.get_json()
+        user_json = request.json
         have_key = have_keys_NotForce(
             user_json, 'email', 'otp', 'password'
          )
@@ -89,12 +89,12 @@ class AuthOperation():
                     value, "OTP_EXPIRATION_TIME_HOURS")),
                 minutes=int(read_environ_value(
                     value, "OTP_EXPIRATION_TIME_MINUTES")))
-            logging.info('Created {}'.format(otp_data.created_at))
-            logging.info('Expiration {}'.format(expiration_time))
+            logging.info("Created {}".format(otp_data.created_at))
+            logging.info("Expiration {}".format(expiration_time))
             epoch_ct = otp_data.created_at.timestamp()
             epoch_et = expiration_time.timestamp()
-            logging.info('Created in EPCOH {}'.format(otp_data.created_at))
-            logging.info('Expiration EPOCH {}'.format(expiration_time))
+            logging.info("Created in EPCOH {}".format(otp_data.created_at))
+            logging.info("Expiration EPOCH {}".format(expiration_time))
             if epoch_ct < epoch_et:
                 return {"message": "OTP is Expired"}, 410
             otp_data.temp_password = encPass(user_json.get("password"))
@@ -121,7 +121,7 @@ class AuthOperation():
                 user_data.email,
                 "Your One Time Password of Element Science App",
                 otp)
-            logging.info('OTP sent to email')
+            logging.info("OTP sent to email")
             user_otp = UserOTPModel(
                 user_id=user_data.id, otp=otp, temp_password=""
             )

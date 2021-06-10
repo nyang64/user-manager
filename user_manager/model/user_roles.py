@@ -12,7 +12,7 @@ class UserRoles(BaseModel):
     role_id = db.Column(
         "role_id",
         db.Integer,
-        db.ForeignKey("ES.role_types.id", ondelete="CA SCADE"),
+        db.ForeignKey("ES.role_types.id", ondelete="CASCADE"),
         nullable=False,
     )
     user_id = db.Column(

@@ -25,7 +25,9 @@ class Users(BaseModel):
     first_name = db.Column("first_name", String(30), nullable=False)
     last_name = db.Column("last_name", String(30), nullable=False)
     phone_number = db.Column("phone_number", String(12), nullable=False)
-    uuid = db.Column(UUID(as_uuid=True), default=uuid.uuid4, unique=True)
+    uuid = db.Column(
+        UUID(as_uuid=True), default=uuid.uuid4, unique=True, nullable=False
+    )
     registration = db.relationship("UserRegister", backref="registrations")
     roles = db.relationship("UserRoles", lazy="joined", uselist=True)
     statuses = db.relationship(

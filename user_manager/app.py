@@ -13,7 +13,11 @@ from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_seeder import FlaskSeeder
 from ma import ma
+from model.patches import Patches
 from utils.constants import FLASK_ENV
+
+# Keep "model.patches" (above) until the model is implemented so it gets picked up by Alembic.
+# Otherwise, Alembic will try to create a migration to delete the table.
 
 # QA and Development environments run with "FLASK_ENV = production"
 # If we need to make calls to QA or Development environments locally,
@@ -35,7 +39,7 @@ app.config["E_EXCEPTIONS"] = True
 # enable cors for all endpoints from any location
 CORS(app)
 logger = logging.getLogger()
-LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO').upper()
+LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO").upper()
 print("Log level {}".format(LOG_LEVEL))
 logger.setLevel(level=LOG_LEVEL)
 

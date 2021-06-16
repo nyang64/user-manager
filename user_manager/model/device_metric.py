@@ -13,7 +13,7 @@ class DeviceMetric(BaseModel):
         db.Integer,
         db.ForeignKey("ES.device_metrics_types.id", ondelete="CASCADE"),
     )
-    metric_value = db.Column("device_metrics_data", db.String(50))
+    metric_value = db.Column("device_metrics_data", db.String(50), nullable=False)
     recorded_at = db.Column("recorded_at", db.DateTime)
     receiver_id = db.Column("receiver_id", db.String(50))
     receiver_recorded_at = db.Column("receiver_recorded_at", db.DateTime)

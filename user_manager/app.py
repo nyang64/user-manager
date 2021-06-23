@@ -1,6 +1,7 @@
 import logging
 import os
 
+import pytz
 from application import Appplication
 from blueprint.auth_blueprint import AuthenticationBlueprint
 from blueprint.device_blueprint import DeviceBlueprint
@@ -9,12 +10,15 @@ from blueprint.provider_blueprint import ProviderBlueprint
 from blueprint.user_blueprint import UserBluePrint
 from config import get_connection_url, read_environ_value
 from db import db
+from utils.cache import cache
 from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_seeder import FlaskSeeder
 from ma import ma
 from model.patches import Patches
-from utils.constants import FLASK_ENV
+from utils.constants import FLASK_ENV, FLASK_SECRET_KEY
+
+utc = pytz.UTC
 
 # Keep "model.patches" (above) until the model is implemented so it gets picked up by Alembic.
 # Otherwise, Alembic will try to create a migration to delete the table.
@@ -27,7 +31,6 @@ print(FLASK_ENV)
 
 if FLASK_ENV != "production" and FLASK_ENV != "test":
     from dotenv import load_dotenv
-
     load_dotenv(f".env.{FLASK_ENV}")
 
 app = Appplication(__name__, "/")
@@ -35,6 +38,12 @@ print(os.getenv("SQLALCHEMY_DATABASE_URI"))
 app.config["SQLALCHEMY_DATABASE_URI"] = get_connection_url()
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 app.config["E_EXCEPTIONS"] = True
+
+# Config for flask cache that holds user login session information
+cache.init_app(app, config={'CACHE_TYPE': 'simple'})
+
+# This is needed for session management by Flask
+app.secret_key = FLASK_SECRET_KEY
 
 # enable cors for all endpoints from any location
 CORS(app)
@@ -68,7 +77,6 @@ app.register_blueprint(device_blueprint)
 
 
 if __name__ == "__main__":
-
     # NOTE: DO NOT change the host and port numbers while deploying to cloud. The application
     # WILL NOT work as the port is tied to ECS container. If the port is changed here, we need to
     # make changes to the ECS infrastructure.

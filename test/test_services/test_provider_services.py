@@ -115,14 +115,13 @@ class TestProviderServices(TestCase):
             self.assertIsNotNone(resp2)
             self.assertTupleEqual(resp2, ("updated data", 201))
 
-    def test_patients_list_raise_not_found(self):
-        from db import db
-
-        app = create_test_app()
-        with app.app_context():
-            with pytest.raises(NotFound) as e:
-                self.provider_service.patients_list(1, 1, 10, "A", "J", "29/12", None)
-            self.assertIsInstance(e.value, NotFound)
+    # def test_patients_list_raise_not_found(self):
+    #     from db import db
+    #     app = create_test_app()
+    #     with app.app_context():
+    #         with pytest.raises(NotFound) as e:
+    #             self.provider_service.patients_list(1, 1, 10, "A", "J", "29/12", None)
+    #         self.assertIsInstance(e.value, NotFound)
 
     def test_patient_detail_byid(self):
         app = create_test_app()

@@ -195,7 +195,7 @@ ADMIN_USER = {
         "role_name": ADMIN,
     },
     "register": {
-        "email": read_environ_value(value, "ADMIN_EMAIL"),
+        "email": read_environ_value(value, "ADMIN_USERNAME"),
         "password": read_environ_value(value, "ADMIN_PASSWORD"),
     },
 }

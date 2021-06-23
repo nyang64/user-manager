@@ -29,3 +29,6 @@ class AuthenticationBlueprint(Blueprint):
         self.add_url_rule('/validate_token', 'Validate Token',
                           self.auth_login.validate_token,
                           methods=['POST'])
+        self.add_url_rule('/unlock_account', 'Unlock User Account',
+                          self.auth_login.unlock_account,
+                          methods=['POST'])

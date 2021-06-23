@@ -119,6 +119,7 @@ class auth_response_model:
         refresh_token: str = "",
         user_status: str = "Provider",
         isFirstTimeLogin: bool = False,
+        locked: bool = False,
     ):
         self.message = message
         self.id_token = id_token
@@ -127,6 +128,7 @@ class auth_response_model:
         self.user_status = user_status.capitalize()
         self.first_name = first_name.capitalize()
         self.last_name = last_name.capitalize()
+        self.locked = locked
 
     def toJsonObj(obj):
         return json.loads(json.dumps(obj, default=lambda o: o.__dict__))

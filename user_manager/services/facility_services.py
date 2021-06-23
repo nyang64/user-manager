@@ -1,9 +1,10 @@
-from werkzeug.exceptions import InternalServerError
-from services.repository.db_repositories import DbRepository
-from model.facilities import Facilities
-from model.address import Address
-from sqlalchemy import exc
 import logging
+
+from model.address import Address
+from model.facilities import Facilities
+from services.repository.db_repositories import DbRepository
+from sqlalchemy import exc
+from werkzeug.exceptions import InternalServerError
 
 
 class FacilityService(DbRepository):
@@ -26,18 +27,18 @@ class FacilityService(DbRepository):
         '''Flush the address transcation'''
         logging.info('Binding Address Data')
         try:
-            addr = Address(street_address_1=address.get('street_address_1'),
+            address = Address(street_address_1=address.get('street_address_1'),
                            street_address_2=address.get('street_address_2'),
                            city=address.get('city'),
                            state=address.get('state'),
                            country=address.get('country'),
                            postal_code=address.get('postal_code'))
-            self.flush_db(addr)
+            self.flush_db(address)
             logging.info('Flushed the Address data')
-            if addr.id is None:
+            if address.id is None:
                 logging.error('Failed to Save Address')
                 raise exc.SQLAlchemyError('Error while adding address')
-            return addr.id
+            return address.id
         except exc.SQLAlchemyError as error:
             logging.error('Error Occured {}'.format(str(error)))
             raise InternalServerError(str(error))

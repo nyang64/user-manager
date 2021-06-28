@@ -66,7 +66,7 @@ class AuthOperation:
 
     @require_user_token(ADMIN, PROVIDER, PATIENT, ESUSER)
     def validate_token(self, decrypt):
-        return {"message": "Token is valid"},
+        return {"message": "Token is valid"}, 200
 
     @require_user_token(ADMIN)
     def unlock_account(self, decrypt):

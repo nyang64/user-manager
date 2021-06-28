@@ -111,12 +111,14 @@ class TestPatientServices(TestCase):
     ):
         app = create_test_app()
         with app.app_context():
-            patient = self.populate_db.create_patient("patient@gmail.com")
-            patient_device = PatientsDevices(
-                patient_id=patient.id, device_serial_number="1212121"
-            )
+            with pytest.raises(NotFound) as e:
+                patient = self.populate_db.create_patient("patient@gmail.com")
+                patient_device = PatientsDevices(
+                    patient_id=patient.id, device_serial_number="1212121"
+                )
 
-            self.patient_service.assign_device_to_patient(patient_device)
+                self.patient_service.assign_device_to_patient(patient_device)
+            self.assertIsInstance(e.value, NotFound)
 
 
     @mock.patch.object(
@@ -132,7 +134,6 @@ class TestPatientServices(TestCase):
     ):
         app = create_test_app()
         with app.app_context():
-
             patient = self.populate_db.create_patient("patient@gmail.com")
             patient_device = PatientsDevices(
                 patient_id=patient.id, device_serial_number="88888888"

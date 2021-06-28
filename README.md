@@ -70,18 +70,17 @@
     1. run `docker build -t um .`
     1. note: be sure that you are in the same directory as your Dockerfile (eg user-manager/user_manager)
 1. run docker image
-   1. run `docker run -p 5000:5000 um`
+   1. run `docker run --env-file=.env -p 5000:5000 um`
    1. "um" below refers to the tag we created in the previous step
-
 
  ## To Run Test Case
 
  1. Set the env variable mentioned below(For window replace export with set)
-  export POSTGRES_DB_PORT=5432
-  export POSTGRES_DB_USER_KEY=avilash
-  export POSTGRES_DB_PASSWORD_KEY=avilashjha
-  export POSTGRES_DB_HOST=localhost
-  export POSTGRES_TEST_DB_NAME=user_test_db
+  export TEST_POSTGRES_DB_PORT=5432
+  export TEST_POSTGRES_DB_USER_KEY=postgres
+  export TEST_POSTGRES_DB_PASSWORD_KEY=Es#12390
+  export TEST_POSTGRES_DB_HOST=dev-es-db.caneampnjecs.us-west-1.rds.amazonaws.com
+  export TEST_POSTGRES_DB_NAME=test-esumdb
   export ACCESS_TOKEN_KEY=C718D5FDDEC279567385BE3E52894
   export REFRESH_TOKEN_KEY=9EA72AD96C39A87A1AFF153983592
   export DEVICE_BASE_URL=http:/fake.com

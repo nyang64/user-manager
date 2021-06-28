@@ -123,7 +123,8 @@ class PatientServices(DbRepository):
                 device_exists_in_dm = DeviceManagerApi.check_device_exists(
                     patient_device.device_serial_number
                 )
-                if device_exists_in_dm:
+
+                if device_exists_in_dm is True:
                     self.flush_db(patient_device)
                     updated = DeviceManagerApi.update_device_status(
                         device_serial_number
@@ -132,6 +133,8 @@ class PatientServices(DbRepository):
                     if updated:
                         patient_device.save_to_db()
                         return patient_device
+                else:
+                    raise NotFound("Device record not found")
 
     def patient_device_list(self, token):
         from sqlalchemy import and_

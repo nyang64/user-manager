@@ -27,12 +27,6 @@ class FacilityService(DbRepository):
         '''Flush the address transcation'''
         logging.info('Binding Address Data')
         try:
-            address = Address(street_address_1=address.get('street_address_1'),
-                           street_address_2=address.get('street_address_2'),
-                           city=address.get('city'),
-                           state=address.get('state'),
-                           country=address.get('country'),
-                           postal_code=address.get('postal_code'))
             self.flush_db(address)
             logging.info('Flushed the Address data')
             if address.id is None:

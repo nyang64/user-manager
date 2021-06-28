@@ -29,37 +29,12 @@ class TestFacilityServices(TestCase):
             db.drop_all()
 
     def test_save_address(self):
-        args = {
-            "street_address_1": "A1",
-            "street_address_2": "A2",
-            "city": "Kal",
-            "state": "MH",
-            "country": "IN",
-            "postal_code": "421306",
-        }
-        # mock_flush.return_value = None
         app = create_test_app()
         with app.app_context():
+            args = self.populate_data.create_address()
             resp = self.facility_service.save_address(args)
             self.assertIsNotNone(resp)
             self.assertEqual(1, resp)
-
-    @mock.patch.object(FacilityService, "flush_db")
-    def test_save_address_raise_exception(self, mock_flush):
-        args = {
-            "street_address_1": "A1",
-            "street_address_2": "A2",
-            "city": "Kal",
-            "state": "MH",
-            "country": "IN",
-            "postal_code": "421306",
-        }
-        mock_flush.return_value = None
-        app = create_test_app()
-        with app.app_context():
-            with pytest.raises(InternalServerError) as e:
-                self.facility_service.save_address(args)
-            self.assertIsInstance(e.value, InternalServerError)
 
     def test_save_facility(self):
         app = create_test_app()

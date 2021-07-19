@@ -1,13 +1,16 @@
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from werkzeug.exceptions import InternalServerError
-from config import read_environ_value
 import os
 import logging
+import boto3
+import smtplib
+from html2image import Html2Image
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
+from werkzeug.exceptions import InternalServerError
+
+from config import read_environ_value
+
 value = os.environ.get('SECRET_MANAGER_ARN')
-
-
 
 
 def send_otp(
@@ -54,7 +57,6 @@ def send_otp(
     except Exception as e:
         logging.error(e)
         raise InternalServerError("Something went wrong. {0}".format(e))
-        return False
 
 
 def send_registration_email(
@@ -96,6 +98,50 @@ def send_registration_email(
         server.login(read_environ_value(value, "SMTP_USERNAME"),
                      read_environ_value(value, "SMTP_PASSWORD"))
         text = msg.as_string()
+        server.sendmail(from_address, to_address, text)
+        server.quit()
+        return True
+    except Exception as e:
+        logging.error(e)
+        raise InternalServerError("Something went wrong. {0}".format(e))
+
+
+def send_newsletter_email(html_body, subject_line, user_reg_obj):
+    from_address = read_environ_value(value, "SMTP_FROM")
+    to_address = user_reg_obj.email
+    msg = MIMEMultipart()
+    msg['From'] = from_address
+    msg['To'] = to_address
+    msg['Subject'] = subject_line
+
+    # Convert HTML string to PNG image and attach to email body
+    hti = Html2Image(
+        custom_flags=['--no-sandbox']
+    )
+    hti.screenshot(html_body, save_as="day.png", size=(600, 1892))
+
+    # Attach image to text for email body
+    text = MIMEText('<img src="cid:image1" class="center">', 'html')
+    msg.attach(text)
+    image = MIMEImage(open('day.png', 'rb').read())
+
+    # Define the image's ID as referenced in the HTML body above
+    image.add_header('Content-ID', '<image1>')
+    msg.attach(image)
+
+    #TESTING
+    # body = MIMEText(html_body, "html")
+    # msg.attach(body)
+
+    try:
+        server = smtplib.SMTP(
+            read_environ_value(value, "SMTP_SERVER"),
+            read_environ_value(value, "SMTP_PORT"))
+        server.starttls()
+        server.login(read_environ_value(value, "SMTP_USERNAME"),
+                     read_environ_value(value, "SMTP_PASSWORD"))
+        text = msg.as_string()
+        print(f"sending email to: {to_address}")
         server.sendmail(from_address, to_address, text)
         server.quit()
         return True

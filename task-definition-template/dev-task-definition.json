@@ -126,6 +126,22 @@
         {
           "name": "TEST_POSTGRES_DB_PASSWORD_KEY",
           "value": "$TEST_POSTGRES_DB_PASSWORD_KEY"
+        },
+        {
+          "name": "CRON_MINUTE",
+          "value": "30"
+        },
+        {
+          "name": "CRON_HOUR",
+          "value": "0"
+        },
+        {
+          "name": "NEWSLETTER_S3_BUCKET",
+          "value": "es-email-newsletter"
+        },
+        {
+          "name": "SURVEY_LINK",
+          "value": ""
         }
       ],
       "secrets": [
@@ -144,13 +160,13 @@
     }
   ],
   "placementConstraints": [],
-  "memory": "1024",
+  "memory": "4096",
   "taskRoleArn": "arn:aws:iam::488323030461:role/ECS-Managed-Policy",
   "family": "$DEPLOYMENT_ENVIRONMENT-user-manager",
   "requiresCompatibilities": [
     "FARGATE"
   ],
   "networkMode": "awsvpc",
-  "cpu": "512",
+  "cpu": "2048",
   "volumes": []
 }

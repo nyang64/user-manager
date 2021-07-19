@@ -3,6 +3,7 @@ import os
 
 import pytz
 from application import Appplication
+from flask_apscheduler import APScheduler
 from blueprint.auth_blueprint import AuthenticationBlueprint
 from blueprint.device_blueprint import DeviceBlueprint
 from blueprint.patient_blueprint import PatientBluePrint
@@ -16,6 +17,7 @@ from flask_migrate import Migrate
 from flask_seeder import FlaskSeeder
 from ma import ma
 from model.patches import Patches
+from services.newsletter_services import NewsletterServices
 from utils.constants import FLASK_ENV, FLASK_SECRET_KEY
 
 utc = pytz.UTC
@@ -54,6 +56,7 @@ logger.setLevel(level=LOG_LEVEL)
 
 migrate = Migrate()
 db.init_app(app)
+db.app = app
 ma.init_app(app)
 migrate.init_app(app, db)
 
@@ -75,6 +78,19 @@ app.register_blueprint(patient_blueprint)
 device_blueprint = DeviceBlueprint()
 app.register_blueprint(device_blueprint)
 
+# Create a scheduler
+cron_minute = int(os.environ.get("CRON_MINUTE"))
+cron_hour = int(os.environ.get("CRON_HOUR"))
+scheduler = APScheduler()
+scheduler.init_app(app)
+scheduler.start()
+
+
+@scheduler.task("interval", hours=cron_hour, minutes=cron_minute, max_instances=1)
+def cron_tasks():
+    logging.info("Start CRON job")
+    NewsletterServices(_db=db, _app=app).deliver_newsletters()
+
 
 if __name__ == "__main__":
     # NOTE: DO NOT change the host and port numbers while deploying to cloud. The application
@@ -82,4 +98,4 @@ if __name__ == "__main__":
     # make changes to the ECS infrastructure.
     logging.info("App is up")
     value = os.environ.get("SECRET_MANAGER_ARN")
-    app.run(host="0.0.0.0", port=5000, debug=read_environ_value(value, "DEBUG"))
+    app.run(host="0.0.0.0", port=5000, debug=read_environ_value(value, "DEBUG"), use_reloader=False)

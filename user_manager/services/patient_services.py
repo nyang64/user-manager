@@ -6,6 +6,8 @@ from model.patients_devices import PatientsDevices
 from model.provider_role_types import ProviderRoleTypes
 from model.user_registration import UserRegister
 from model.users import Users
+from model.newsletters import Newsletters
+from schema.newsletter_schema import NewsletterSchema
 from schema.patients_providers_schema import PatientsProvidersSchema
 from services.auth_services import AuthServices
 from services.device_manager_api import DeviceManagerApi
@@ -36,7 +38,21 @@ class PatientServices(DbRepository):
             patient_details["providers"]["prescribing_provider_id"],
         )
 
+        self.enroll_newsletter(user_id)
+
         return patient_id
+
+    def enroll_newsletter(self, user_id):
+        user_newsletter_schema = NewsletterSchema()
+        user_newsletter = user_newsletter_schema.load(
+            {
+                "user_id": user_id,
+                "day_at": 0,
+            }
+        )
+
+        self.flush_db(user_newsletter)
+        self.commit_db()
 
     def assign_providers(
         self, patient_id, outpatient_provider_id, prescribing_provider_id

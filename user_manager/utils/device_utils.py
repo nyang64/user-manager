@@ -147,7 +147,7 @@ def parse_metrics(metrics_hex):
     metrics.seek(index, 0)
     rollingMean100 = metrics.read(4).hex()
     logging.info("Rolling Mean 100 {}".format(rollingMean100))
-    metrics_data[constants.DEVICE_ROLLING_MEAN_100] = convert_to_float(rollingMean32)
+    metrics_data[constants.DEVICE_ROLLING_MEAN_100] = convert_to_float(rollingMean100)
 
     index += 4
     metrics.seek(index, 0)

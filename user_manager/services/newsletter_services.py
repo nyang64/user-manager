@@ -41,8 +41,9 @@ class NewsletterServices(DbRepository):
                     valid_html_file.split(".")[0].replace("-", " ").capitalize()
 
         # Iterate through newsletters records to check if users need emails
+        # user_id = user_id column in newsletters table -> should also be general user_id
         for user_id in enrolled_users:
-            user_obj = UserServices.getUserById(user_id)
+            user_obj = UserServices.get_user_by_user_id(user_id=user_id)
             user_reg_obj = UserRegister.find_by_id(reg_id=user_obj.registration_id)
             print(f"Check enrolled user: {user_id}")
 

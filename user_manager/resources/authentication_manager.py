@@ -124,7 +124,7 @@ class AuthOperation:
             if int(otp_cnt) >= int(read_environ_value(value, "OTP_LIMIT")):
                 logging.warning("OTP Limit exceeded")
                 return {"message": "OTP Limit Reached"}, 429
-            user_detail = Users.getUserById(user_reg_id=user_data.id)
+            user_detail = Users.get_user_by_registration_id(user_reg_id=user_data.id)
             otp = generateOTP()
             send_otp(
                 user_detail.first_name,

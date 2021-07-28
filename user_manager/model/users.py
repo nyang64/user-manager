@@ -60,7 +60,7 @@ class Users(BaseModel):
         return db.session.query(cls).filter_by(id=user_id).first()
 
     @classmethod
-    def getUserById(cls, user_reg_id):
+    def get_user_by_registration_id(cls, user_reg_id):
         try:
             user = cls.find_by_registration_id(registration_id=user_reg_id)
             if user is None:

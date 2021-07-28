@@ -121,12 +121,12 @@ class TestUserServices(TestCase):
         app = create_test_app()
         with app.app_context():
             with pytest.raises(InternalServerError) as e:
-                self.user_service.getUserById(1)
+                self.user_service.get_user_by_registration_id(1)
             self.assertIsInstance(e.value, InternalServerError)
 
     def test_getUserById(self):
         app = create_test_app()
         with app.app_context():
             user = self.populate_data.create_user("user@gmail.com")
-            resp = self.user_service.getUserById(user.registration_id)
+            resp = self.user_service.get_user_by_registration_id(user.registration_id)
             self.assertIsNotNone(resp)

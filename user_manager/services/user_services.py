@@ -103,9 +103,20 @@ class UserServices(DbRepository):
             raise InternalServerError(str(error))
 
     @classmethod
-    def getUserById(self, user_reg_id) -> "Users":
+    def get_user_by_registration_id(self, user_reg_id) -> "Users":
         try:
             user_data = Users.find_by_registration_id(registration_id=user_reg_id)
+            if user_data is None:
+                raise NotFound("User Details Not Found")
+            return user_data
+        except Exception as error:
+            logging.error(str(error))
+            raise InternalServerError("Something Went Wrong")
+
+    @classmethod
+    def get_user_by_user_id(cls, user_id) -> "Users":
+        try:
+            user_data = Users.find_by_id(_id=user_id)
             if user_data is None:
                 raise NotFound("User Details Not Found")
             return user_data

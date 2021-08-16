@@ -218,12 +218,18 @@ class ProviderManager:
 
         logging.info("Request Received to add facility")
         request_data = validate_request()
-        address, facility_name, on_call_phone = add_facility_schema.load(request_data)
+        address, facility_name, on_call_phone, external_facility_id = add_facility_schema.load(request_data)
+        logging.debug("User: {} with role: {} - adding new facility: {}::{}".format(decrypt["user_email"], decrypt["user_role"], facility_name, external_facility_id))
         logging.info("Facility Name: {}".format(facility_name))
         logging.info("Address Info: {}".format(address))
         facility_obj = FacilityService()
-        aid, fid = facility_obj.register_facility(address, facility_name, on_call_phone)
+
+        # Check if facility already exists
+        exists = facility_obj.check_facility_exists(external_facility_id)
+        if exists:
+            return "Facility ext_id:{} already exists".format(external_facility_id)
+        aid, fid = facility_obj.register_facility(address, facility_name, on_call_phone, external_facility_id)
         return (
-            {"address_id": aid, "facility_id": fid, "status_code": http.client.CREATED},
+            {"address_id": aid, "facility_id": fid, "external_facility_id": external_facility_id, "status_code": http.client.CREATED},
             http.client.CREATED,
         )

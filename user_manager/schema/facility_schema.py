@@ -10,13 +10,14 @@ def must_not_blank(data):
 
 
 class AddFacilitySchema(BaseSchema):
-    address = fields.Nested(AddressSchema, required=True)
+    address = fields.Nested(AddressSchema, required=False)
     facility_name = fields.Str(required=True, validate=must_not_blank)
     on_call_phone = fields.Str(required=True, validate=must_not_blank)
+    external_facility_id = fields.Str(required=True, validate=must_not_blank)
 
     @post_load
     def load_data(self, data, **kwargs):
-        return data.get("address"), data.get("facility_name"), data.get("on_call_phone")
+        return data.get("address"), data.get("facility_name"), data.get("on_call_phone"), data.get("external_facility_id")
 
 
 add_facility_schema = AddFacilitySchema()

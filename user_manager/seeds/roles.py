@@ -28,14 +28,20 @@ def provider():
 
 def user():
     roles = Roles.all()
+    roles_list = ["ADMIN", "PROVIDER", "PATIENT", "USER", "CUSTOMER_SERVICE", "STUDY_MANAGER"]
 
-    if len(roles) > 3:
-        message_details["user_roles"] = "Nothing was added because 3 roles already exist. "
+    if len(roles) > 0:
+        # Iterate through dictionary and see if exists
+        for value in roles_list:
+            print(value)
+            if not Roles.find_by_name(value):
+                message_details["Roles"] = "Added a new role " + value
+                new_role = Roles(role_name=value)
+                new_role.save_to_db()
+                message_details["Role types"] = "Role type was created"
     else:
-        role_names = ['ADMIN', 'PROVIDER', 'PATIENT', 'USER']
-        for name in role_names:
-            new_role = Roles(role_name=name)
+        for value in roles_list:
+            new_role = Roles(role_name=value)
             new_role.save_to_db()
-            message_details["user_roles"] = "Roles were created"
+            message_details["Device ui status types"] = "Added a new role " + value
 
-    print_message_details()

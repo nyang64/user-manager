@@ -26,6 +26,13 @@ def create_provider_req_value():
         "role": "PROVIDER",
     }
 
+def create_facility_req_value():
+    return {
+        "facility_name":"Kaiser",
+        "on_call_phone": "4155555555",
+        "external_facility_id": "100-1",
+    }
+
 
 class TestProviderManager(TestCase):
     def __init__(self, *args, **kwargs):
@@ -145,3 +152,24 @@ class TestProviderManager(TestCase):
                     200,
                 ),
             )
+
+    @mock.patch.object(FacilityService, "check_facility_exists")
+    @mock.patch("utils.validation.request", spec={})
+    def test_add_facility(self, mock_req, mock_facility):
+        mock_req.is_json = True
+        mock_req.json = create_facility_req_value()
+        mock_facility.return_value = True
+        app = create_test_app()
+        with app.test_request_context():
+            resp = self.provider.add_facility.__wrapped__(self.provider, {"user_email": "123@mail.com", "user_role": "ADMIN"})
+            self.assertIsNotNone(resp)
+            assert type(resp) == dict
+
+    @mock.patch.object(FacilityService, "check_facility_exists")
+    def test_add_facility_none(self, mock_facility):
+        mock_facility.return_value = None
+        app = create_test_app()
+        with app.test_request_context():
+            with pytest.raises(BadRequest) as e:
+                resp = self.provider.add_facility.__wrapped__(self.provider, "")
+            assert type(e.value) is BadRequest

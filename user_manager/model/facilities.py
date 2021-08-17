@@ -13,7 +13,7 @@ class Facilities(BaseModel):
     )
     external_facility_id = db.Column(
         "external_facility_id",
-        db.String(6),
+        db.String(10),
         nullable=False,
     )
     on_call_phone = db.Column("on_call_phone", db.String(12), nullable=False)

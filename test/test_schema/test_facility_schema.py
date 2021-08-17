@@ -21,6 +21,17 @@ class TestFacilitySchema(TestCase):
                 "country": "IN",
                 "postal_code": "421306",
             },
+            "external_facility_id": "123456"
+        }
+        user_role = AddFacilitySchema().load(args)
+        print(user_role, type(user_role))
+        self.assertIsInstance(user_role, tuple)
+
+    def test_add_facility_schema_without_address(self):
+        args = {
+            "facility_name": "FCAJ",
+            "on_call_phone": "1123451234",
+            "external_facility_id": "123456"
         }
         user_role = AddFacilitySchema().load(args)
         print(user_role, type(user_role))

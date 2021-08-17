@@ -98,7 +98,7 @@ class PopulateData:
     def create_facility(self):
         address = self.create_address()
         facility = Facilities(
-            address_id=address.id, on_call_phone="9090909090", name="faci"
+            address_id=address.id, on_call_phone="9090909090", name="faci", external_facility_id="100"
         )
         db.session.add(facility)
         db.session.commit()

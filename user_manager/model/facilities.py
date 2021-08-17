@@ -9,6 +9,11 @@ class Facilities(BaseModel):
         "address_id",
         db.Integer,
         db.ForeignKey("ES.addresses.id", ondelete="CASCADE"),
+        nullable=True,
+    )
+    external_facility_id = db.Column(
+        "external_facility_id",
+        db.String(10),
         nullable=False,
     )
     on_call_phone = db.Column("on_call_phone", db.String(12), nullable=False)
@@ -17,3 +22,7 @@ class Facilities(BaseModel):
     @classmethod
     def find_by_id(cls, _id) -> "Facilities":
         return cls.query.filter_by(id=_id).first()
+
+    @classmethod
+    def find_by_external_id(cls, _ext_id) -> "Facilities":
+        return cls.query.filter_by(external_facility_id=_ext_id).first()

@@ -40,7 +40,7 @@ class TestFacilityServices(TestCase):
         app = create_test_app()
         with app.app_context():
             address = self.populate_data.create_address()
-            resp = self.facility_service.save_facility("F", address.id, "12")
+            resp = self.facility_service.save_facility("F", address.id, "12", "123")
             self.assertIsNotNone(resp)
             self.assertEqual(1, resp)
 
@@ -50,5 +50,5 @@ class TestFacilityServices(TestCase):
         app = create_test_app()
         with app.app_context():
             with pytest.raises(InternalServerError) as e:
-                self.facility_service.save_facility("F", 1, "12")
+                self.facility_service.save_facility("F", 1, "12", "1234567")
             self.assertIsInstance(e.value, InternalServerError)

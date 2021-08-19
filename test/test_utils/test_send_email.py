@@ -1,5 +1,5 @@
 import pytest
-from utils.send_mail import send_otp, send_registration_email
+from utils.send_mail import send_otp, send_patient_registration_email
 
 
 @pytest.fixture
@@ -45,7 +45,7 @@ class TestSendEmail:
 
     def test_send_registration_with_invalid_parameter(self, email_var):
         with pytest.raises(Exception) as e:
-            assert send_registration_email(
+            assert send_patient_registration_email(
                 email_var[0], None, email_var[2], email_var[3], email_var[4]
             )
         assert "500 Internal Server Error" in str(e.value)

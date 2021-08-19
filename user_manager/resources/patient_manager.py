@@ -33,7 +33,7 @@ class PatientManager:
 
     @require_user_token(ADMIN, PROVIDER)
     def create_patient(self, token):
-        from utils.send_mail import send_registration_email
+        from utils.send_mail import send_patient_registration_email
 
         request_params = validate_request()
         request_params["role_name"] = "PATIENT"
@@ -44,7 +44,7 @@ class PatientManager:
         patient_id = self.patient_obj.register_patient(
             register_params, user_params, patient_params
         )
-        send_registration_email(
+        send_patient_registration_email(
             user_params[0],
             register_params[0],
             "Welcome to Element Science",

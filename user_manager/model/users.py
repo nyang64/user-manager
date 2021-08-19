@@ -28,6 +28,7 @@ class Users(BaseModel):
     uuid = db.Column(
         UUID(as_uuid=True), default=uuid.uuid4, unique=True, nullable=False
     )
+    external_user_id = db.Column("external_user_id", String(10), nullable=True)
     registration = db.relationship("UserRegister", backref="registrations")
     roles = db.relationship("UserRoles", lazy="joined", uselist=True)
     statuses = db.relationship(

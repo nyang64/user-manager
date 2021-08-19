@@ -3,6 +3,8 @@ import json
 import logging
 import math
 import random
+import secrets
+import string
 import uuid
 from json import JSONEncoder
 
@@ -160,3 +162,10 @@ def generate_signed_url(report_key=None):
     except ClientError:
         logging.error("Error while generation URL")
         return "Error while generation URL"
+
+
+def generate_random_password():
+    alphabet = string.ascii_letters + string.digits
+    password = ''.join(secrets.choice(alphabet) for i in range(8))
+    return password
+

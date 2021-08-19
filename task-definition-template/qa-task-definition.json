@@ -24,6 +24,10 @@
           "value": "https://testflight.apple.com/join/QidKZCuu"
         },
         {
+          "name": "CLINICAL_PORTAL_URL",
+          "value": "https://qa.clinical.elementscience.com/"
+        },
+        {
           "name": "POSTGRES_DB_HOST",
           "value": "$DB_URL"
         },

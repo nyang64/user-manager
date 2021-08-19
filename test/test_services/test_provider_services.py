@@ -140,7 +140,7 @@ class TestProviderServices(TestCase):
         mock_provider.return_value = 2
         app = create_test_app()
         reg = ("avi@gmail.com", "avi")
-        user = ("F", "L", "121212")
+        user = ("F", "L", "121212", "101-1")
         with app.app_context():
             self.populate_data.add_roles()
             resp = self.provider_service.register_provider_service(

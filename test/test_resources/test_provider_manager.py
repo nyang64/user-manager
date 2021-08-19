@@ -22,8 +22,8 @@ def create_provider_req_value():
         "facility_id": "1",
         "phone_number": "9988776111",
         "email": "laura@elementsci.com",
-        "password": "test12345",
-        "role": "PROVIDER",
+        "role": "outpatient",
+        "external_user_id": "101-103"
     }
 
 def create_facility_req_value():
@@ -97,17 +97,19 @@ class TestProviderManager(TestCase):
     @mock.patch.object(Facilities, "find_by_id")
     @mock.patch.object(Providers, "find_by_id")
     @mock.patch.object(ProviderService, "register_provider_service")
+    @mock.patch("resources.provider_manager.send_provider_registration_email")
     @mock.patch("resources.provider_manager.request", spec={})
     def test_register_provider(
         self,
         mock_req,
+        mock_email,
         mock_service,
         mock_provider,
         mock_facility,
         mock_address,
         mock_prole,
         mock_user,
-        mock_register,
+        mock_register
     ):
         mock_req.json = create_provider_req_value()
         mock_service.return_value = 1
@@ -119,7 +121,7 @@ class TestProviderManager(TestCase):
         mock_register.return_value = UserRegister(id=1)
         app = create_test_app()
         with app.test_request_context():
-            resp = self.provider.register_provider.__wrapped__(self.provider, "")
+            resp = self.provider.register_provider.__wrapped__(self.provider, {"user_email": "123@mail.com", "user_role": "ADMIN"})
             self.assertIsNotNone(resp)
             self.assertEqual(2, len(resp))
             self.assertEqual(resp[1], 201)

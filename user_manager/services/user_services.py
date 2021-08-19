@@ -20,7 +20,11 @@ class UserServices(DbRepository):
 
     def register_user(self, register, user):
         reg_id = self.auth_obj.register_new_user(register[0], register[1])
-        user_id, user_uuid = self.save_user(user[0], user[1], user[2], reg_id)
+        user_id, user_uuid = self.save_user(first_name=user[0],
+                                            last_name=user[1],
+                                            phone_number=user[2],
+                                            external_user_id=None,
+                                            reg_id=reg_id)
 
         self.assign_role(user_id, role_name=user[3])
         self.assign_status(user_id)
@@ -28,13 +32,14 @@ class UserServices(DbRepository):
 
         return user_id, user_uuid
 
-    def save_user(self, first_name, last_name, phone_number, reg_id):
+    def save_user(self, first_name, last_name, phone_number, external_user_id, reg_id):
         user_data = Users(
             first_name=first_name,
             last_name=last_name,
             phone_number=phone_number,
             registration_id=reg_id,
             uuid=generate_uuid(),
+            external_user_id=external_user_id
         )
         self.flush_db(user_data)
 

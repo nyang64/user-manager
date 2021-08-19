@@ -11,8 +11,3 @@ class SeedDemo(Seeder):
         roles.seed()
         user_status_types.seed()
         admins.seed()
-        if os.environ.get("FLASK_ENV") != "production":
-            created_providers = providers.seed()
-            patients.seed(
-                created_providers["outpatient"], created_providers["prescribing"]
-            )

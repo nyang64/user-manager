@@ -37,7 +37,11 @@ class ProviderService(DbRepository):
             reg_id = self.auth_obj.register_new_user(register[0], register[1])
 
             # Create and save user.
-            user_id, uuid = self.user_obj.save_user(user[0], user[1], user[2], reg_id)
+            user_id, uuid = self.user_obj.save_user(first_name=user[0],
+                                                    last_name=user[1],
+                                                    phone_number=user[2],
+                                                    reg_id=reg_id,
+                                                    external_user_id=user[3])
 
             # Create and save the user's role.
             self.user_obj.assign_role(user_id, PROVIDER)

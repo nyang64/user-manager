@@ -90,6 +90,7 @@ PROVIDER_OUTPATIENT = {
         "facility": {
             "name": "Healthy Hearts",
             "on_call_phone": "5556667777",
+            "external_facility_id": "101",
             "address": {
                 "street_address_1": "Market St",
                 "street_address_2": "",
@@ -100,6 +101,7 @@ PROVIDER_OUTPATIENT = {
             },
         },
         "role_name": "outpatient",
+        "external_user_id": "101-102"
     },
 }
 
@@ -118,6 +120,7 @@ PROVIDER_OUTPATIENT_2 = {
         "facility": {
             "name": "Happy Heart",
             "on_call_phone": "5554443333",
+            "external_facility_id": "102",
             "address": {
                 "street_address_1": "Townsend St.",
                 "street_address_2": "",
@@ -128,6 +131,7 @@ PROVIDER_OUTPATIENT_2 = {
             },
         },
         "role_name": "outpatient",
+        "external_user_id": "101-102"
     },
 }
 

@@ -25,6 +25,8 @@ from utils.common import have_keys
 from utils.constants import ADMIN, PROVIDER
 from utils.jwt import require_user_token
 from utils.validation import validate_request
+from utils.common import generate_random_password
+from utils.send_mail import send_provider_registration_email
 
 provider_schema = ProvidersSchema()
 providers_schema = ProvidersSchema(many=True)
@@ -40,29 +42,43 @@ class ProviderManager:
         self.provider_obj = ProviderService()
 
     @require_user_token(ADMIN, PROVIDER)
-    def register_provider(self, device):
+    def register_provider(self, token):
         provider_json = request.json
-
         if (
-            have_keys(
-                provider_json,
-                "first_name",
-                "last_name",
-                "facility_id",
-                "phone_number",
-                "email",
-                "password",
-                "role",
-            )
-            is False
+                have_keys(
+                    provider_json,
+                    "first_name",
+                    "last_name",
+                    "facility_id",
+                    "email",
+                    "role",
+                )
+                is False
         ):
             return {"message": "Invalid Request Parameters"}, 400
 
-        register = (str(provider_json["email"]).lower(), provider_json["password"])
+        logging.debug(
+            "User: {} with role: {} - is registering a new provider: {}::{}".format(token["user_email"],
+                                                                                    token["user_role"],
+                                                                                    provider_json["first_name"],
+                                                                                    provider_json["last_name"]))
+        pwd = generate_random_password()
+        register = (str(provider_json["email"]).lower(), pwd)
+
+        print(provider_json)
+        phone_number = None
+        if "phone_number" in provider_json:
+            phone_number = provider_json["phone_number"]
+
+        external_user_id = None
+        if "external_user_id" in provider_json:
+            external_user_id = provider_json["external_user_id"]
+
         user = (
             provider_json["first_name"],
             provider_json["last_name"],
-            provider_json["phone_number"],
+            phone_number,
+            external_user_id
         )
 
         facility_id = provider_json["facility_id"]
@@ -77,6 +93,14 @@ class ProviderManager:
         provider_roles = ProviderRoles.find_by_provider_id(provider_id)
         user = Users.find_by_id(provider.user_id)
         registration = UserRegister.find_by_id(user.registration_id)
+
+        send_provider_registration_email(
+            first_name=user.first_name,
+            last_name=user.last_name,
+            to_address=registration.email,
+            username=registration.email,
+            password=pwd
+        )
 
         response = {
             "registration": register_schema.dump(registration),
@@ -128,10 +152,10 @@ class ProviderManager:
     def update_provider(self, decrypt):
         provider_json = request.json
         if (
-            have_keys(
-                provider_json, "provider_id", "first_name", "last_name", "phone_number"
-            )
-            is False
+                have_keys(
+                    provider_json, "provider_id", "first_name", "last_name", "phone_number"
+                )
+                is False
         ):
             return {"message": "Invalid Request Parameters"}, 400
         provider_data = Providers.find_by_id(id=provider_json["provider_id"])
@@ -219,7 +243,9 @@ class ProviderManager:
         logging.info("Request Received to add facility")
         request_data = validate_request()
         address, facility_name, on_call_phone, external_facility_id = add_facility_schema.load(request_data)
-        logging.debug("User: {} with role: {} - adding new facility: {}::{}".format(token["user_email"], token["user_role"], facility_name, external_facility_id))
+        logging.debug(
+            "User: {} with role: {} - adding new facility: {}::{}".format(token["user_email"], token["user_role"],
+                                                                          facility_name, external_facility_id))
         logging.info("Facility Name: {}".format(facility_name))
         logging.info("Address Info: {}".format(address))
         facility_obj = FacilityService()
@@ -230,6 +256,7 @@ class ProviderManager:
             return {"message": "Facility ext_id:{} already exists".format(external_facility_id)}
         aid, fid = facility_obj.register_facility(address, facility_name, on_call_phone, external_facility_id)
         return (
-            {"address_id": aid, "facility_id": fid, "external_facility_id": external_facility_id, "status_code": http.client.CREATED},
+            {"address_id": aid, "facility_id": fid, "external_facility_id": external_facility_id,
+             "status_code": http.client.CREATED},
             http.client.CREATED,
         )

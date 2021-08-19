@@ -40,6 +40,10 @@
           "value": "$PATIENT_PORTAL_PASSWORD"
         },
         {
+          "name": "CLINICAL_PORTAL_URL",
+          "value": "https://cohort.clinical.elementscience.com/"
+        },
+        {
           "name": "POSTGRES_DB_HOST",
           "value": "$DB_URL"
         },

@@ -102,6 +102,39 @@ class FacilityService(DbRepository):
             logging.error("Error occured: {}".format(str(error)))
             raise InternalServerError(str(error))
 
+    def list_all_facilities(self):
+        """List all facility records"""
+        logging.info("List all facilities")
+        try:
+            facilities = Facilities.all()
+            data_count = len(facilities)
+            f_list = []
+
+            for facility in facilities:
+                address = ""
+                if facility.address_id:
+                    facility_address = Address.find_by_id(facility.address_id)
+                    address = "{} {}, {}, {} {} {}".format(
+                        facility_address.street_address_1,
+                        facility_address.street_address_2,
+                        facility_address.city,
+                        facility_address.state,
+                        facility_address.country,
+                        facility_address.postal_code
+                    )
+                facilites_dict = {}
+                facilites_dict["name"] = facility.name
+                facilites_dict["on_call_phone"] = facility.on_call_phone
+                facilites_dict["external_facility_id"] = facility.external_facility_id
+                facilites_dict["id"] = facility.id
+                facilites_dict["address"] = address
+                f_list.append(facilites_dict)
+
+            return f_list, data_count
+        except exc.SQLAlchemyError as error:
+            logging.error("Error occured: {}".format(str(error)))
+            raise InternalServerError(str(error))
+
     def save_address(self, address):
         """Flush the address transcation"""
         logging.info("Binding Address Data")

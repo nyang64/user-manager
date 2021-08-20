@@ -21,6 +21,7 @@ from schema.report_schema import patient_reports_schema, report_id_schema
 from schema.user_schema import UserSchema
 from services.provider_services import ProviderService
 from services.user_services import UserServices
+from services.facility_services import FacilityService
 from utils.common import have_keys
 from utils.constants import ADMIN, PROVIDER
 from utils.jwt import require_user_token
@@ -40,6 +41,7 @@ class ProviderManager:
     def __init__(self):
         self.userObj = UserServices()
         self.provider_obj = ProviderService()
+        self.facility_service_obj = FacilityService()
 
     @require_user_token(ADMIN, PROVIDER)
     def register_provider(self, token):
@@ -234,7 +236,7 @@ class ProviderManager:
         msg, code = self.provider_obj.update_uploaded_ts(report_id)
         return {"message": msg, "status_code": code}, code
 
-    @require_user_token(ADMIN)
+    @require_user_token(PROVIDER)
     def add_facility(self, token):
         """ Add address, Facility and assign address id to facility table """
         from schema.facility_schema import add_facility_schema
@@ -253,10 +255,31 @@ class ProviderManager:
         # Check if facility already exists
         exists = facility_obj.check_facility_exists(external_facility_id)
         if exists:
-            return {"message": "Facility ext_id:{} already exists".format(external_facility_id)}
+            return (
+                    {"message": "Facility ext_id:{} already exists".format(external_facility_id), "status_code": http.client.CONFLICT},
+                    http.client.CONFLICT,
+                )
+
         aid, fid = facility_obj.register_facility(address, facility_name, on_call_phone, external_facility_id)
         return (
             {"address_id": aid, "facility_id": fid, "external_facility_id": external_facility_id,
              "status_code": http.client.CREATED},
             http.client.CREATED,
+        )
+
+    @require_user_token(PROVIDER)
+    def get_facilities_list(self, token):
+        """Return a list of facilities"""
+        """
+        :return filtered facilities list
+        """
+        logging.debug("Provider: {} getting list of all facilities".format(token["user_email"]))
+        facilities_list, total = self.facility_service_obj.list_all_facilities()
+        return (
+            {
+                "total": total,
+                "data": facilities_list,
+                "status_code": http.client.OK,
+            },
+            http.client.OK,
         )

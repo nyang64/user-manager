@@ -26,3 +26,7 @@ class Facilities(BaseModel):
     @classmethod
     def find_by_external_id(cls, _ext_id) -> "Facilities":
         return cls.query.filter_by(external_facility_id=_ext_id).first()
+
+    @classmethod
+    def all(cls) -> "Facilities":
+        return cls.query.all()

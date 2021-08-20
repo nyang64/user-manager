@@ -2,7 +2,6 @@
 source = .
 omit = ./env/*, *__init__.py, *test/*, *tests/*, *model/base_model.py, */seeds/seed_db.py, 
         */utils/jwt.py, */schema/base_schema.py, */services/patient_services.py,
-        */services/facility_services.py, */services/provider_services.py,
         */services/common_services.py, */services/auth_services.py,
         */repository/db_repositories.py, */services/user_services.py,
         */utils/cli_routes.py, *resources/authentication_manager.py

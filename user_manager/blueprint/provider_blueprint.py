@@ -70,3 +70,9 @@ class ProviderBlueprint(Blueprint):
             self.provider_Obj.add_facility,
             methods=["POST"],
         )
+        self.add_url_rule(
+            "/facilities",
+            "List all facilities",
+            self.provider_Obj.get_facilities_list,
+            methods=["GET"]
+        )

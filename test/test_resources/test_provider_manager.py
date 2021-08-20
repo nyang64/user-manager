@@ -165,7 +165,7 @@ class TestProviderManager(TestCase):
         with app.test_request_context():
             resp = self.provider.add_facility.__wrapped__(self.provider, {"user_email": "123@mail.com", "user_role": "ADMIN"})
             self.assertIsNotNone(resp)
-            assert type(resp) == dict
+            assert type(resp) == tuple
 
     @mock.patch.object(FacilityService, "check_facility_exists")
     def test_add_facility_none(self, mock_facility):
@@ -175,3 +175,12 @@ class TestProviderManager(TestCase):
             with pytest.raises(BadRequest) as e:
                 resp = self.provider.add_facility.__wrapped__(self.provider, "")
             assert type(e.value) is BadRequest
+
+    @mock.patch("model.facilities.Facilities.all")
+    def test_list_facilities(self, mock_facility):
+        mock_facility = Facilities(address_id="1", on_call_phone="9090909090", name="facility", external_facility_id="100")
+        app = create_test_app()
+        with app.test_request_context():
+            resp = self.provider.get_facilities_list.__wrapped__(self.provider, {"user_email": "esadmin@elementsci.com", "user_role": "ADMIN"})
+            self.assertIsNotNone(resp)
+            assert type(resp) == tuple

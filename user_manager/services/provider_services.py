@@ -131,7 +131,7 @@ class ProviderService(DbRepository):
         )
 
         patient_data = (
-            base_query.join(Address, Patient.address_id == Address.id, isouter=True)
+            base_query.join(Address, Patient.permanent_address_id == Address.id, isouter=True)
             .join(TherapyReport, Patient.id == TherapyReport.patient_id, isouter=True)
             .with_entities(
                 Patient.id,

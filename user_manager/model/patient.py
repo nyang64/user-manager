@@ -22,15 +22,24 @@ class Patient(BaseModel):
     enrolled_date = db.Column("enrolled_at", db.DateTime, default=db.func.now())
     gender = db.Column("gender", db.String(30), nullable=False)
     indication = db.Column("indication", db.String(40), nullable=False)
-    address_id = db.Column(
-        "address_id",
+    permanent_address_id = db.Column(
+        "permanent_address_id",
         db.Integer,
         db.ForeignKey("ES.addresses.id", ondelete="CASCADE"),
         nullable=True,
     )
     mobile_app_user = db.Column("mobile_app_user", db.Boolean, default=True)
-    address = db.relationship(
-        "Address", backref="address", uselist=False, viewonly=True
+    shipping_address_id = db.Column(
+        "shipping_address_id",
+        db.Integer,
+        db.ForeignKey("ES.addresses.id", ondelete="CASCADE"),
+        nullable=True
+    )
+    permanent_address = db.relationship(
+        "Address", foreign_keys=[permanent_address_id]
+    )
+    shipping_address = db.relationship(
+        "Address", foreign_keys=[shipping_address_id]
     )
     user = db.relationship("Users", backref="users", uselist=False, viewonly=True)
     devices = db.relationship(

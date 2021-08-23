@@ -50,6 +50,7 @@ class CreatePatientSchema(CreateUserSchema):
     outpatient_provider = fields.Int(required=True, validate=must_not_blank)
     indication = fields.Str(required=True, validate=must_not_blank)
     device_serial_number = fields.Str(required=False)
+    mobile_app_user = fields.Bool(required=False)
 
     @post_load
     def make_post_load_object(self, data, **kwargs):
@@ -62,6 +63,7 @@ class CreatePatientSchema(CreateUserSchema):
                 "gender": data.get("gender"),
                 "indication": data.get("indication"),
                 "address": data.get("address"),
+                "mobile_app_user": data.get("mobile_app_user")
             },
             "providers": {
                 "prescribing_provider_id": data.get("prescribing_provider"),

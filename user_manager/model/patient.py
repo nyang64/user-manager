@@ -28,7 +28,7 @@ class Patient(BaseModel):
         db.ForeignKey("ES.addresses.id", ondelete="CASCADE"),
         nullable=True,
     )
-    using_mobile_app = db.Column("mobile_app_user", db.Boolean, default=True)
+    mobile_app_user = db.Column("mobile_app_user", db.Boolean, default=True)
     address = db.relationship(
         "Address", backref="address", uselist=False, viewonly=True
     )

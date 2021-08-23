@@ -22,6 +22,7 @@ from schema.register_schema import RegistrationSchema
 from schema.user_schema import UserSchema
 from services.patient_services import PatientServices
 from utils.constants import ADMIN, PATIENT, PROVIDER
+from utils.common import generate_random_password
 from utils.jwt import require_user_token
 from utils.validation import validate_request
 from werkzeug.exceptions import BadRequest
@@ -36,7 +37,11 @@ class PatientManager:
         from utils.send_mail import send_patient_registration_email
 
         request_params = validate_request()
+
+        pwd = generate_random_password()
+        request_params["password"] = pwd
         request_params["role_name"] = "PATIENT"
+
         register_params, user_params, patient_params = create_patient_schema.load(
             request_params
         )
@@ -44,6 +49,8 @@ class PatientManager:
         patient_id = self.patient_obj.register_patient(
             register_params, user_params, patient_params
         )
+
+        pwd = generate_random_password()
         send_patient_registration_email(
             user_params[0],
             register_params[0],

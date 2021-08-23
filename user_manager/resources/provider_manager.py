@@ -23,7 +23,7 @@ from services.provider_services import ProviderService
 from services.user_services import UserServices
 from services.facility_services import FacilityService
 from utils.common import have_keys
-from utils.constants import ADMIN, PROVIDER
+from utils.constants import ADMIN, PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER
 from utils.jwt import require_user_token
 from utils.validation import validate_request
 from utils.common import generate_random_password
@@ -67,7 +67,6 @@ class ProviderManager:
         pwd = generate_random_password()
         register = (str(provider_json["email"]).lower(), pwd)
 
-        print(provider_json)
         phone_number = None
         if "phone_number" in provider_json:
             phone_number = provider_json["phone_number"]
@@ -236,7 +235,7 @@ class ProviderManager:
         msg, code = self.provider_obj.update_uploaded_ts(report_id)
         return {"message": msg, "status_code": code}, code
 
-    @require_user_token(PROVIDER)
+    @require_user_token(ADMIN, STUDY_MANAGER, CUSTOMER_SERVICE)
     def add_facility(self, token):
         """ Add address, Facility and assign address id to facility table """
         from schema.facility_schema import add_facility_schema

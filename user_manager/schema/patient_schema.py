@@ -6,6 +6,7 @@ from model.patient import Patient
 from schema.address_schema import AddressSchema
 from schema.base_schema import BaseSchema, validate_number
 from schema.patients_devices_schema import PatientsDevices, PatientsDevicesSchema
+from schema.patients_patches_schema import PatientsPatches, PatientsPatchesSchema
 from schema.user_schema import CreateUserSchema, UserSchema
 
 ENAME_MISSING = "emergency_contact_name parameter is missing"
@@ -28,6 +29,15 @@ def validate_device_serial_number(data):
         raise ValidationError(DEVICE_ERROR)
 
 
+def validate_patch_lot_number(data):
+    """Validate the patch lot number which should be a 9 digit character string"""
+    if not data:
+        raise ValidationError("parameter missing")
+    if len(data) != 9:
+        patch_error = "Lot number should be of 9 digit string"
+        raise ValidationError(patch_error)
+
+
 class PatientSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Patient
@@ -38,6 +48,7 @@ class PatientSchema(ma.SQLAlchemyAutoSchema):
     shipping_address = ma.Nested(AddressSchema)
     user_id = ma.auto_field()
     devices = ma.List(ma.Nested(PatientsDevicesSchema))
+    patches = ma.List(ma.Nested(PatientsPatchesSchema))
     user = ma.Nested(UserSchema)
 
 
@@ -53,6 +64,7 @@ class CreatePatientSchema(CreateUserSchema):
     indication = fields.Str(required=True, validate=must_not_blank)
     device_serial_number = fields.Str(required=False)
     mobile_app_user = fields.Bool(required=False)
+    patches = fields.List(fields.Nested(PatientsPatchesSchema, required=False))
 
     @post_load
     def make_post_load_object(self, data, **kwargs):
@@ -66,13 +78,14 @@ class CreatePatientSchema(CreateUserSchema):
                 "indication": data.get("indication"),
                 "mobile_app_user": data.get("mobile_app_user"),
                 "permanent_address": data.get("permanent_address"),
-                "shipping_address": data.get("shipping_address"),
+                "shipping_address": data.get("shipping_address")
             },
             "providers": {
                 "prescribing_provider_id": data.get("prescribing_provider"),
                 "outpatient_provider_id": data.get("outpatient_provider"),
             },
             "device": {"serial_number": data.get("device_serial_number")},
+            "patches": {"patches": data.get("patches")}
         }
 
         return register, user, patient_details
@@ -112,6 +125,21 @@ class AssignDeviceSchema(BaseSchema, ma.SQLAlchemyAutoSchema):
 
 
 assign_device_schema = AssignDeviceSchema()
+
+
+class AssignPatchesSchema(BaseSchema, ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = PatientsPatches
+        load_instance = True
+        include_fk = True
+
+    patch_lot_number = fields.Str(
+        required=True, validate=validate_patch_lot_number
+    )
+
+
+assign_patches_schema = AssignPatchesSchema()
+
 
 
 class PatientDetailSchema(BaseSchema):

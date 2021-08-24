@@ -45,6 +45,8 @@ class Patient(BaseModel):
     devices = db.relationship(
         "PatientsDevices", backref="patients_id", uselist=True, viewonly=True
     )
+    patches = db.relationship("PatientsPatches", backref="patients_id",
+                              uselist=True, viewonly=True)
 
     @classmethod
     def all(cls) -> "Patient":

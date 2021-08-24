@@ -1,4 +1,4 @@
-from model.patches import Patches
+from model.patients_patches import Patches
 
 
 class TestPatches:

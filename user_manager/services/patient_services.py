@@ -31,13 +31,10 @@ class PatientServices(DbRepository):
             )
 
         # Check if shipping address exists if not same as permanent address
-        if patient_details["patient"]["shipping_address"] != None:
+        if patient_details["patient"]["shipping_address"]:
             patient_details["patient"]["shipping_address_id"] = self.save_address(
                 patient_details["patient"]["shipping_address"]
             )
-        else:
-            patient_details["patient"]["shipping_address"] = patient_details["patient"]["permanent_address"]
-            patient_details["patient"]["shipping_address_id"] = patient_details["patient"]["permanent_address_id"]
 
         patient_id = self.save_patient(patient_details["patient"])
 
@@ -129,6 +126,10 @@ class PatientServices(DbRepository):
                 )
 
         return assigned_count
+
+    def save_patient_patches(self, patient_patches):
+        for patient_patch in patient_patches:
+            patient_patch.save_to_db()
 
     def assign_device_to_patient(self, patient_device):
         exist_patient = Patient.find_by_id(patient_device.patient_id)

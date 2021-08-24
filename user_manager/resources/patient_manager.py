@@ -130,6 +130,17 @@ class PatientManager:
 
         return jsonify(patient_schema.dump(patients))
 
+    @require_user_token(ADMIN, PROVIDER)
+    def patient_remove_device(self, token):
+        device_sn = request.args.get("device_serial_number")
+        if device_sn is None:
+            raise BadRequest("device serial number missing")
+        patient_id = self.patient_obj.remove_patient_device_association(device_sn)
+        if patient_id is None:
+            return {"message": f"Unable to find patient association with device: {device_sn}"}, http.client.NOT_FOUND
+        return {"message": f"Patient: {patient_id} disassociated with device serial number {device_sn}"}, http.client.OK
+
+
     def therapy_report_details(self, patient_id):
         # create schemas for formatting the JSON response
         register_schema = RegistrationSchema()

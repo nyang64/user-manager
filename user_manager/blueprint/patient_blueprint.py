@@ -37,3 +37,7 @@ class PatientBluePrint(Blueprint):
                           'patient therapy report details',
                           self.patient_obj.therapy_report_details,
                           methods=['GET'])
+        self.add_url_rule('/patient/device',
+                          'disassociate device from patient',
+                          self.patient_obj.patient_remove_device,
+                          methods=['DELETE'])

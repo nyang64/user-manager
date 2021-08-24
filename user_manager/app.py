@@ -16,7 +16,6 @@ from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_seeder import FlaskSeeder
 from ma import ma
-from model.patches import Patches
 from services.newsletter_services import NewsletterServices
 from utils.constants import FLASK_ENV, FLASK_SECRET_KEY
 

@@ -141,7 +141,7 @@ class PatientServices(DbRepository):
         device_in_use = PatientsDevices.device_in_use(
             patient_device.device_serial_number
         )
-
+        breakpoint()
         if not device_in_use:
             device_count = self.count_device_assigned(patient_device.patient_id)
 
@@ -161,6 +161,17 @@ class PatientServices(DbRepository):
                         return patient_device
                 else:
                     raise NotFound("Device record not found")
+        else:
+            raise Conflict("Device already associated with patient")
+
+    def remove_patient_device_association(self, device_serial_number):
+        patient_device = PatientsDevices.find_by_device_serial_number(device_serial_number)
+        if patient_device is None:
+            return None
+        patient_device.is_active = False
+        self.flush_db(patient_device)
+        self.commit_db()
+        return patient_device.patient_id
 
     def patient_device_list(self, token):
         from sqlalchemy import and_
@@ -178,7 +189,7 @@ class PatientServices(DbRepository):
             .join(PatientsDevices, Patient.id == PatientsDevices.patient_id)
             .with_entities(PatientsDevices.device_serial_number, Users.id)
         )
-        device_serial_numbers = serial_numbers_query.all()
+        device_serial_numbers = serial_numbers_query.filter_by(is_active=True).all()
         devices = []
 
         for d in device_serial_numbers:

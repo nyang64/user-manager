@@ -20,7 +20,7 @@ class Patient(BaseModel):
     gender = db.Column("gender", db.String(12))
     date_of_birth = db.Column("date_of_birth", db.String(30), nullable=False)
     enrolled_date = db.Column("enrolled_at", db.DateTime, default=db.func.now())
-    unenrolled_date = db.Column("unenrolled_at", db.DateTime, nullable=True)
+    unenrolled_at = db.Column("unenrolled_at", db.DateTime, nullable=True)
     gender = db.Column("gender", db.String(30), nullable=False)
     indication = db.Column("indication", db.String(40), nullable=False)
     permanent_address_id = db.Column(

@@ -41,7 +41,8 @@ class AuthServices(DbRepository):
         exist_data = UserRegister.find_by_id(reg_id)
         if bool(exist_data) is False:
             raise NotFound("user record not found")
-        self.delete_obj(exist_data)
+        exist_data.deactivated = True
+        self.save_db(exist_data)
 
     def add_otp(self, user_otp):
         self.save_db(user_otp)
@@ -52,6 +53,19 @@ class AuthServices(DbRepository):
         if user_data is None:
             raise NotFound("No Such User Exist")
 
+        # Check to see if user is deactivated
+        # If disabled return error message
+        if user_data.deactivated:
+            response = auth_response_model(
+                message="Account Deactivated",
+                locked=False,
+                deactivated=True,
+                id_token="",
+                user_status="",
+                isFirstTimeLogin="",
+            )
+            return response.toJsonObj(), 403
+
         # Check session and to see if we need to proceed further with authentication.
         # If the account is already locked or multiple login failures, return with a
         # error message
@@ -59,6 +73,7 @@ class AuthServices(DbRepository):
             response = auth_response_model(
                 message="Account Locked",
                 locked=True,
+                deactivated=False,
                 id_token="",
                 user_status="",
                 isFirstTimeLogin="",
@@ -92,6 +107,7 @@ class AuthServices(DbRepository):
                 refresh_token=encoded_refreshToken,
                 isFirstTimeLogin=user_data.isFirst,
                 locked=user_data.locked,
+                deactivated=user_data.deactivated,
             )
             return response_model.toJsonObj()
 

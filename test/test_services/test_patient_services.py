@@ -7,8 +7,9 @@ from db import db
 from model.patients_devices import PatientsDevices
 from services.device_manager_api import DeviceManagerApi
 from services.patient_services import PatientServices
+from services.user_services import UserServices
 from sqlalchemy.exc import SQLAlchemyError
-from werkzeug.exceptions import InternalServerError, NotFound
+from werkzeug.exceptions import InternalServerError, NotFound, Conflict
 
 
 class TestPatientServices(TestCase):
@@ -92,8 +93,9 @@ class TestPatientServices(TestCase):
     )
     @mock.patch.object(DeviceManagerApi, "check_device_exists", return_value=True)
     @mock.patch.object(DeviceManagerApi, "update_device_status", return_value=True)
+    @mock.patch.object(PatientsDevices, "device_in_use", return_value=False)
     def test_assign_device_to_patient(
-        self, get_device, check_device_exists, update_device_status
+        self, get_device, check_device_exists, update_device_status, mock_device_in_use
     ):
         app = create_test_app()
         with app.app_context():
@@ -106,8 +108,9 @@ class TestPatientServices(TestCase):
             self.assertIsNotNone(resp.id)
 
     @mock.patch.object(DeviceManagerApi, "check_device_exists", return_value=False)
+    @mock.patch.object(PatientsDevices, "device_in_use", return_value=False)
     def test_assign_device_to_patient_raise_exception_not_found(
-        self, check_device_exists
+        self, check_device_exists, mock_device_in_use
     ):
         app = create_test_app()
         with app.app_context():
@@ -134,12 +137,14 @@ class TestPatientServices(TestCase):
     ):
         app = create_test_app()
         with app.app_context():
-            patient = self.populate_db.create_patient("patient@gmail.com")
-            patient_device = PatientsDevices(
-                patient_id=patient.id, device_serial_number="88888888"
-            )
-            patient_device.save_to_db()
-            self.patient_service.assign_device_to_patient(patient_device)
+            with pytest.raises(Conflict) as e:
+                patient = self.populate_db.create_patient("patient@gmail.com")
+                patient_device = PatientsDevices(
+                    patient_id=patient.id, device_serial_number="88888888"
+                )
+                patient_device.save_to_db()
+                self.patient_service.assign_device_to_patient(patient_device)
+            self.assertRaises(Conflict)
 
     def test_patient_device_list_raise_exception(self):
         pass
@@ -161,7 +166,8 @@ class TestPatientServices(TestCase):
                 )
             self.assertIsInstance(e.value, NotFound)
 
-    def test_delete_patient_data(self):
+    @mock.patch.object(UserServices, "change_user_status")
+    def test_delete_patient_data(self, mock_status):
         app = create_test_app()
         with app.app_context():
             patient = self.populate_db.create_patient("patient@gmail.com")

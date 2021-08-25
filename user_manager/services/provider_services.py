@@ -141,7 +141,7 @@ class ProviderService(DbRepository):
                 Users.phone_number,
                 Patient.date_of_birth,
                 Patient.enrolled_date,
-                Patient.unenrolled_date,
+                Patient.unenrolled_at,
                 Patient.emergency_contact_name,
                 Patient.emergency_contact_number,
                 Address.street_address_1,

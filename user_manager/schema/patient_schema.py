@@ -150,7 +150,7 @@ class PatientDetailSchema(BaseSchema):
     date_of_birth = fields.Str(dump_only=True)
     email = fields.Str(dump_only=True)
     enrolled_on = fields.Str(attribute="enrolled_date", dump_only=True)
-    unenrolled_on = fields.Str(attribute="unenrolled_date", dump_only=True)
+    unenrolled_on = fields.Str(attribute="unenrolled_at", dump_only=True)
     emergency_contact_name = fields.Str(dump_only=True)
     emergency_contact_number = fields.Str(dump_only=True)
     status = fields.Str(attribute="name", dump_only=True)

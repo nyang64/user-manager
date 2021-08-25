@@ -142,7 +142,7 @@ class PatientServices(DbRepository):
         device_in_use = PatientsDevices.device_in_use(
             patient_device.device_serial_number
         )
-        breakpoint()
+
         if not device_in_use:
             device_count = self.count_device_assigned(patient_device.patient_id)
 
@@ -216,7 +216,6 @@ class PatientServices(DbRepository):
         # Unenroll patient from patients table
         exist_patient.unenrolled_at = datetime.now()
         self.save_db(exist_patient)
-        breakpoint()
 
         # Proceed to soft delete from user table
         self.user_obj.delete_user_byid(exist_patient.user_id)

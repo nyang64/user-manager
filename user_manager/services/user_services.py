@@ -10,7 +10,7 @@ from services.auth_services import AuthServices
 from services.repository.db_repositories import DbRepository
 from sqlalchemy.exc import SQLAlchemyError
 from utils.common import generate_uuid
-from utils.constants import ENROLLED
+from utils.constants import ENROLLED, DISENROLLED
 from werkzeug.exceptions import InternalServerError, NotFound
 
 
@@ -27,7 +27,7 @@ class UserServices(DbRepository):
                                             reg_id=reg_id)
 
         self.assign_role(user_id, role_name=user[3])
-        self.assign_status(user_id)
+        self.change_user_status(user_id, ENROLLED)
         self.commit_db()
 
         return user_id, user_uuid
@@ -79,6 +79,7 @@ class UserServices(DbRepository):
         if bool(exist_user) is False:
             raise NotFound("user does not exist")
         self.auth_obj.delete_regtration(exist_user.registration_id)
+        self.change_user_status(user_id, DISENROLLED)
 
     def assign_role(self, user_id, role_name="PATIENT"):
         role_id = Roles.get_roleid(role_name)
@@ -129,10 +130,8 @@ class UserServices(DbRepository):
             logging.error(str(error))
             raise InternalServerError("Something Went Wrong")
 
-    def assign_status(self, user_id):
-        status_type = UserStatusType.find_by_name(ENROLLED)
+    def change_user_status(self, user_id, status):
+        status_type = UserStatusType.find_by_name(status)
         user_status = UserStatus(status_id=status_type.id, user_id=user_id)
-
         self.flush_db(user_status)
-
         return user_status.status

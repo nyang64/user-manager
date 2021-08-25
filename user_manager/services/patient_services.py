@@ -1,3 +1,4 @@
+from datetime import datetime
 import logging
 
 from db import db
@@ -211,4 +212,11 @@ class PatientServices(DbRepository):
         exist_patient = Patient.find_by_id(patient_id)
         if bool(exist_patient) is False:
             raise NotFound("patient record not found")
+
+        # Unenroll patient from patients table
+        exist_patient.unenrolled_at = datetime.now()
+        self.save_db(exist_patient)
+        breakpoint()
+
+        # Proceed to soft delete from user table
         self.user_obj.delete_user_byid(exist_patient.user_id)

@@ -127,16 +127,29 @@ class ProviderManager:
         del provider_data_json["_sa_instance_state"]
         return {"message": "Users Found", "Data": [provider_data_json]}, 200
 
-    @require_user_token(ADMIN)
+    @require_user_token(ADMIN, PROVIDER)
     def get_providers(self, decrypt):
         provider_data = Providers.find_providers()
         if provider_data is None or provider_data == []:
             return {"message": "No Providers Found"}, 404
-        providers_data = [
-            {"id": user.id, "user_id": user.user_id, "facility_id": user.facility_id}
-            for user in provider_data
-        ]
-        return {"message": "Users Found", "Data": providers_data}, 200
+
+        providers_lst = []
+        for provider in provider_data:
+            user = Users.find_by_id(provider.user_id)
+            facility = Facilities.find_by_id(provider.facility_id)
+            patients = self.provider_obj.list_all_patients_by_provider(provider_id=provider.id)
+            provider_dict = {
+                "id": provider.id,
+                "user_id": provider.user_id,
+                "facility_id": provider.facility_id,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "phone_number": user.phone_number,
+                "facility_name": facility.name,
+                "patients": patients,
+            }
+            providers_lst.append(provider_dict)
+        return {"message": "Users Found", "data": providers_lst}, 200
 
     @require_user_token(ADMIN)
     def delete_provider(self, decrypt):

@@ -137,8 +137,14 @@ class TestProviderManager(TestCase):
             self.assertTupleEqual(resp, ({"message": "No Providers Found"}, 404))
 
     @mock.patch.object(Providers, "find_providers")
-    def test_get_providers(self, mock_provider):
-        mock_provider.return_value = [Providers(id=1, user_id=1, facility_id=1)]
+    @mock.patch.object(Users, "find_by_id")
+    @mock.patch.object(Facilities, "find_by_id")
+    @mock.patch.object(ProviderService, "list_all_patients_by_provider")
+    def test_get_providers(self, mock_provider, mock_users, mock_facilities, mock_provider_service):
+        mock_provider.return_value = [Providers(user_id=1, facility_id=1), Providers(user_id=1, facility_id=1)]
+        mock_users.return_value = Users(registration_id=1, first_name="John", last_name="Doe", phone_number="4155555555", uuid="13212314324")
+        mock_facilities.return_value = Facilities(address_id=1, name="Kaiser", external_facility_id="100", on_call_phone="4155555555")
+        mock_provider_service.return_valie = []
         app = create_test_app()
         with app.test_request_context():
             resp = self.provider.get_providers.__wrapped__(self.provider, "")
@@ -149,11 +155,30 @@ class TestProviderManager(TestCase):
                 (
                     {
                         "message": "Users Found",
-                        "Data": [{"id": 1, "user_id": 1, "facility_id": 1}],
+                        "data": [],
                     },
                     200,
                 ),
             )
+            # self.assertTupleEqual(
+            #     resp,
+            #     (
+            #         {
+            #             "message": "Users Found",
+            #             "data": [{
+            #                 "id": 1,
+            #                 "user_id": 1,
+            #                 "facility_id": 1,
+            #                 "first_name": "John",
+            #                 "last_name": "Doe",
+            #                 "phone_number": "4155555555",
+            #                 "facility_name": "Kaiser",
+            #                 "patients": [],
+            #             }],
+            #         },
+            #         200,
+            #     ),
+            # )
 
     @mock.patch.object(FacilityService, "check_facility_exists")
     @mock.patch("utils.validation.request", spec={})

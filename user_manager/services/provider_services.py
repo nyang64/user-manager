@@ -20,6 +20,7 @@ from services.repository.db_repositories import DbRepository
 from services.user_services import UserServices
 from sqlalchemy.exc import SQLAlchemyError
 from utils.constants import PROVIDER
+from sqlalchemy import exc
 from werkzeug.exceptions import InternalServerError, NotFound
 
 provider_role_schema = ProvidersRolesSchema()
@@ -131,7 +132,7 @@ class ProviderService(DbRepository):
         )
 
         patient_data = (
-            base_query.join(Address, Patient.address_id == Address.id, isouter=True)
+            base_query.join(Address, Patient.permanent_address_id == Address.id, isouter=True)
             .join(TherapyReport, Patient.id == TherapyReport.patient_id, isouter=True)
             .with_entities(
                 Patient.id,
@@ -141,6 +142,7 @@ class ProviderService(DbRepository):
                 Users.phone_number,
                 Patient.date_of_birth,
                 Patient.enrolled_date,
+                Patient.unenrolled_at,
                 Patient.emergency_contact_name,
                 Patient.emergency_contact_number,
                 Address.street_address_1,
@@ -224,6 +226,31 @@ class ProviderService(DbRepository):
             lists.append(patient_data._asdict())
 
         return lists, data_count
+
+    def list_all_patients_by_provider(self, provider_id):
+        """List all patients records given provider_id"""
+        logging.debug(f"List all patients for provider: {provider_id}")
+        try:
+            patients_providers = PatientsProviders.find_by_provider_id(provider_id)
+            patients_dict = {}
+            patients_list = []
+
+            for patient_provider in patients_providers:
+                print(f"provider: {provider_id} with patient: {patient_provider.patient_id}")
+
+                patient = {}
+                patient_record = Patient.find_by_id(patient_provider.patient_id)
+                user_record = Users.find_by_patient_id(patient_record.user_id)
+                patient["id"] = patient_provider.patient_id
+                patient["first_name"] = user_record.first_name
+                patient["last_name"] = user_record.last_name
+                # patients_dict[provider_id].append(patient)
+                patients_list.append(patient)
+
+            return patients_list
+        except exc.SQLAlchemyError as error:
+            logging.error("Error occured: {}".format(str(error)))
+            raise InternalServerError(str(error))
 
     def _base_query(self, provider_id):
         """

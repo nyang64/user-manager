@@ -28,7 +28,7 @@ def provider():
 
 def user():
     roles = Roles.all()
-    roles_list = ["ADMIN", "PROVIDER", "PATIENT", "USER", "CUSTOMER_SERVICE", "STUDY_MANAGER"]
+    roles_list = ["ADMIN", "PROVIDER", "PATIENT", "USER", "CUSTOMER_SERVICE", "STUDY_MANAGER", "SITE_COORDINATOR"]
 
     if len(roles) > 0:
         # Iterate through dictionary and see if exists

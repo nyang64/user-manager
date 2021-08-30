@@ -5,6 +5,7 @@ from model.address import Address
 from model.facilities import Facilities
 from model.patient import Patient
 from model.patients_devices import PatientsDevices
+from model.patients_patches import PatientsPatches
 from model.patients_providers import PatientsProviders
 from model.providers import Providers
 from model.user_registration import UserRegister
@@ -13,6 +14,7 @@ from schema.address_schema import AddressSchema
 from schema.patient_schema import (
     PatientSchema,
     assign_device_schema,
+    assign_patches_schema,
     create_patient_schema,
     update_patient_schema,
 )
@@ -22,6 +24,7 @@ from schema.register_schema import RegistrationSchema
 from schema.user_schema import UserSchema
 from services.patient_services import PatientServices
 from utils.constants import ADMIN, PATIENT, PROVIDER
+from utils.common import generate_random_password
 from utils.jwt import require_user_token
 from utils.validation import validate_request
 from werkzeug.exceptions import BadRequest
@@ -36,7 +39,11 @@ class PatientManager:
         from utils.send_mail import send_patient_registration_email
 
         request_params = validate_request()
+
+        pwd = generate_random_password()
+        request_params["password"] = pwd
         request_params["role_name"] = "PATIENT"
+
         register_params, user_params, patient_params = create_patient_schema.load(
             request_params
         )
@@ -44,6 +51,8 @@ class PatientManager:
         patient_id = self.patient_obj.register_patient(
             register_params, user_params, patient_params
         )
+
+        pwd = generate_random_password()
         send_patient_registration_email(
             user_params[0],
             register_params[0],
@@ -55,6 +64,9 @@ class PatientManager:
         if request_params.get("device_serial_number"):
             self.assign_first_device(patient_id, request_params["device_serial_number"])
 
+        if request_params.get("patches"):
+            self.assign_patches(patient_id, request_params["patches"])
+
         patient_schema = PatientSchema()
         patient = Patient.find_by_id(patient_id)
 
@@ -65,6 +77,17 @@ class PatientManager:
             {"device_serial_number": device_serial_number, "patient_id": patient_id}
         )
         return self.patient_obj.assign_device_to_patient(patient_device)
+
+    def assign_patches(self, patient_id, patches):
+        patches_to_persist = []
+        for patch in patches:
+            patch_lot_number = patch["patch_lot_number"]
+            patient_patch = assign_patches_schema.load(
+                {"patch_lot_number": patch_lot_number, "patient_id": patient_id}
+            )
+            patches_to_persist.append(patient_patch)
+
+        return self.patient_obj.save_patient_patches(patches_to_persist)
 
     @require_user_token(ADMIN, PROVIDER)
     def update_patient(self, decrypt):
@@ -106,6 +129,17 @@ class PatientManager:
         patients = Patient.all()
 
         return jsonify(patient_schema.dump(patients))
+
+    @require_user_token(ADMIN, PROVIDER)
+    def patient_remove_device(self, token):
+        device_sn = request.args.get("device_serial_number")
+        if device_sn is None:
+            raise BadRequest("device serial number missing")
+        patient_id = self.patient_obj.remove_patient_device_association(device_sn)
+        if patient_id is None:
+            return {"message": f"Unable to find patient association with device: {device_sn}"}, http.client.NOT_FOUND
+        return {"message": f"Patient: {patient_id} disassociated with device serial number {device_sn}"}, http.client.OK
+
 
     def therapy_report_details(self, patient_id):
         # create schemas for formatting the JSON response

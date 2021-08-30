@@ -1,3 +1,4 @@
+from datetime import datetime
 import logging
 
 from db import db
@@ -25,9 +26,15 @@ class PatientServices(DbRepository):
         user_id, user_uuid = self.user_obj.register_user(register, user)
         patient_details["patient"]["user_id"] = user_id
 
-        if patient_details["patient"]["address"]:
-            patient_details["patient"]["address_id"] = self.save_address(
-                patient_details["patient"]["address"]
+        if patient_details["patient"]["permanent_address"]:
+            patient_details["patient"]["permanent_address_id"] = self.save_address(
+                patient_details["patient"]["permanent_address"]
+            )
+
+        # Check if shipping address exists if not same as permanent address
+        if patient_details["patient"]["shipping_address"]:
+            patient_details["patient"]["shipping_address_id"] = self.save_address(
+                patient_details["patient"]["shipping_address"]
             )
 
         patient_id = self.save_patient(patient_details["patient"])
@@ -121,6 +128,10 @@ class PatientServices(DbRepository):
 
         return assigned_count
 
+    def save_patient_patches(self, patient_patches):
+        for patient_patch in patient_patches:
+            patient_patch.save_to_db()
+
     def assign_device_to_patient(self, patient_device):
         exist_patient = Patient.find_by_id(patient_device.patient_id)
         device_serial_number = patient_device.device_serial_number
@@ -151,6 +162,17 @@ class PatientServices(DbRepository):
                         return patient_device
                 else:
                     raise NotFound("Device record not found")
+        else:
+            raise Conflict("Device already associated with patient")
+
+    def remove_patient_device_association(self, device_serial_number):
+        patient_device = PatientsDevices.find_by_device_serial_number(device_serial_number)
+        if patient_device is None:
+            return None
+        patient_device.is_active = False
+        self.flush_db(patient_device)
+        self.commit_db()
+        return patient_device.patient_id
 
     def patient_device_list(self, token):
         from sqlalchemy import and_
@@ -168,7 +190,7 @@ class PatientServices(DbRepository):
             .join(PatientsDevices, Patient.id == PatientsDevices.patient_id)
             .with_entities(PatientsDevices.device_serial_number, Users.id)
         )
-        device_serial_numbers = serial_numbers_query.all()
+        device_serial_numbers = serial_numbers_query.filter_by(is_active=True).all()
         devices = []
 
         for d in device_serial_numbers:
@@ -190,4 +212,10 @@ class PatientServices(DbRepository):
         exist_patient = Patient.find_by_id(patient_id)
         if bool(exist_patient) is False:
             raise NotFound("patient record not found")
+
+        # Unenroll patient from patients table
+        exist_patient.unenrolled_at = datetime.now()
+        self.save_db(exist_patient)
+
+        # Proceed to soft delete from user table
         self.user_obj.delete_user_byid(exist_patient.user_id)

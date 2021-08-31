@@ -30,12 +30,14 @@ class PatientServices(DbRepository):
             patient_details["patient"]["permanent_address_id"] = self.save_address(
                 patient_details["patient"]["permanent_address"]
             )
-
-        # Check if shipping address exists if not same as permanent address
-        if patient_details["patient"]["shipping_address"]:
-            patient_details["patient"]["shipping_address_id"] = self.save_address(
-                patient_details["patient"]["shipping_address"]
-            )
+            # Check if shipping address exists if not same as permanent address
+            if patient_details["patient"]["shipping_address"]:
+                patient_details["patient"]["shipping_address_id"] = self.save_address(
+                    patient_details["patient"]["shipping_address"]
+                )
+            else:
+                patient_details["patient"]["shipping_address"] = patient_details["patient"]["permanent_address"]
+                patient_details["patient"]["shipping_address_id"] = patient_details["patient"]["permanent_address_id"]
 
         patient_id = self.save_patient(patient_details["patient"])
 

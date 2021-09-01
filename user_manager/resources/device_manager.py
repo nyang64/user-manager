@@ -31,22 +31,25 @@ class DeviceManager:
         logging.info(status_json)
         statuses = status_json.get('statuses')
 
-        for status in statuses:
-            ui_status = {}
-            ui_status['device_serial_number'] = status_json.get('device_serial_number')
-            ui_status['receiver_recorded_at'] = status_json.get('received_at')
-            ui_status['receiver_id'] = status_json.get('receiver_id')
-            ui_status['recorded_at'] = status.get('recorded_at')
-            status_type = DeviceUiStatusType.find_by_ui_id(status["ui_id"])
+        if statuses:
+            for status in statuses:
+                ui_status = {}
+                ui_status['device_serial_number'] = status_json.get('device_serial_number')
+                ui_status['receiver_recorded_at'] = status_json.get('received_at')
+                ui_status['receiver_id'] = status_json.get('receiver_id')
+                ui_status['recorded_at'] = status.get('recorded_at')
+                status_type = DeviceUiStatusType.find_by_ui_id(status["ui_id"])
 
-            if status_type is not None:
-                ui_status["status_id"] = status_type.id
-            else:
-                logging.error("Could not find status type for {}".format(status["ui_id"]))
+                if status_type is not None:
+                    ui_status["status_id"] = status_type.id
+                else:
+                    logging.error("Could not find status type for {}".format(status["ui_id"]))
 
-            status_schema = DeviceUiStatusSchema()
-            status_model = status_schema.load(ui_status)
-            status_model.save_to_db()
+                status_schema = DeviceUiStatusSchema()
+                status_model = status_schema.load(ui_status)
+                status_model.save_to_db()
+        else:
+            logging.info("No status messages were present in the message")
 
         return {"message": "Device ui status persisted"}, 201
 

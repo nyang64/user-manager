@@ -1,7 +1,9 @@
 from schema.user_schema import CreateUserSchema
-from marshmallow import fields, ValidationError
+from marshmallow import fields, ValidationError, post_load
 from ma import ma
 from model.providers import Providers
+from model.users import Users
+from schema.base_schema import BaseSchema
 
 
 def must_not_blank(data):
@@ -29,11 +31,23 @@ class CreateProviderSchema(CreateUserSchema):
         validate=must_not_blank)
 
 
-class UpdateProviderSchema(CreateProviderSchema):
-    provider_id = fields.Str(
-        required=True,
-        attribute="id",
-        validate=must_not_blank)
+class UpdateProviderSchema(BaseSchema):
+    first_name = fields.Str(required=False)
+    last_name = fields.Str(required=False)
+    external_user_id = fields.Str(required=False)
+    phone_number = fields.Str(required=False)
+    email = fields.Str(required=False)
+    facility_id = fields.Str(required=False)
+
+    @post_load
+    def load_data(self, data, **kwargs):
+        facility_id = data.get("facility_id")
+        user = Users(first_name=data.get("first_name"),
+                     last_name=data.get("last_name"),
+                     phone_number=data.get("phone_number"),
+                     external_user_id=data.get("external_user_id"))
+        email = data.get("email")
+        return facility_id, email, user
 
 
-UpdateProviderSchema = UpdateProviderSchema(many=True)
+UpdateProviderSchema = UpdateProviderSchema()

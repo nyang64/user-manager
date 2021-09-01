@@ -1,9 +1,6 @@
-import http
 from datetime import datetime, timedelta
 from test.flask_app1 import create_test_app
 from unittest import TestCase, mock
-
-from flask import request
 
 import os
 import pytest
@@ -40,6 +37,28 @@ class TestAuthManager(TestCase):
             with pytest.raises(InternalServerError) as e:
                 self.auth.update_user_password.__wrapped__(self.auth, decrypt)
             self.assertIsInstance(e.value, InternalServerError)
+
+    @mock.patch("resources.authentication_manager.request", spec={})
+    @mock.patch.object(AuthServices, "update_password")
+    def test_update_user_password_success(self, mock_auth, mock_req):
+        mock_req.json = {"newpassword": "1234"}
+        decrypt = {"user_email": "user@gmail.com"}
+        app = create_test_app()
+        # Test to raise Internal Error
+        with app.test_request_context():
+                response = self.auth.update_user_password.__wrapped__(self.auth, decrypt)
+                self.assertTrue(response[1], 200)
+
+    @mock.patch("resources.authentication_manager.request", spec={})
+    @mock.patch.object(AuthServices, "reset_session")
+    def test_delete_token(self, mock_auth, mock_req):
+        decrypt = {"user_email": "user@gmail.com"}
+        app = create_test_app()
+        # Test to raise Internal Error
+        with app.test_request_context():
+            response = self.auth.delete.__wrapped__(self.auth, decrypt)
+            self.assertTrue(response[1], 200)
+
 
     @mock.patch.object(user_login_schema, "validate_data")
     @mock.patch.object(AuthServices, "User_login")

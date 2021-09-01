@@ -61,7 +61,7 @@ class AuthOperation:
 
     @require_user_token(ADMIN, PROVIDER, PATIENT, ESUSER)
     def delete(self, decrypt):
-        self.auth_obj.delete_token(decrypt["user_email"])
+        self.auth_obj.reset_session(decrypt["user_email"])
         return {"message": "Logged out"}, 200
 
     @require_user_token(ADMIN, PROVIDER, PATIENT, ESUSER)

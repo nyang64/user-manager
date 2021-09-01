@@ -15,7 +15,7 @@ from schema.patient_schema import (
     patient_id_schema,
 )
 from schema.providers_roles_schema import ProvidersRolesSchema
-from schema.providers_schema import ProvidersSchema
+from schema.providers_schema import ProvidersSchema, UpdateProviderSchema
 from schema.register_schema import RegistrationSchema
 from schema.report_schema import patient_reports_schema, report_id_schema
 from schema.user_schema import UserSchema
@@ -28,6 +28,7 @@ from utils.jwt import require_user_token
 from utils.validation import validate_request
 from utils.common import generate_random_password
 from utils.send_mail import send_provider_registration_email
+from werkzeug.exceptions import BadRequest
 
 provider_schema = ProvidersSchema()
 providers_schema = ProvidersSchema(many=True)
@@ -43,7 +44,7 @@ class ProviderManager:
         self.provider_obj = ProviderService()
         self.facility_service_obj = FacilityService()
 
-    @require_user_token(ADMIN, PROVIDER)
+    @require_user_token(ADMIN, STUDY_MANAGER, CUSTOMER_SERVICE)
     def register_provider(self, token):
         provider_json = request.json
         if (
@@ -127,7 +128,7 @@ class ProviderManager:
         del provider_data_json["_sa_instance_state"]
         return {"message": "Users Found", "Data": [provider_data_json]}, 200
 
-    @require_user_token(ADMIN, PROVIDER)
+    @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER, PROVIDER)
     def get_providers(self, decrypt):
         provider_data = Providers.find_providers()
         if provider_data is None or provider_data == []:
@@ -162,26 +163,31 @@ class ProviderManager:
         self.userObj.delete_user_byid(provider_data.user_id)
         return {"message": "Provider Deleted"}, 200
 
-    @require_user_token(ADMIN, PROVIDER)
-    def update_provider(self, decrypt):
-        provider_json = request.json
-        if (
-                have_keys(
-                    provider_json, "provider_id", "first_name", "last_name", "phone_number"
-                )
-                is False
-        ):
-            return {"message": "Invalid Request Parameters"}, 400
-        provider_data = Providers.find_by_id(id=provider_json["provider_id"])
-        if provider_data is None:
-            return {"message": "No Such Provider Exist"}, 404
-        self.userObj.update_user_byid(
-            provider_data.user_id,
-            provider_json["first_name"],
-            provider_json["last_name"],
-            provider_json["phone_number"],
-        )
-        return {"message": "Provider Updated"}, 200
+    @require_user_token(ADMIN, STUDY_MANAGER)
+    def update_provider(self, token):
+        """Update a facility details"""
+        logging.debug("User: {} updating providers".format(token["user_email"]))
+
+        provider_id = request.args.get("id")
+        if provider_id is None:
+            raise BadRequest("Provider id parameter is missing")
+
+        try:
+            request_data = validate_request()
+            req_facility_id, req_email, req_user = UpdateProviderSchema.load(request_data)
+
+            provider_data = Providers.find_by_id(_id=provider_id)
+            if provider_data is None:
+                return {"message": "No Such Provider Exist"}, 404
+
+            self.provider_obj.update_provider(facility_id=req_facility_id,
+                                              user=req_user,
+                                              email=req_email,
+                                              provider_from_db=provider_data)
+        except Exception as ex:
+            return {"message": ex.description}, http.client.BAD_REQUEST
+
+        return {"message": "Successfully updated provider"}, http.client.OK
 
     @require_user_token(PROVIDER)
     def get_patient_list(self, token):
@@ -248,8 +254,10 @@ class ProviderManager:
         msg, code = self.provider_obj.update_uploaded_ts(report_id)
         return {"message": msg, "status_code": code}, code
 
-    @require_user_token(ADMIN, STUDY_MANAGER, CUSTOMER_SERVICE)
+    @require_user_token(ADMIN, STUDY_MANAGER)
     def add_facility(self, token):
+        logging.debug("User: {} Adding a facility".format(token["user_email"]))
+
         """ Add address, Facility and assign address id to facility table """
         from schema.facility_schema import add_facility_schema
         from services.facility_services import FacilityService
@@ -265,7 +273,7 @@ class ProviderManager:
         facility_obj = FacilityService()
 
         # Check if facility already exists
-        exists = facility_obj.check_facility_exists(external_facility_id)
+        exists = facility_obj.check_facility_exists_by_external_id(external_facility_id)
         if exists:
             return (
                     {"message": "Facility ext_id:{} already exists".format(external_facility_id), "status_code": http.client.CONFLICT},
@@ -279,13 +287,13 @@ class ProviderManager:
             http.client.CREATED,
         )
 
-    @require_user_token(PROVIDER)
+    @require_user_token(ADMIN, STUDY_MANAGER)
     def get_facilities_list(self, token):
         """Return a list of facilities"""
         """
         :return filtered facilities list
         """
-        logging.debug("Provider: {} getting list of all facilities".format(token["user_email"]))
+        logging.debug("User: {} getting list of all facilities".format(token["user_email"]))
         facilities_list, total = self.facility_service_obj.list_all_facilities()
         return (
             {
@@ -295,3 +303,28 @@ class ProviderManager:
             },
             http.client.OK,
         )
+
+    @require_user_token(ADMIN, STUDY_MANAGER)
+    def update_facility(self, token):
+        from schema.facility_schema import update_facility_schema
+        from services.facility_services import FacilityService
+
+        """Update a facility details"""
+        logging.debug("User: {} updating details of a facility".format(token["user_email"]))
+
+        facility_id = request.args.get("id")
+        if facility_id is None:
+            raise BadRequest("parameter id is missing")
+
+        try:
+            request_data = validate_request()
+            address, facility_name, on_call_phone, external_facility_id = update_facility_schema.load(request_data)
+
+            facility_svc = FacilityService()
+            facility_svc.update_facility(facility_id, address, facility_name, on_call_phone, external_facility_id)
+        except Exception as ex:
+            return {"message": "Update failed. Please check logs for details"}, http.client.BAD_REQUEST
+
+        return {"message": "Sucessfully updated"}, http.client.OK
+
+

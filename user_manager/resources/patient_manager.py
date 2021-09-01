@@ -23,7 +23,7 @@ from schema.providers_schema import ProvidersSchema
 from schema.register_schema import RegistrationSchema
 from schema.user_schema import UserSchema
 from services.patient_services import PatientServices
-from utils.constants import ADMIN, PATIENT, PROVIDER
+from utils.constants import ADMIN, PATIENT, PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER
 from utils.common import generate_random_password
 from utils.jwt import require_user_token
 from utils.validation import validate_request
@@ -34,7 +34,7 @@ class PatientManager:
     def __init__(self):
         self.patient_obj = PatientServices()
 
-    @require_user_token(ADMIN, PROVIDER)
+    @require_user_token(ADMIN, STUDY_MANAGER, CUSTOMER_SERVICE)
     def create_patient(self, token):
         from utils.send_mail import send_patient_registration_email
 
@@ -123,7 +123,7 @@ class PatientManager:
         resp = {"devices": device_list}
         return jsonify(resp), http.client.OK
 
-    @require_user_token(ADMIN, PATIENT, PROVIDER)
+    @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER, PROVIDER)
     def patients(self, token):
         patient_schema = PatientSchema(many=True)
         patients = Patient.all()

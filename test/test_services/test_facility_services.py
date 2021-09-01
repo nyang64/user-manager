@@ -72,7 +72,7 @@ class TestFacilityServices(TestCase):
         mock_ext_id = "100-1"
         app = create_test_app()
         with app.test_request_context():
-            resp = self.facility_service.check_facility_exists(mock_ext_id)
+            resp = self.facility_service.check_facility_exists_by_external_id(mock_ext_id)
             self.assertIsNotNone(resp)
             assert type(resp) == bool
             self.assertEqual(resp, True)

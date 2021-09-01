@@ -20,4 +20,9 @@ class AddFacilitySchema(BaseSchema):
         return data.get("address"), data.get("facility_name"), data.get("on_call_phone"), data.get("external_facility_id")
 
 
+class UpdateFacilitySchema(AddFacilitySchema):
+    pass
+
+
+update_facility_schema = UpdateFacilitySchema()
 add_facility_schema = AddFacilitySchema()

@@ -1,6 +1,7 @@
 import logging
 from collections import namedtuple
 
+from datetime import datetime
 from db import db
 from model.address import Address
 from model.facilities import Facilities
@@ -20,6 +21,8 @@ from services.repository.db_repositories import DbRepository
 from services.user_services import UserServices
 from sqlalchemy.exc import SQLAlchemyError
 from utils.constants import PROVIDER
+from utils.common import generate_random_password, encPass
+from utils.send_mail import send_provider_registration_email
 from sqlalchemy import exc
 from werkzeug.exceptions import InternalServerError, NotFound
 
@@ -104,8 +107,6 @@ class ProviderService(DbRepository):
         return signed_url, 200
 
     def update_uploaded_ts(self, report_id):
-        from datetime import datetime
-
         if report_id is None:
             return "reportId is None", 404
         salvos = (
@@ -299,3 +300,98 @@ class ProviderService(DbRepository):
             base_query = base_query.filter(Patient.date_of_birth == date_of_birth)
 
         return base_query
+
+    def update_provider(self, facility_id, user, email, provider_from_db):
+        """
+        Updating providers will affect 3 tables on following checks
+            - providers:    if the facility id is different from the data in DB.
+            - users:        if the first name, last name, phone number or external user id is different from data in
+                            users table
+            - registration: if the email is different from the email in registrations table
+
+            If the registration email changes (Security):
+                - Update database with the new email.
+                - Generate a new password and update the database with the new password
+                - the registration email needs to be resent with a new password.
+        """
+        session = db.session
+        try:
+            user_id = provider_from_db.user_id
+
+            # 1.check if the facility id is the same from what was in the database
+            # Facility id can not be NULL.
+            if int(facility_id) != provider_from_db.facility_id:
+                logging.debug("Facility_ids are different")
+                provider_from_db.facility_id = facility_id
+                provider_from_db.updated_on = datetime.now()
+                session.add(provider_from_db)
+
+            # 2. check if the user object has any changes
+            user_from_db = Users.find_by_id(_id=user_id)
+            if user_from_db is None:
+                raise InternalServerError(f"User with {user_id} not found")
+
+            updated, user_from_db = self.update_user(user_from_db, user)
+            if updated:
+                logging.debug("user data is modified")
+                user_from_db.updated_on = datetime.now()
+                session.add(user_from_db)
+
+            # 3.Check registration
+            registration = UserRegister.find_by_id(user_from_db.registration_id)
+            if registration is None:
+                raise InternalServerError(f"Registration info for user {user_id} not found")
+
+            registration_updated = False
+            pwd = None
+            if registration.email != email:
+                logging.debug(f"registration email {registration.email} is different from email in req {email}")
+                # check if any other user account exists with the same email - Emails are unique
+                duplicate_email = UserRegister.find_by_email(email)
+                if duplicate_email:
+                    raise InternalServerError(f"Another user with the email {email} already exists")
+                else:
+                    registration.email = email
+                    pwd = generate_random_password()
+                    registration.password = encPass(pwd)
+                    registration.updated_at = datetime.now()
+                    session.add(registration)
+                    registration_updated = True
+
+            session.commit()
+
+            # send registration email to the new email address
+            if registration_updated:
+                logging.info("Sending an email notification to the new address")
+                send_provider_registration_email(
+                    first_name=user.first_name,
+                    last_name=user.last_name,
+                    to_address=registration.email,
+                    username=registration.email,
+                    password=pwd
+                )
+        except Exception as ex:
+            session.rollback()
+            logging.error("Error occurred: {}".format(str(ex)))
+            raise InternalServerError(str(ex))
+
+    def update_user(self, user_from_db, user_from_req):
+        updated = False
+
+        if user_from_db.first_name != user_from_req.first_name:
+            user_from_db.first_name = user_from_req.first_name
+            updated = True
+
+        if user_from_db.last_name !=  user_from_req.last_name:
+            user_from_db.last_name = user_from_req.last_name
+            updated = True
+
+        if user_from_db.phone_number != user_from_req.phone_number:
+            user_from_db.phone_number = user_from_req.phone_number
+            updated = True
+
+        if user_from_db.external_user_id != user_from_req.external_user_id:
+            user_from_db.external_user_id = user_from_req.external_user_id
+            updated = True
+
+        return updated, user_from_db

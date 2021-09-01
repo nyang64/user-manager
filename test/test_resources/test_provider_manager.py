@@ -49,9 +49,6 @@ class TestProviderManager(TestCase):
             resp = ProviderManager.get_patient_detail_byid.__wrapped__(
                 self.provider, ""
             )
-
-            # self.assertEqual(resp[0].json, {"report": {}})
-            #     self.provider, '')
             self.assertEqual(resp[0].json, {"report": {}})
 
             self.assertEqual(resp[1], http.client.OK)
@@ -160,27 +157,9 @@ class TestProviderManager(TestCase):
                     200,
                 ),
             )
-            # self.assertTupleEqual(
-            #     resp,
-            #     (
-            #         {
-            #             "message": "Users Found",
-            #             "data": [{
-            #                 "id": 1,
-            #                 "user_id": 1,
-            #                 "facility_id": 1,
-            #                 "first_name": "John",
-            #                 "last_name": "Doe",
-            #                 "phone_number": "4155555555",
-            #                 "facility_name": "Kaiser",
-            #                 "patients": [],
-            #             }],
-            #         },
-            #         200,
-            #     ),
-            # )
 
-    @mock.patch.object(FacilityService, "check_facility_exists")
+
+    @mock.patch.object(FacilityService, "check_facility_exists_by_external_id")
     @mock.patch("utils.validation.request", spec={})
     def test_add_facility(self, mock_req, mock_facility):
         mock_req.is_json = True
@@ -192,13 +171,13 @@ class TestProviderManager(TestCase):
             self.assertIsNotNone(resp)
             assert type(resp) == tuple
 
-    @mock.patch.object(FacilityService, "check_facility_exists")
+    @mock.patch.object(FacilityService, "check_facility_exists_by_external_id")
     def test_add_facility_none(self, mock_facility):
         mock_facility.return_value = None
         app = create_test_app()
         with app.test_request_context():
             with pytest.raises(BadRequest) as e:
-                resp = self.provider.add_facility.__wrapped__(self.provider, "")
+                resp = self.provider.add_facility.__wrapped__(self.provider, {"user_email": "123@mail.com", "user_role": "ADMIN"})
             assert type(e.value) is BadRequest
 
     @mock.patch("model.facilities.Facilities.all")

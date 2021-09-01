@@ -26,7 +26,7 @@ class FacilityService(DbRepository):
         except exc.SQLAlchemyError as error:
             raise InternalServerError(str(error))
 
-    def check_facility_exists(self, external_facility_id) -> bool:
+    def check_facility_exists_by_external_id(self, external_facility_id) -> bool:
         '''Check for existing facility in facilities table'''
         logging.info("Checking for existing facility")
         try:
@@ -103,3 +103,41 @@ class FacilityService(DbRepository):
         except exc.SQLAlchemyError as error:
             logging.error('Error Occured {}'.format(str(error)))
             raise InternalServerError(str(error))
+
+    def update_facility(self, facility_id, address, facility_name, on_call_phone, external_facility_id):
+        logging.info('Updating Facility Data')
+        try:
+            facility_from_db = Facilities.find_by_id(facility_id)
+            if facility_from_db is None:
+                logging.error(f"Could not find facility with the ID: {facility_id}")
+                raise InternalServerError(f"Could not find facility with the ID: {facility_id}")
+
+            #check if the address needs to be updated
+            if address:
+                facility_address_from_db = Address.find_by_id(facility_from_db.address_id)
+                self.__update_address(facility_address_from_db, address)
+
+            self.__update_facility_data(facility_from_db, name=facility_name, on_call_phone=on_call_phone,
+                                             external_facility_id=external_facility_id)
+            self.commit_db()
+        except Exception as error:
+            logging.error('Error Occured {}'.format(str(error)))
+            raise InternalServerError(str(error))
+
+    def __update_address(self, address_from_db, new_address):
+        address_from_db.street_address_1 = new_address.street_address_1
+        address_from_db.street_address_2 = new_address.street_address_2
+        address_from_db.city = new_address.city
+        address_from_db.state = new_address.state
+        address_from_db.country = new_address.country
+        address_from_db.postal_code = new_address.postal_code
+
+        self.flush_db(address_from_db)
+
+    def __update_facility_data(self, facility_from_db, name, on_call_phone, external_facility_id):
+        facility_from_db.name = name
+        facility_from_db.on_call_phone = on_call_phone
+        facility_from_db.external_facility_id = external_facility_id
+
+        self.flush_db(facility_from_db)
+

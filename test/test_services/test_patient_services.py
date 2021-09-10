@@ -5,9 +5,15 @@ from unittest import TestCase, mock
 import pytest
 from db import db
 from model.patients_devices import PatientsDevices
+from model.provider_role_types import ProviderRoleTypes
+from model.user_registration import UserRegister
+from model.users import Users
+from model.patient import Patient
+from model.newsletters import Newsletters
 from services.device_manager_api import DeviceManagerApi
 from services.patient_services import PatientServices
 from services.user_services import UserServices
+from schema.newsletter_schema import NewsletterSchema
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import InternalServerError, NotFound, Conflict
 
@@ -47,21 +53,111 @@ class TestPatientServices(TestCase):
             self.assertIsInstance(e.value, TypeError)
             self.assertIn("not subscriptable", str(e))
 
-    # def test_save_patient(self):
-    #     app = create_test_app()
-    #     with app.app_context():
-    #         user = self.populate_db.create_user("user@gmail.com")
-    #         patient_details = {
-    #             "emergency_contact_name": "emer_name",
-    #             "emergency_contact_number": "emer_contact",
-    #             "date_of_birth": "29/12/1997",
-    #             "gender": "male",
-    #             "indication": "In",
-    #             "address": "",
-    #             "user_id": user.id,
-    #         }
-    #         resp = self.patient_service.save_patient(patient_details)
-    #         self.assertIsNotNone(resp)
+    @mock.patch.object(UserServices, "register_user", return_value=[2, "1223333232asas"])
+    @mock.patch("services.patient_services.PatientServices.enroll_newsletter")
+    @mock.patch("services.patient_services.PatientServices.assign_providers")
+    @mock.patch("services.patient_services.PatientServices.save_address", return_value="1")
+    @mock.patch("services.patient_services.PatientServices.save_patient", return_value="5")
+    def test_register_patient_success(self, mock_pat, mock_addr, mock_prov, mock_enroll, mock_user_svc):
+        register = UserRegister(email="123@es.com")
+        user = Users(first_name="123")
+        patient_details = {
+            "patient": {
+                           "shipping_address": {
+                               "street_address_1": "121212",
+                               "street_address_2": "1111"
+                           },
+                           "permanent_address": {
+                               "street_address_1": "test steee",
+                               "street_address_2": "1234"
+                           }
+                    },
+            "providers": {
+                "outpatient_provider_id": 5,
+                "prescribing_provider_id": 3
+            }
+        }
+        app = create_test_app()
+        with app.app_context():
+            patient_id = self.patient_service.register_patient(register, user, patient_details)
+            self.assertIsNotNone(patient_id)
+
+    @mock.patch.object(UserServices, "register_user", return_value=[2, "1223333232asas"])
+    @mock.patch("services.patient_services.PatientServices.enroll_newsletter")
+    @mock.patch("services.patient_services.PatientServices.assign_providers")
+    @mock.patch("services.patient_services.PatientServices.save_address", return_value="1")
+    @mock.patch("services.patient_services.PatientServices.save_patient", return_value="5")
+    def test_register_patient_success_no_shipping_key(self, mock_pat, mock_addr, mock_prov, mock_enroll, mock_user_svc):
+        register = UserRegister(email="123@es.com")
+        user = Users(first_name="123")
+        patient_details = {
+            "patient": {
+                "permanent_address": {
+                    "street_address_1": "test steee",
+                    "street_address_2": "1234"
+                }
+            },
+            "providers": {
+                "outpatient_provider_id": 5,
+                "prescribing_provider_id": 3
+            }
+        }
+        app = create_test_app()
+        with app.app_context():
+            patient_id = self.patient_service.register_patient(register, user, patient_details)
+            self.assertIsNotNone(patient_id)
+
+    @mock.patch.object(UserServices, "register_user", return_value=[2, "1223333232asas"])
+    @mock.patch("services.patient_services.PatientServices.enroll_newsletter")
+    @mock.patch("services.patient_services.PatientServices.assign_providers")
+    @mock.patch("services.patient_services.PatientServices.save_address", return_value="1")
+    @mock.patch("services.patient_services.PatientServices.save_patient", return_value="5")
+    def test_register_patient_success_with_shipping_key(self, mock_pat, mock_addr, mock_prov, mock_enroll, mock_user_svc):
+        register = UserRegister(email="123@es.com")
+        user = Users(first_name="123")
+        patient_details = {
+            "patient": {
+                "permanent_address": {
+                    "street_address_1": "test steee",
+                    "street_address_2": "1234"
+                },
+                "shipping_address": {
+
+                }
+            },
+            "providers": {
+                "outpatient_provider_id": 5,
+                "prescribing_provider_id": 3
+            }
+        }
+        app = create_test_app()
+        with app.app_context():
+            patient_id = self.patient_service.register_patient(register, user, patient_details)
+            self.assertIsNotNone(patient_id)
+
+    @mock.patch("services.patient_services.PatientServices.flush_db")
+    @mock.patch("services.patient_services.PatientServices.commit_db")
+    def test_enroll_newsletter(self, commit, flush):
+        app = create_test_app()
+        with app.app_context():
+            self.patient_service.enroll_newsletter(1)
+
+    @mock.patch.object(ProviderRoleTypes, "find_by_name")
+    @mock.patch("services.patient_services.PatientServices.flush_db")
+    @mock.patch("services.patient_services.PatientServices.commit_db")
+    def test_assign_providers(self, commit, flush, provider_role):
+        app = create_test_app()
+        with app.app_context():
+            self.patient_service.assign_providers(patient_id=1, outpatient_provider_id=2,
+                                                  prescribing_provider_id=3)
+
+    @mock.patch.object(Users, "check_user_exist")
+    @mock.patch("services.patient_services.PatientServices.flush_db")
+    @mock.patch("services.patient_services.PatientServices.commit_db")
+    def test_save_patient(self, commit, flush, users):
+        app = create_test_app()
+        with app.app_context():
+            self.patient_service.save_patient({"user_id": "1"})
 
     @mock.patch.object(PatientServices, "save_patient")
     def test_save_patient_raise_exception(self, save_patient):
@@ -82,9 +178,6 @@ class TestPatientServices(TestCase):
                 self.patient_service.save_patient(patient_details)
             self.assertIsInstance(e.value, SQLAlchemyError)
 
-    def test_count_device_assigned_raise_exception(self):
-        # raise Programing Error Exception
-        pass
 
     @mock.patch.object(
         DeviceManagerApi,
@@ -146,25 +239,20 @@ class TestPatientServices(TestCase):
                 self.patient_service.assign_device_to_patient(patient_device)
             self.assertRaises(Conflict)
 
-    def test_patient_device_list_raise_exception(self):
-        pass
-
-    def test_update_patient_data(self):
+    def test_remove_patient_device_association_with_no_devices(self):
         app = create_test_app()
         with app.app_context():
-            patient = self.populate_db.create_patient("patient@gmail.com")
-            self.patient_service.update_patient_data(
-                patient.id, "emerc", "ecre", "28/12/1997"
-            )
+            value = self.patient_service.remove_patient_device_association("123456")
+            self.assertEqual(value, None)
 
-    def test_update_patient_data_raise_exception(self):
+    @mock.patch.object(PatientsDevices, "find_by_device_serial_number",
+                       return_value=PatientsDevices(patient_id=1, device_serial_number="1234567"))
+    @mock.patch("services.patient_services.PatientServices.flush_db")
+    @mock.patch("services.patient_services.PatientServices.commit_db")
+    def test_remove_patient_device_association_with_devices(self, commit, flush, pat_dev):
         app = create_test_app()
         with app.app_context():
-            with pytest.raises(NotFound) as e:
-                self.patient_service.update_patient_data(
-                    1, "emerc", "ecre", "28/12/1997"
-                )
-            self.assertIsInstance(e.value, NotFound)
+            self.patient_service.remove_patient_device_association("123456")
 
     @mock.patch.object(UserServices, "change_user_status")
     def test_delete_patient_data(self, mock_status):
@@ -179,3 +267,32 @@ class TestPatientServices(TestCase):
             with pytest.raises(NotFound) as e:
                 self.patient_service.delete_patient_data(1)
             self.assertIsInstance(e.value, NotFound)
+
+    @mock.patch.object(Users, "find_by_id", return_value=None)
+    def test_update_patient_data_raises_no_user_error(self, users):
+        patient = Patient(user_id=1)
+        app = create_test_app()
+        with app.app_context():
+            with pytest.raises(InternalServerError) as e:
+                self.patient_service.update_patient_data(None, "test", patient, None, patient)
+
+    @mock.patch.object(Users, "find_by_id")
+    @mock.patch.object(UserRegister, "find_by_id", return_value=None)
+    @mock.patch("services.patient_services.db.session")
+    def test_update_patient_data_raises_no_registration(self, mock_session, mock_users, mock_register):
+        user_from_db = Users(first_name="Test",
+                             last_name="Name",
+                             phone_number="2312311231",
+                             external_user_id="123")
+
+        user_from_req = Users(first_name="Test_2",
+                              last_name="Name_2",
+                              phone_number="2312311231",
+                              external_user_id="123")
+
+        mock_users.rerun_value = user_from_db
+        patient = Patient(user_id=1)
+        app = create_test_app()
+        with app.app_context():
+            with pytest.raises(InternalServerError) as e:
+                self.patient_service.update_patient_data(user_from_req, "test@es.com", None, None, patient)

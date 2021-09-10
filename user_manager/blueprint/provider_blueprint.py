@@ -82,3 +82,9 @@ class ProviderBlueprint(Blueprint):
             self.provider_Obj.update_facility,
             methods=["PUT"]
         )
+        self.add_url_rule(
+            "/facility/detail",
+            "Get a facility",
+            self.provider_Obj.get_facility,
+            methods=["GET"],
+        )

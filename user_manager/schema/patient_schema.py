@@ -3,11 +3,13 @@ import logging
 from ma import ma
 from marshmallow import ValidationError, fields, post_load
 from model.patient import Patient
+from model.users import Users
 from schema.address_schema import AddressSchema
 from schema.base_schema import BaseSchema, validate_number
+from schema.patients_providers_schema import PatientsProviders
 from schema.patients_devices_schema import PatientsDevices, PatientsDevicesSchema
 from schema.patients_patches_schema import PatientsPatches, PatientsPatchesSchema
-from schema.user_schema import CreateUserSchema, UserSchema
+from schema.user_schema import CreateUserSchema, UserSchema, UpdateUserSchema
 
 ENAME_MISSING = "emergency_contact_name parameter is missing"
 ENUMBER_MISSING = "emergency_contact_number parameter is missing"
@@ -95,20 +97,55 @@ create_patient_schema = CreatePatientSchema()
 patients_schema = CreatePatientSchema(many=True)
 
 
+# Creating a new schema to return objects instead of returning tuples. Will create a story to standardize the
+# schema creation for post clinical trials
 class UpdatePatientSchema(BaseSchema):
+    permanent_address = fields.Nested(AddressSchema, required=False)
+    shipping_address = fields.Nested(AddressSchema, required=False)
     emergency_contact_name = fields.Str(required=True, validate=must_not_blank)
     emergency_contact_number = fields.Str(required=True, validate=validate_number)
     date_of_birth = fields.Str(required=True, validate=must_not_blank)
+    gender = fields.Str(required=True, validate=must_not_blank)
+    prescribing_provider = fields.Int(required=True, validate=must_not_blank)
+    outpatient_provider = fields.Int(required=True, validate=must_not_blank)
+    indication = fields.Str(required=True, validate=must_not_blank)
+    device_serial_number = fields.Str(required=False)
+    mobile_app_user = fields.Bool(required=False)
+    patches = fields.List(fields.Nested(PatientsPatchesSchema, required=False))
+    email = fields.Str(required=False)
+    first_name = fields.Str(required=True, validate=must_not_blank)
+    last_name = fields.Str(required=True, validate=must_not_blank)
+    phone_number = fields.Str(required=True, validate=must_not_blank)
+    external_user_id = fields.Str(required=False)
 
     @post_load
-    def make_post_dump_object(self, data, **kwargs):
-        emergency_contact_name = data.get("emergency_contact_name")
-        emergency_contact_number = data.get("emergency_contact_number")
-        date_of_birth = data.get("date_of_birth")
-        patient = (emergency_contact_name, emergency_contact_number, date_of_birth)
-        return patient
+    def make_post_load_object(self, data, **kwargs):
+        user = Users(first_name=data.get("first_name"),
+                     last_name=data.get("last_name"),
+                     phone_number=data.get("phone_number"),
+                     external_user_id=data.get("external_user_id"))
 
+        email = data.get("email")
+        patient = Patient(emergency_contact_name=data.get("emergency_contact_name"),
+                          emergency_contact_number=data.get("emergency_contact_number"),
+                          date_of_birth=data.get("date_of_birth"),
+                          gender=data.get("gender"),
+                          indication=data.get("indication"),
+                          mobile_app_user=data.get("mobile_app_user"),
+                          permanent_address=data.get("permanent_address"),
+                          shipping_address=data.get("shipping_address"))
 
+        patient_details = {
+            "providers": {
+                "prescribing_provider_id": data.get("prescribing_provider"),
+                "outpatient_provider_id": data.get("outpatient_provider"),
+            },
+            "device": {"serial_number": data.get("device_serial_number")},
+            "patches": {"patches": data.get("patches")}
+        }
+        return user, email, patient, patient_details
+
+# Both create and update patient schemas are the same for now
 update_patient_schema = UpdatePatientSchema()
 update_patients_schema = UpdatePatientSchema(many=True)
 
@@ -141,7 +178,6 @@ class AssignPatchesSchema(BaseSchema, ma.SQLAlchemyAutoSchema):
 assign_patches_schema = AssignPatchesSchema()
 
 
-
 class PatientDetailSchema(BaseSchema):
     patient_id = fields.Int(attribute="id", dump_only=True)
     first_name = fields.Str(dump_only=True)
@@ -161,6 +197,7 @@ class PatientDetailSchema(BaseSchema):
     state = fields.Str(dump_only=True)
     country = fields.Str(dump_only=True)
     postal_code = fields.Str(dump_only=True)
+
 
 patient_detail_schema = PatientDetailSchema()
 

@@ -54,19 +54,9 @@ class UserManager:
         return {'message': 'user deleted',
                 'status_code': '202'}, http.client.ACCEPTED
 
-    def mock_get_detail_bytoken(self):
-        resp = {
-            'email': 'mehul.sojitra@infostretch.com',
-            'id': '122',
-            'scope': 'User',
-            'status': 'Active',
-            'type': 'Patient',
-            'uuid': '1f4ea346-25ce-4e35-a19c-22da1385997b'
-        }
-        return jsonify(resp), http.client.OK
-
     @require_user_token(ADMIN, PROVIDER, PATIENT, ESUSER)
-    def show(self, user_id):
+    def show(self, token):
+        user_id = request.args.get('id')
         user = Users.find_by_id(user_id)
         user_schema = UserSchema()
         return user_schema.dump(user)

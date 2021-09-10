@@ -69,20 +69,25 @@ class TestPatientManager(TestCase):
                 PatientManager.delete_patient.__wrapped__(self.patient, "")
             self.assertIsInstance(e.value, BadRequest)
 
+
+    @mock.patch.object(Patient, "find_by_id")
     @mock.patch.object(PatientServices, "update_patient_data")
-    @mock.patch("utils.validation.request", spec={})
+    @mock.patch("resources.patient_manager.update_patient_schema.load",
+                return_value=[None, None, "", ""])
     @mock.patch("resources.patient_manager.request", spec={})
-    def test_update_patient(
-        self, update_patient_data, validation_request, patient_request
-    ):
-        validation_request.is_json = True
-        update_patient_data.args = {"id": 1}
-        validation_request.json = {
-            "emergency_contact_name": "avilash",
-            "emergency_contact_number": "1212121212",
-            "date_of_birth": "2019-08-08",
+    @mock.patch("utils.validation.request", spec={})
+    def test_update_patient(self, mock_req_validation, mock_request, mock_update_schema,
+                            mock_patient, update_patient_data):
+        mock_req_validation.is_json = True
+        mock_req_validation.json = {
+            "mobile_app_user": True,
+            "device_serial_number": "10000570",
+            "indication": "VF",
+            "outpatient_provider": "1",
+            "external_user_id": "1256",
         }
-        expected_resp = ({"message": "Sucessfully updated"}, http.client.OK)
+        mock_request.args = {"id": 1}
+        expected_resp = ({"message": "Successfully updated"}, http.client.OK)
         app = create_test_app()
         with app.test_request_context():
             resp = PatientManager.update_patient.__wrapped__(self.patient, "")

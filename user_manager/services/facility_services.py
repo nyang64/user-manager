@@ -37,7 +37,15 @@ class FacilityService(DbRepository):
             return False
         except exc.SQLAlchemyError as error:
             logging.error('Error Occured {}'.format(str(error)))
-            raise InternalServerError(str(error)) 
+            raise InternalServerError(str(error))
+
+    def get_facility_by_id(self, facility_id):
+        logging.info("Get facility by id")
+        try:
+            facility = Facilities.find_by_id(_id=facility_id)
+            return facility
+        except Exception as e:
+            raise InternalServerError(str(e))
 
     def list_all_facilities(self):
         """List all facility records"""
@@ -115,10 +123,16 @@ class FacilityService(DbRepository):
             #check if the address needs to be updated
             if address:
                 facility_address_from_db = Address.find_by_id(facility_from_db.address_id)
-                self.__update_address(facility_address_from_db, address)
+
+                #If address does not exist, create new address, otherwise update address
+                if facility_address_from_db:
+                    self.__update_address(facility_address_from_db, address)
+                else:
+                    self.save_address(address)
 
             self.__update_facility_data(facility_from_db, name=facility_name, on_call_phone=on_call_phone,
-                                             external_facility_id=external_facility_id)
+                                        external_facility_id=external_facility_id, address_id=address.id)
+
             self.commit_db()
         except Exception as error:
             logging.error('Error Occured {}'.format(str(error)))
@@ -134,10 +148,12 @@ class FacilityService(DbRepository):
 
         self.flush_db(address_from_db)
 
-    def __update_facility_data(self, facility_from_db, name, on_call_phone, external_facility_id):
+    def __update_facility_data(self, facility_from_db, name, on_call_phone, external_facility_id, address_id=None):
         facility_from_db.name = name
         facility_from_db.on_call_phone = on_call_phone
         facility_from_db.external_facility_id = external_facility_id
+        if address_id:
+            facility_from_db.address_id = address_id
 
         self.flush_db(facility_from_db)
 

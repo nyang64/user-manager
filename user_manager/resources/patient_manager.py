@@ -89,17 +89,26 @@ class PatientManager:
 
         return self.patient_obj.save_patient_patches(patches_to_persist)
 
-    @require_user_token(ADMIN, PROVIDER)
-    def update_patient(self, decrypt):
+    @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER)
+    def update_patient(self, token):
         patient_id = request.args.get("id")
         if patient_id is None:
             raise BadRequest("parameter id is missing")
         request_data = validate_request()
-        patient = update_patient_schema.load(request_data)
-        self.patient_obj.update_patient_data(
-            patient_id, patient[0], patient[1], patient[2]
-        )
-        return {"message": "Sucessfully updated"}, http.client.OK
+
+        try:
+            patient_data_from_db = Patient.find_by_id(_id=patient_id)
+            if patient_data_from_db is None:
+                return {"message": "No such patient exist"}, 404
+
+            user, email, patient, patient_details = update_patient_schema.load(request_data)
+            self.patient_obj.update_patient_data(
+                user, email, patient, patient_details, patient_data_from_db
+            )
+        except Exception as ex:
+            return {"message": ex.description}, http.client.BAD_REQUEST
+
+        return {"message": "Successfully updated"}, http.client.OK
 
     @require_user_token(ADMIN, PROVIDER)
     def delete_patient(self, decrypt):
@@ -129,6 +138,18 @@ class PatientManager:
         patients = Patient.all()
 
         return jsonify(patient_schema.dump(patients))
+
+    @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER, PROVIDER)
+    def get_patient_by_id(self, token):
+        #TODO Add more logic to get all needed data
+        patient_id = request.args.get("id")
+        patient_data = Patient.find_by_id(patient_id)
+        if patient_id is None:
+            return {"message": "No Such Patient Exist"}, 404
+        patient_data_json = patient_data.__dict__
+        del patient_data_json["_sa_instance_state"]
+        return {"message": "Users Found", "Data": [patient_data_json]}, 200
+
 
     @require_user_token(ADMIN, PROVIDER)
     def patient_remove_device(self, token):
@@ -183,9 +204,14 @@ class PatientManager:
             prescribing_provider_user.registration_id
         )
 
+        # PATCH FOR THERAPY REPORT - REPORT_GENERATOR NEEDS TO BE UPDATED AND USE "PERMANENT_ADDRESS" KEY INSTEAD
+        # OF "ADDRESS" KEY IN PATIENT SCHEMA JSON
+        patient_json = patient_schema.dump(patient)
+        patient_json["address"] = patient_json.pop("permanent_address")
+
         response = {
             "patient": {
-                "patient": patient_schema.dump(patient),
+                "patient": patient_json,
                 "user": user_schema.dump(user),
                 "registration": register_schema.dump(registration),
             },

@@ -44,6 +44,10 @@ class PatientsDevices(BaseModel):
         return cls.query.filter_by(id=_patient_id).first()
 
     @classmethod
+    def find_record_by_patient_id(cls, _patient_id) -> "PatientsDevices":
+        return cls.query.filter_by(patient_id=_patient_id, is_active=True).first()
+
+    @classmethod
     def find_by_device_serial_number(cls, _device_sn) -> "PatientDevices":
         return db.session.query(cls).filter_by(device_serial_number=_device_sn).first()
 

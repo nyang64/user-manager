@@ -60,3 +60,12 @@ class Patient(BaseModel):
     def save_to_db(self) -> None:
         db.session.add(self)
         db.session.commit()
+
+    def copy(self, updated_obj):
+        self.emergency_contact_name = updated_obj.emergency_contact_name
+        self.emergency_contact_number = updated_obj.emergency_contact_number
+        self.date_of_birth = updated_obj.date_of_birth
+        self.gender = updated_obj.gender
+        self.indication = updated_obj.indication
+        self.mobile_app_user = updated_obj.mobile_app_user
+

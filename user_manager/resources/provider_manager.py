@@ -305,6 +305,40 @@ class ProviderManager:
         )
 
     @require_user_token(ADMIN, STUDY_MANAGER)
+    def get_facility(self, token):
+        """Return facility object"""
+        """
+        :return facility object in json
+        """
+        request_data = request.args
+        facility_id = request_data["id"]
+        facility = self.facility_service_obj.get_facility_by_id(facility_id)
+        if facility is None:
+            return jsonify({'message': 'Facility not found'}, http.client.NOT_FOUND)
+        resp = dict()
+        resp['name'] = facility.name
+        address = Address.find_by_id(_id=facility.address_id)
+        address_dict = None
+        if address:
+            address_dict = {
+                "street_address_1": address.street_address_1,
+                "street_address_2": address.street_address_2,
+                "city": address.city,
+                "state": address.state,
+                "country": address.country,
+                "postal_code": address.postal_code,
+            }
+        resp['facility_name'] = facility.name
+        resp['id'] = facility.id
+        resp['external_facility_id'] = facility.external_facility_id
+        resp['updated_on'] = facility.updated_on
+        resp['created_at'] = facility.created_at
+        resp['address_id'] = facility.address_id
+        resp['address'] = address_dict
+        resp['on_call_phone'] = facility.on_call_phone
+        return jsonify(resp), http.client.OK
+
+    @require_user_token(ADMIN, STUDY_MANAGER)
     def update_facility(self, token):
         from schema.facility_schema import update_facility_schema
         from services.facility_services import FacilityService

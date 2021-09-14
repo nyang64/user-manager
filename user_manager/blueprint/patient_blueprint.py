@@ -25,6 +25,10 @@ class PatientBluePrint(Blueprint):
                           'get patient',
                           self.patient_obj.get_patient_by_id,
                           methods=['GET'])
+        self.add_url_rule('/patient/details',
+                          'get patient details',
+                          self.patient_obj.get_patient_details_by_id,
+                          methods=['GET'])
         self.add_url_rule('/patients',
                           'all patients',
                           self.patient_obj.patients,

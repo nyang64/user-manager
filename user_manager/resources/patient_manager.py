@@ -7,6 +7,7 @@ from model.patient import Patient
 from model.patients_devices import PatientsDevices
 from model.patients_patches import PatientsPatches
 from model.patients_providers import PatientsProviders
+from model.provider_role_types import ProviderRoleTypes
 from model.providers import Providers
 from model.user_registration import UserRegister
 from model.users import Users
@@ -18,6 +19,7 @@ from schema.patient_schema import (
     create_patient_schema,
     update_patient_schema,
 )
+from schema.patient_schema import patients_schema
 from schema.patients_devices_schema import PatientsDevicesSchema
 from schema.providers_schema import ProvidersSchema
 from schema.register_schema import RegistrationSchema
@@ -100,7 +102,6 @@ class PatientManager:
             patient_data_from_db = Patient.find_by_id(_id=patient_id)
             if patient_data_from_db is None:
                 return {"message": "No such patient exist"}, 404
-
             user, email, patient, patient_details = update_patient_schema.load(request_data)
             self.patient_obj.update_patient_data(
                 user, email, patient, patient_details, patient_data_from_db
@@ -141,14 +142,50 @@ class PatientManager:
 
     @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER, PROVIDER)
     def get_patient_by_id(self, token):
+        # TODO Add more logic to get all needed data
+        patient_id = request.args.get("id")
+        patient_data = Patient.find_by_id(patient_id)
+        if patient_id is None:
+            return {"message": "No Such Patient Exist"}, 404
+
+        patient_data_json = patient_data.__dict__
+        del patient_data_json["_sa_instance_state"]
+        return {"message": "Users Found", "Data": [patient_data_json]}, 200
+
+    @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER, PROVIDER)
+    def get_patient_details_by_id(self, token):
         #TODO Add more logic to get all needed data
         patient_id = request.args.get("id")
         patient_data = Patient.find_by_id(patient_id)
         if patient_id is None:
             return {"message": "No Such Patient Exist"}, 404
-        patient_data_json = patient_data.__dict__
-        del patient_data_json["_sa_instance_state"]
-        return {"message": "Users Found", "Data": [patient_data_json]}, 200
+        patient_json = PatientSchema().dump(patient_data)
+
+        # TODO: Write a single query to get all these data from the database in one call
+        user = Users.find_by_patient_id(patient_data.user_id)
+        registration = UserRegister.find_by_id(user.registration_id)
+
+        # outpatient provider
+        outpatient_role_id = ProviderRoleTypes.find_by_name(_name="outpatient").id
+        outpatient_provider = PatientsProviders.find_by_patient_and_role_id(
+            patient_data.id, outpatient_role_id
+        )
+
+        # prescribing provider
+        prescribing_role_id = ProviderRoleTypes.find_by_name(_name="prescribing").id
+        prescribing_provider = PatientsProviders.find_by_patient_and_role_id(
+            patient_data.id, prescribing_role_id
+        )
+
+        response = {
+            "patient": {
+                "patient": patient_json,
+                "registration": RegistrationSchema().dump(registration),
+                "outpatient_provider": outpatient_provider.provider_id,
+                "prescribing_provider": prescribing_provider.provider_id
+            }
+        }
+        return jsonify(response), 200
 
 
     @require_user_token(ADMIN, PROVIDER)

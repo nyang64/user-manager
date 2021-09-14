@@ -346,7 +346,7 @@ class PatientServices(DbRepository):
         return updated, user_from_db
 
     def __check_patient_device_association(self, session, new_sn, patient_id, patient_devices):
-        if patient_devices.device_serial_number == new_sn:
+        if patient_devices and patient_devices.device_serial_number == new_sn:
             logging.info("No new device is assigned")
         else:
             # check the device exists in the database and available
@@ -363,11 +363,14 @@ class PatientServices(DbRepository):
                             patient_id=patient_id,
                             device_serial_number=new_sn
                         )
-                        # Set the current device to not active
-                        patient_devices.is_active = False
-                        patient_devices.updated_on = datetime.now()
 
-                        session.add(patient_devices)
+                        # If patient_devices not None
+                        if patient_devices:
+                            # Set the current device to not active
+                            patient_devices.is_active = False
+                            patient_devices.updated_on = datetime.now()
+                            session.add(patient_devices)
+
                         session.add(patient_device_new)
 
                         DeviceManagerApi.update_device_status(new_sn)

@@ -39,6 +39,7 @@ definitions:
           - export DB_USER="$AWS_DB_USER"
           - export DATABASE_URI="$AWS_DATABASE_URI"
           - export SM_ARN="$AWS_SM_ARN"
+          - export APP_LINK="$APP_LINK"
           - export AWS_REGION="$AWS_DEFAULT_REGION"
           - export DEPLOYMENT_ENVIRONMENT="$BITBUCKET_DEPLOYMENT_ENVIRONMENT"
           - export LOG_LEVEL="$FLASK_LOG_LEVEL"
@@ -128,3 +129,8 @@ pipelines:
           <<: *CICD-deployment-without-Artifact
           name: Deploy to Production environment
           deployment: prod
+    clinicaltrials-deployment:
+      - step:
+          <<: *CICD-deployment-without-Artifact
+          name: Deploy to Clinical trials environment
+          deployment: clinicaltrials

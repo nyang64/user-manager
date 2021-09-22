@@ -28,6 +28,7 @@ class CreateUserSchema(RegisterSchema):
     last_name = fields.Str(required=True, validate=must_not_blank)
     phone_number = fields.Str(required=True, validate=validate_number)
     role_name = fields.Str(required=True, validate=must_not_blank)
+    external_user_id = fields.Str(reqired=True)
 
     @post_load
     def make_post_load_object(self, data, **kwargs):
@@ -36,7 +37,8 @@ class CreateUserSchema(RegisterSchema):
         last_name = data.get("last_name")
         phone_number = data.get("phone_number")
         role_name = data.get("role_name")
-        user = (first_name, last_name, phone_number, role_name)
+        external_user_id = data.get("external_user_id")
+        user = (first_name, last_name, phone_number, role_name, external_user_id)
         return register, user
 
 

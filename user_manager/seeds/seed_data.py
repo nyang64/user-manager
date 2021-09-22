@@ -4,22 +4,6 @@ from datetime import datetime
 from config import read_environ_value
 from utils.constants import ADMIN, FLASK_ENV, PATIENT, PROVIDER
 
-if not FLASK_ENV:
-    message = """
-                - you must assign a value to 'FLASK_ENV'.
-                - in terminal run 'export FLASK_ENV = local' or 'set FLASK_ENV = local'
-                - 'local' can be replaced with 'development', 'production' or 'qa'.
-                - ensure that you have corresponding .env files.
-                - see README.md
-              """
-    raise Exception(message)
-
-# if flask_env != "production":
-#     from dotenv import load_dotenv
-#
-#     print(f".env.{flask_env}")
-#     load_dotenv(f".env.{flask_env}")
-
 value = os.getenv("SECRET_MANAGER_ARN")
 
 APPLE_USER = {

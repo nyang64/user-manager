@@ -23,7 +23,7 @@ class UserServices(DbRepository):
         user_id, user_uuid = self.save_user(first_name=user[0],
                                             last_name=user[1],
                                             phone_number=user[2],
-                                            external_user_id=None,
+                                            external_user_id=user[4],
                                             reg_id=reg_id)
 
         self.assign_role(user_id, role_name=user[3])

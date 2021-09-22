@@ -98,7 +98,7 @@ class TestUserServices(TestCase):
     def test_register_user(self, mock_user):
         mock_user.return_value = None
         reg = ("email@gmail.com", "password")
-        user = ("Avilash", "Jha", "80", "PATIENT")
+        user = ("Avilash", "Jha", "80", "PATIENT", "102-11")
         app = create_test_app()
         with app.app_context():
             UserStatusType(name="ENROLLED").save_to_db()

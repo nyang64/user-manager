@@ -233,7 +233,6 @@ class ProviderService(DbRepository):
         logging.debug(f"List all patients for provider: {provider_id}")
         try:
             patients_providers = PatientsProviders.find_by_provider_id(provider_id)
-            patients_dict = {}
             patients_list = []
 
             for patient_provider in patients_providers:
@@ -258,7 +257,7 @@ class ProviderService(DbRepository):
         :return := Return the base query for patient list
         """
         patient_query = (
-            db.session.query(Patient)
+            db.session.query(Patient).distinct()
             .join(PatientsProviders, Patient.id == PatientsProviders.patient_id)
             .filter(PatientsProviders.provider_id == provider_id)
         )

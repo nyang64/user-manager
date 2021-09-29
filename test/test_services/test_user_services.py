@@ -95,8 +95,10 @@ class TestUserServices(TestCase):
             self.assertIsInstance(e.value, NotFound)
 
     @mock.patch.object(UserServices, "assign_role")
-    def test_register_user(self, mock_user):
+    @mock.patch.object(UserServices, "change_user_status")
+    def test_register_user(self, mock_user, mock_user_status):
         mock_user.return_value = None
+        mock_user_status.return_value = None
         reg = ("email@gmail.com", "password")
         user = ("Avilash", "Jha", "80", "PATIENT", "102-11")
         app = create_test_app()

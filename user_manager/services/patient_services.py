@@ -316,6 +316,10 @@ class PatientServices(DbRepository):
         if bool(exist_patient) is False:
             raise NotFound("patient record not found")
 
+        # Check if patient is already unenrolled
+        if exist_patient.unenrolled_at:
+            raise Conflict("patient already unenrolled")
+
         # Unenroll patient from patients table
         exist_patient.unenrolled_at = datetime.now()
         self.save_db(exist_patient)
@@ -408,5 +412,13 @@ class PatientServices(DbRepository):
             session.add(ship_address)
 
         return session
+
+    def get_enrollment_status(self, user_data) -> bool:
+        patient = Patient.find_by_user_id(user_data.id)
+        if patient:
+            if patient.unenrolled_at:
+                return False
+
+        return True
 
 

@@ -80,6 +80,7 @@ class UserServices(DbRepository):
             raise NotFound("user does not exist")
         self.auth_obj.delete_regtration(exist_user.registration_id)
         self.change_user_status(user_id, DISENROLLED)
+        self.commit_db()
 
     def assign_role(self, user_id, role_name="PATIENT"):
         role_id = Roles.get_roleid(role_name)
@@ -132,6 +133,7 @@ class UserServices(DbRepository):
 
     def change_user_status(self, user_id, status):
         status_type = UserStatusType.find_by_name(status)
-        user_status = UserStatus(status_id=status_type.id, user_id=user_id)
-        self.flush_db(user_status)
-        return user_status.status
+        user_status_obj = UserStatus.get_user_status_by_user_id(_user_id=user_id)
+        user_status_obj.status_id = status_type.id
+        self.flush_db(user_status_obj)
+        return user_status_obj.status

@@ -24,3 +24,7 @@ class UserStatus(BaseModel):
     status = db.relationship(
         "UserStatusType", backref="user_status_types", uselist=False
     )
+
+    @classmethod
+    def get_user_status_by_user_id(cls, _user_id) -> "UserStatus":
+        return db.session.query(cls).filter_by(user_id=_user_id).first()

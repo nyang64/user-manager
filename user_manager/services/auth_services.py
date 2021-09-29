@@ -5,6 +5,8 @@ import pytz
 from model.user_otp import UserOTPModel
 from model.user_registration import UserRegister
 from model.users import Users
+from model.user_status import UserStatus
+from model.user_status_type import UserStatusType
 from services.repository.db_repositories import DbRepository
 from sqlalchemy.exc import SQLAlchemyError
 from utils.common import auth_response_model, checkPass, encPass

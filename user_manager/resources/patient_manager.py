@@ -112,7 +112,7 @@ class PatientManager:
         return {"message": "Successfully updated"}, http.client.OK
 
     @require_user_token(ADMIN, PROVIDER)
-    def delete_patient(self, decrypt):
+    def delete_patient(self, token):
         patient_id = request.args.get("id")
         if patient_id is None:
             raise BadRequest("parameter id is missing")

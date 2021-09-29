@@ -57,6 +57,10 @@ class Patient(BaseModel):
     def find_by_id(cls, _id):
         return db.session.query(cls).filter_by(id=_id).first()
 
+    @classmethod
+    def find_by_user_id(cls, _user_id):
+        return db.session.query(cls).filter_by(user_id=_user_id).first()
+
     def save_to_db(self) -> None:
         db.session.add(self)
         db.session.commit()

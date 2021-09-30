@@ -35,6 +35,7 @@ DEVICE_BASE_URL = read_environ_value(value, "DEVICE_BASE_URL")
 # Statuses from device-manager
 ASSIGNED = "Assigned"
 AVAILABLE = "Available"
+INACTIVE = "Inactive"
 
 # Metrics
 DEVICE_BUTTON_PRESS = "buttonPresses"

@@ -30,12 +30,12 @@ class DeviceManagerApi:
         return device_exists
 
     @classmethod
-    def update_device_status(cls, device_serial_number):
+    def update_device_status(cls, device_serial_number, status):
         if FLASK_ENV == "local":
             return True
 
         header = {"Authorization": cls.get_auth_token()}
-        payload = {"serial_number": device_serial_number, "name": ASSIGNED}
+        payload = {"serial_number": device_serial_number, "name": status}
         url = cls.base_url + "/update/device/status"
         updated = None
 

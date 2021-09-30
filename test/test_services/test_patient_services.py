@@ -249,7 +249,9 @@ class TestPatientServices(TestCase):
                        return_value=PatientsDevices(patient_id=1, device_serial_number="1234567"))
     @mock.patch("services.patient_services.PatientServices.flush_db")
     @mock.patch("services.patient_services.PatientServices.commit_db")
-    def test_remove_patient_device_association_with_devices(self, commit, flush, pat_dev):
+    @mock.patch.object(DeviceManagerApi, "check_device_exists", return_value=True)
+    @mock.patch.object(DeviceManagerApi, "update_device_status", return_value=True)
+    def test_remove_patient_device_association_with_devices(self, commit, flush, pat_dev, mock_check_device, mock_update_status):
         app = create_test_app()
         with app.app_context():
             self.patient_service.remove_patient_device_association("123456")

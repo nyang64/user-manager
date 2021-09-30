@@ -16,6 +16,7 @@ from services.auth_services import AuthServices
 from services.device_manager_api import DeviceManagerApi
 from services.repository.db_repositories import DbRepository
 from services.user_services import UserServices
+from utils.constants import ASSIGNED, AVAILABLE, INACTIVE
 from werkzeug.exceptions import Conflict, InternalServerError, NotAcceptable, NotFound
 
 from utils.common import generate_random_password, encPass
@@ -177,7 +178,8 @@ class PatientServices(DbRepository):
                 if device_exists_in_dm is True:
                     self.flush_db(patient_device)
                     updated = DeviceManagerApi.update_device_status(
-                        device_serial_number
+                        device_serial_number,
+                        ASSIGNED
                     )
 
                     if updated:
@@ -192,10 +194,24 @@ class PatientServices(DbRepository):
         patient_device = PatientsDevices.find_by_device_serial_number(device_serial_number)
         if patient_device is None:
             return None
+
+        # Update patients_device association table
         patient_device.is_active = False
         self.flush_db(patient_device)
-        self.commit_db()
-        return patient_device.patient_id
+
+        # Update device manager table
+        device_exists_in_dm = DeviceManagerApi.check_device_exists(
+            device_serial_number
+        )
+
+        if device_exists_in_dm:
+            updated = DeviceManagerApi.update_device_status(
+                device_serial_number, INACTIVE
+            )
+            if updated:
+                return patient_device.patient_id
+        else:
+            raise NotFound("Device record not found in device database")
 
     def patient_device_list(self, token):
         from sqlalchemy import and_
@@ -377,7 +393,7 @@ class PatientServices(DbRepository):
 
                         session.add(patient_device_new)
 
-                        DeviceManagerApi.update_device_status(new_sn)
+                        DeviceManagerApi.update_device_status(new_sn, ASSIGNED)
                     else:
                         raise NotFound("Device record not found")
             else:

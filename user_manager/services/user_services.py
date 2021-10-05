@@ -134,6 +134,14 @@ class UserServices(DbRepository):
     def change_user_status(self, user_id, status):
         status_type = UserStatusType.find_by_name(status)
         user_status_obj = UserStatus.get_user_status_by_user_id(_user_id=user_id)
+
+        # Check if new user
+        if not user_status_obj:
+            # Create new user_status object and commit to table
+            new_user_status_obj = UserStatus(status_id=status_type.id, user_id=user_id)
+            self.flush_db(new_user_status_obj)
+            return status_type.id
+
         user_status_obj.status_id = status_type.id
         self.flush_db(user_status_obj)
         return user_status_obj.status

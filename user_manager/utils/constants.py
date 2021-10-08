@@ -55,3 +55,5 @@ DEVICE_INFO_MOCK = {
     "serial_number": "22222222",
 }
 FAKE_TOKEN = "12345ABCDEF"
+
+PATIENT_PORTAL_LOGIN_PASSWORD = read_environ_value(value, "PATIENT_PORTAL_PASSWORD")

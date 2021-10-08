@@ -137,3 +137,7 @@ class AuthOperation:
             self.auth_obj.add_otp(user_otp)
             return {"message": "OTP Sent to Email"}, 200
         return {"message": "Invalid Request Parameters"}, 400
+
+    def patient_portal_login(self):
+        login_object = user_login_schema.validate_data(request.json)
+        return self.auth_obj.patient_portal_login(login_object)

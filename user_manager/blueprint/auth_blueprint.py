@@ -32,3 +32,6 @@ class AuthenticationBlueprint(Blueprint):
         self.add_url_rule('/unlock_account', 'Unlock User Account',
                           self.auth_login.unlock_account,
                           methods=['POST'])
+        self.add_url_rule('/patients/portal_login', 'Verify Patient for login',
+                          self.auth_login.patient_portal_login,
+                          methods=['POST'])

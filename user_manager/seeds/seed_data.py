@@ -181,6 +181,7 @@ ADMIN_USER = {
         "last_name": "admin",
         "phone_number": "8097810754",
         "role_name": ADMIN,
+        "external_user_id": "000-00"
     },
     "register": {
         "email": read_environ_value(value, "ADMIN_USERNAME"),

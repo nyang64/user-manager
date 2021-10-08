@@ -232,3 +232,66 @@ class AuthServices(DbRepository):
         # Check the session and make sure the lock from the session is removed too.
         self.reset_session(user_email)
 
+    def patient_portal_login(self, data: UserRegister) -> auth_response_model:
+        user_data = UserRegister.find_by_email(str(data.email).lower())
+        if user_data is None:
+            raise NotFound("No Such User Exist")
+
+        # Check to see if user is deactivated
+        # If disabled return error message
+        if user_data.deactivated:
+            response = auth_response_model(
+                message="Account Deactivated",
+                locked=False,
+                deactivated=True,
+                id_token="",
+                user_status="",
+                isFirstTimeLogin=""
+            )
+            return response.toJsonObj(), 403
+
+        # Check session and to see if we need to proceed further with authentication.
+        logger.debug(user_data.__dict__)
+        user_detail = Users.find_by_registration_id(user_data.id)
+
+        user_roles = user_detail.roles
+        if user_roles is None:
+            raise Unauthorized("No Such User Allowed")
+
+        role_name = user_roles[0].role.role_name
+        logger.debug(role_name)
+
+        if role_name not in [constants.PATIENT, constants.PROVIDER]:
+            response = auth_response_model(
+                message="User with role " + role_name + " is not allowed to access this content",
+                locked=False,
+                deactivated=False,
+                id_token="",
+                user_status="",
+                isFirstTimeLogin=""
+            )
+            return response.toJsonObj(), 403
+
+        # Get the password from secret manager
+        if data.password == constants.PATIENT_PORTAL_LOGIN_PASSWORD:
+            access_token = encoded_Token(
+                False, str(data.email).lower(), role_name
+            )
+            refresh_token = encoded_Token(
+                True, str(data.email).lower(), role_name
+            )
+            self.reset_session(user_data.email)
+            response_model = auth_response_model(
+                message="Successfully Logged In",
+                id_token=access_token,
+                first_name=user_detail.first_name,
+                last_name=user_detail.last_name,
+                refresh_token=refresh_token,
+                isFirstTimeLogin=user_data.isFirst,
+                user_role=role_name
+            )
+            return response_model.toJsonObj()
+        raise Unauthorized("Invalid Credentials")
+
+
+

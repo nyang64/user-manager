@@ -94,10 +94,11 @@ class NewsletterServices(DbRepository):
         current_time = datetime.now(tz=timezone.utc)
 
         # get time difference from when created
+        # Upon registration day 0 is initialized and day 1 triggers the first email
+        # subsequent days will start on the start of every 24 hour period
         time_delta = current_time - created_time
-        day = time_delta.days
+        day = time_delta.days + 1  # This states each new days starts at each 24 hour period
         print(f"current_day_at: {newsletter_day_at}")
-        print(f"time_delta: {time_delta.days}")
 
         # Newsletters not send daily, check if day_at differs and if day_at is valid
         if day is not newsletter_day_at and str(day) in self.valid_days:
@@ -115,7 +116,6 @@ class NewsletterServices(DbRepository):
 
     def construct_html_body(self, file_day, user):
         template_path = self.valid_days[str(file_day)]["HTML_FILE"]
-        print(f"template path: {template_path}")
 
         # Other render variables
         survey_link = os.environ.get("SURVEY_LINK")

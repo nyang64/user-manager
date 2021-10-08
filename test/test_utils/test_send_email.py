@@ -1,6 +1,8 @@
 import pytest
 from utils.send_mail import send_otp, send_patient_registration_email
+from unittest import mock
 
+from utils.s3_api import S3Api
 
 @pytest.fixture
 def email_var_otp():
@@ -43,7 +45,9 @@ class TestSendEmail:
     #         email_var[3],
     #         email_var[4]) is True
 
-    def test_send_registration_with_invalid_parameter(self, email_var):
+    @mock.patch.object(S3Api, "download_app_instructions")
+    @mock.patch("utils.send_mail.render_template")
+    def test_send_registration_with_invalid_parameter(self, mock_s3_api, mock_template, email_var):
         with pytest.raises(Exception) as e:
             assert send_patient_registration_email(
                 email_var[0], None, email_var[2], email_var[3], email_var[4]

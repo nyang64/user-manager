@@ -10,7 +10,6 @@ boto3==1.16.61
 flask_seeder
 requests
 flask_cors
-html2image==2.0.1
 pytest
 coverage
 pandas

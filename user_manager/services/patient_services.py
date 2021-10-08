@@ -27,6 +27,7 @@ class PatientServices(DbRepository):
     def __init__(self):
         self.auth_obj = AuthServices()
         self.user_obj = UserServices()
+        self.newsletter_start_day = 0
 
     def register_patient(self, register, user, patient_details):
         """
@@ -79,7 +80,7 @@ class PatientServices(DbRepository):
         user_newsletter = user_newsletter_schema.load(
             {
                 "user_id": user_id,
-                "day_at": 0,
+                "day_at": self.newsletter_start_day,
             }
         )
         self.flush_db(user_newsletter)

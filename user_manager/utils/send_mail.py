@@ -1,14 +1,14 @@
 import os
 import logging
-import boto3
 import smtplib
-from html2image import Html2Image
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.mime.image import MIMEImage
+from flask import render_template
 from werkzeug.exceptions import InternalServerError
+from shutil import rmtree
 
 from config import read_environ_value
+from utils.s3_api import S3Api
 from utils.constants import PATIENT, PROVIDER
 
 value = os.environ.get('SECRET_MANAGER_ARN')
@@ -69,28 +69,27 @@ def send_patient_registration_email(
     msg['From'] = from_address
     msg['To'] = to_address
     msg['Subject'] = "{}".format(subject)
-    body = """
-    Hello {},
 
+    # Fetch app instructions html from S3 bucket
+    print(f"Download app instructions from S3 bucket")
+    local_location = os.getcwd() + "/templates/"
+    if not os.path.exists(local_location):
+        os.makedirs(local_location)
 
-     <h1>Welcome to Element Science</h1>
-        <p>The ES-2 Jewel app is a mobile app accessory to the Jewel device.
-        This version of the mobile app will display current Jewel
-        device status.</p>
+    # Call S3Api and construct the html body
+    S3Api.download_app_instructions(local_location)
+    print(f"Done downloading HTML files from S3")
+    template_path = "app-instructions.html"
 
+    # Construct html template body
+    testflight_link = read_environ_value(value, "TESTFLIGHT_LINK")
+    link = read_environ_value(value, 'APP_LINK')
 
-    <h1>App download instructions</h1>
-    <p>
-    <ul>
-        <li>Download and install the app using the link {}
-        <li>Install the app
-        <li>Login with the credentials:<br/>
-                username: {}
-                password: {}
-    </ul></p>
-    """.format(first_name, read_environ_value(value, 'APP_LINK'),
-               username, password)
-    msg.attach(MIMEText(body, 'html'))
+    rendered_html_body = render_template(
+        template_path, app_link=link, testflight=testflight_link, username=username, password=password
+    )
+
+    msg.attach(MIMEText(rendered_html_body, 'html'))
     try:
         server = smtplib.SMTP(
             read_environ_value(value, "SMTP_SERVER"),
@@ -101,6 +100,7 @@ def send_patient_registration_email(
         text = msg.as_string()
         server.sendmail(from_address, to_address, text)
         server.quit()
+        rmtree(local_location, ignore_errors=True)
         return True
     except Exception as e:
         logging.error(e)
@@ -115,24 +115,8 @@ def send_newsletter_email(html_body, subject_line, user_reg_obj):
     msg['To'] = to_address
     msg['Subject'] = subject_line
 
-    # Convert HTML string to PNG image and attach to email body
-    hti = Html2Image(
-        custom_flags=['--no-sandbox']
-    )
-    hti.screenshot(html_body, save_as="day.png", size=(600, 1892))
-
-    # Attach image to text for email body
-    text = MIMEText('<img src="cid:image1" class="center">', 'html')
-    msg.attach(text)
-    image = MIMEImage(open('day.png', 'rb').read())
-
-    # Define the image's ID as referenced in the HTML body above
-    image.add_header('Content-ID', '<image1>')
-    msg.attach(image)
-
-    #TESTING
-    # body = MIMEText(html_body, "html")
-    # msg.attach(body)
+    body = MIMEText(html_body, "html")
+    msg.attach(body)
 
     try:
         server = smtplib.SMTP(

@@ -110,6 +110,7 @@ class AuthServices(DbRepository):
                 isFirstTimeLogin=user_data.isFirst,
                 locked=user_data.locked,
                 deactivated=user_data.deactivated,
+                user_role=role_name,
             )
             return response_model.toJsonObj()
 
@@ -134,6 +135,7 @@ class AuthServices(DbRepository):
                     last_name=user_detail.last_name,
                     refresh_token=encoded_refreshToken,
                     isFirstTimeLogin=user_data.isFirst,
+                    user_role=role_name,
                 )
                 return response_model.toJsonObj()
             else:

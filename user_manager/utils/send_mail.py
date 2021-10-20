@@ -181,3 +181,51 @@ def send_provider_registration_email(first_name, last_name, to_address,
     except Exception as e:
         logging.error(e)
         raise InternalServerError("Something went wrong. {0}".format(e))
+
+
+def send_user_registration_email(first_name, last_name, to_address,
+                                        username, password):
+    from_address = read_environ_value(value, "SMTP_FROM")
+    msg = MIMEMultipart()
+    msg['From'] = from_address
+    msg['To'] = to_address
+    msg['Subject'] = "Welcome to Element Science"
+    body = """
+        <html>
+          <head>
+          Element Science
+          </head>
+          <body>
+            <h1>Welcome to Element Science</h1>
+            <p>Dear {} {},</p>
+            <p></p>
+            <p>
+              You have been assigned as a user in Element Science Patient Management System.
+            </p>
+            <p>URL for the portal is: {}</p>
+            <p>
+              Login with the credentials:<br/>
+                        username: {}
+                        password: {}
+            </p>
+          </body>
+        </html>
+        """.format(first_name, last_name, read_environ_value(value, 'MANAGEMENT_PORTAL_URL'),
+                   username, password)
+    msg.attach(MIMEText(body, 'html'))
+
+    try:
+        server = smtplib.SMTP(
+            read_environ_value(value, "SMTP_SERVER"),
+            read_environ_value(value, "SMTP_PORT"))
+        server.starttls()
+        server.login(read_environ_value(value, "SMTP_USERNAME"),
+                     read_environ_value(value, "SMTP_PASSWORD"))
+        text = msg.as_string()
+        print(f"sending email to: {to_address}")
+        server.sendmail(from_address, to_address, text)
+        server.quit()
+        return True
+    except Exception as e:
+        logging.error(e)
+        raise InternalServerError("Something went wrong. {0}".format(e))

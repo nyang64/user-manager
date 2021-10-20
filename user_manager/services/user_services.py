@@ -84,6 +84,9 @@ class UserServices(DbRepository):
 
     def assign_role(self, user_id, role_name="PATIENT"):
         role_id = Roles.get_roleid(role_name)
+        if role_id is None:
+            raise Exception("role not found")
+
         user_role = UserRoles(role_id=role_id.id, user_id=user_id)
         self.flush_db(user_role)
         return user_role.role

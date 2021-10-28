@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 
 from config import read_environ_value
-from utils.constants import ADMIN, FLASK_ENV, PATIENT, PROVIDER
+from utils.constants import ADMIN, FLASK_ENV, PATIENT, PROVIDER, STUDY_MANAGER
 
 value = os.getenv("SECRET_MANAGER_ARN")
 
@@ -186,6 +186,20 @@ ADMIN_USER = {
     "register": {
         "email": read_environ_value(value, "ADMIN_USERNAME"),
         "password": read_environ_value(value, "ADMIN_PASSWORD"),
+    },
+}
+
+STUDY_MANAGER = {
+    "user": {
+        "first_name": "ES",
+        "last_name": "StudyMgr",
+        "phone_number": "4158726500",
+        "role_name": STUDY_MANAGER,
+        "external_user_id": "000-00"
+    },
+    "register": {
+        "email": read_environ_value(value, "STUDY_MANAGER_USERNAME"),
+        "password": read_environ_value(value, "STUDY_MANAGER_PASSWORD"),
     },
 }
 

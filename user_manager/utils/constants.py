@@ -57,3 +57,7 @@ DEVICE_INFO_MOCK = {
 FAKE_TOKEN = "12345ABCDEF"
 
 PATIENT_PORTAL_LOGIN_PASSWORD = read_environ_value(value, "PATIENT_PORTAL_PASSWORD")
+
+# Constants for product distribution request
+PDR_PROTOCOL_NUMBER = 2053
+CUSTOMER_SERVICE_EMAIL= read_environ_value(value, "CUSTOMER_SERVICE_EMAIL")

@@ -24,7 +24,6 @@ class NewsletterServices(DbRepository):
 
         # Create a temporary folder for HTML test_templates to be rendered in
         local_location = os.getcwd() + "/templates/"
-        self._create_local_directory_for_files(local_location=local_location)
         print(f"Download HTML files from S3")
         # Call S3Api and construct the html body
         S3Api.download_html_template(local_location)
@@ -63,9 +62,6 @@ class NewsletterServices(DbRepository):
                 # Update newsletter record in db
                 self.update_newsletter_day_at(newsletter_obj=newsletter_user, new_day=newsletter_day)
 
-        # Destroy temporary local_location
-        self._destroy_local_location(local_location)
-
     def find_enrolled_users(self):
         with self.db.app.app_context():
             user_ids = []
@@ -74,17 +70,6 @@ class NewsletterServices(DbRepository):
                 user_ids.append(newsletter.user_id)
 
             return user_ids
-
-    def _create_local_directory_for_files(self, local_location):
-        if not os.path.exists(local_location):
-            os.makedirs(local_location)
-
-    def _destroy_local_location(self, local_location):
-        try:
-            rmtree(local_location, ignore_errors=True)
-        except Exception as e:
-            print("Unable to remove temporary_images folder")
-            raise e
 
     def can_send_newsletter(self, newsletter_obj) -> (bool, int):
         newsletter_day_at = newsletter_obj.day_at

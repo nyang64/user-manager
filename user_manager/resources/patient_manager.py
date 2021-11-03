@@ -1,4 +1,5 @@
 import http
+import logging
 
 from flask import jsonify, request
 from model.address import Address
@@ -25,6 +26,7 @@ from schema.providers_schema import ProvidersSchema
 from schema.register_schema import RegistrationSchema
 from schema.user_schema import UserSchema
 from services.patient_services import PatientServices
+from services.material_request_services import  MaterialRequestService
 from utils.constants import ADMIN, PATIENT, PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER
 from utils.common import generate_random_password
 from utils.jwt import require_user_token
@@ -41,6 +43,11 @@ class PatientManager:
         from utils.send_mail import send_patient_registration_email
 
         request_params = validate_request()
+        logging.debug(
+            "User: {} with role: {} - is registering a new patient: {}::{}".format(token["user_email"],
+                                                                                   token["user_role"],
+                                                                                   request_params["first_name"],
+                                                                                   request_params["last_name"]))
 
         pwd = generate_random_password()
         request_params["password"] = pwd
@@ -54,7 +61,6 @@ class PatientManager:
             register_params, user_params, patient_params
         )
 
-        pwd = generate_random_password()
         send_patient_registration_email(
             user_params[0],
             register_params[0],
@@ -72,9 +78,16 @@ class PatientManager:
         patient_schema = PatientSchema()
         patient = Patient.find_by_id(patient_id)
 
+        prs = MaterialRequestService()
+        prs.send_initial_product_request(token["user_email"], patient, register_params[0])
+
         return jsonify(patient_schema.dump(patient)), http.client.CREATED
 
+
     def assign_first_device(self, patient_id, device_serial_number):
+        """
+            Assign the first device to a patient
+        """
         patient_device = assign_device_schema.load(
             {"device_serial_number": device_serial_number, "patient_id": patient_id}
         )

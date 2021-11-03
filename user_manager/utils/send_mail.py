@@ -1,15 +1,16 @@
 import os
 import logging
 import smtplib
+from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email import encoders
 from flask import render_template
 from werkzeug.exceptions import InternalServerError
-from shutil import rmtree
 
 from config import read_environ_value
 from utils.s3_api import S3Api
-from utils.constants import PATIENT, PROVIDER
+from utils.constants import CUSTOMER_SERVICE_EMAIL
 
 value = os.environ.get('SECRET_MANAGER_ARN')
 
@@ -73,8 +74,6 @@ def send_patient_registration_email(
     # Fetch app instructions html from S3 bucket
     print(f"Download app instructions from S3 bucket")
     local_location = os.getcwd() + "/templates/"
-    if not os.path.exists(local_location):
-        os.makedirs(local_location)
 
     # Call S3Api and construct the html body
     S3Api.download_app_instructions(local_location)
@@ -100,7 +99,6 @@ def send_patient_registration_email(
         text = msg.as_string()
         server.sendmail(from_address, to_address, text)
         server.quit()
-        rmtree(local_location, ignore_errors=True)
         return True
     except Exception as e:
         logging.error(e)
@@ -224,6 +222,49 @@ def send_user_registration_email(first_name, last_name, to_address,
         text = msg.as_string()
         print(f"sending email to: {to_address}")
         server.sendmail(from_address, to_address, text)
+        server.quit()
+        return True
+    except Exception as e:
+        logging.error(e)
+        raise InternalServerError("Something went wrong. {0}".format(e))
+
+
+
+def send_product_request_email(docx_content, csv_content, sender):
+    print("Sending email.")
+    from_address = read_environ_value(value, "SMTP_FROM")
+    receivers_mail = [CUSTOMER_SERVICE_EMAIL, sender]
+    to_address = ", ".join(receivers_mail)
+    msg = MIMEMultipart()
+
+    msg['From'] = from_address
+    msg['To'] = to_address
+    msg['Subject'] = "Product Request Form"
+    body = MIMEText("Test", "html")
+    msg.attach(body)
+
+    part = MIMEBase("application", "octate-stream")
+    part.set_payload(docx_content)
+    encoders.encode_base64(part)
+    part.add_header("Content-Disposition",
+                    f"attachment; filename=Test.docx")
+    msg.attach(part)
+
+    part1 = MIMEBase("application", "octate-stream")
+    part1.set_payload(csv_content)
+    encoders.encode_base64(part1)
+    part1.add_header("Content-Disposition", f"attachment; filename=Test.csv")
+    msg.attach(part1)
+
+    try:
+        server = smtplib.SMTP(
+            read_environ_value(value, "SMTP_SERVER"),
+            read_environ_value(value, "SMTP_PORT"))
+        server.starttls()
+        server.login(read_environ_value(value, "SMTP_USERNAME"),
+                     read_environ_value(value, "SMTP_PASSWORD"))
+        print(f"sending email to: {to_address}")
+        server.sendmail(from_address, to_address, msg.as_string())
         server.quit()
         return True
     except Exception as e:

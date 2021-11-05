@@ -40,6 +40,12 @@ class ProviderBlueprint(Blueprint):
             methods=["GET"],
         )
         self.add_url_rule(
+            "/providers/list",
+            "Get paginated list of providers",
+            self.provider_Obj.get_providers_list,
+            methods=["POST"],
+        )
+        self.add_url_rule(
             "/patients/list",
             "Get all patient list",
             self.provider_Obj.get_patient_list,

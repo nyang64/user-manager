@@ -238,6 +238,37 @@ class FilterPatientSchema(BaseSchema):
 filter_patient_schema = FilterPatientSchema()
 
 
+class PatientListSchema(BaseSchema):
+    page_number = fields.Int(required=True, load_only=True)
+    record_per_page = fields.Int(load_only=True)
+    name = fields.Str(load_only=True)
+    id = fields.Str(load_only=True)
+
+    @post_load
+    def post_data(self, data, **kwargs):
+        try:
+            name = data.get("name", None)
+            page_number = int(data.get("page_number", 0))
+            record_per_page = int(data.get("record_per_page", 10))
+            external_id = data.get("id", None)
+        except ValueError as e:
+            logging.error(e)
+            page_number = 0
+            record_per_page = 10
+            external_id = ""
+            name = ""
+        filter_input = (
+            page_number,
+            record_per_page,
+            name,
+            external_id,
+        )
+        return filter_input
+
+
+patient_list_schema = PatientListSchema()
+
+
 class PatientIdSchema(BaseSchema):
     patientID = fields.Int(required=True, validate=must_not_blank, load_only=True)
 

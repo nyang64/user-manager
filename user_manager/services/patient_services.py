@@ -1,14 +1,20 @@
+from collections import namedtuple
 from datetime import datetime
 import logging
 
 from db import db
+from model.facilities import Facilities
+from model.therapy_reports import TherapyReport
 from model.patient import Patient
 from model.patients_devices import PatientsDevices
 from model.provider_role_types import ProviderRoleTypes
 from model.user_registration import UserRegister
 from model.users import Users
+from model.user_status import UserStatus
+from model.user_status_type import UserStatusType
 from model.address import Address
 from model.patients_providers import PatientsProviders
+from model.providers import Providers
 from model.newsletters import Newsletters
 from schema.newsletter_schema import NewsletterSchema
 from schema.patients_providers_schema import PatientsProvidersSchema
@@ -437,5 +443,99 @@ class PatientServices(DbRepository):
                 return False
 
         return True
+
+    def get_patients_list(self, page_number, record_per_page, name, external_id):
+        patient_list = namedtuple(
+            "PatientList",
+            (
+                "name",
+                "external_id",
+                "provider_name",
+                "enrolled_on",
+                "site",
+                "therapy_date",
+                "patient_id",
+                "enrollment_status"
+            )
+        )
+        base_query = self._base_query(name, external_id)
+        base_query = base_query.with_entities(
+            Users.external_user_id,
+            Users.first_name,
+            Users.last_name,
+            UserStatusType.name,
+            Patient.enrolled_date,
+            TherapyReport.created_at,
+            PatientsProviders.provider_id,
+            Patient.id
+        )
+
+        filter_query = self._filter_query(base_query, name, external_id)
+        data_count = filter_query.count()
+        query_data = []
+        lists = []
+        try:
+            query_data = (
+                    filter_query.order_by(Users.first_name).paginate(page_number + 1, record_per_page).items
+            )
+        except Exception as e:
+            logging.exception(e)
+
+        # For each of the patients get the prescribing providers and facility name
+        # There will be only one facility associated with a provider
+        for data in query_data:
+            provider_facility = db.session.query(Users, Facilities)\
+                    .join(Providers, Providers.user_id == Users.id)\
+                    .join(Facilities, Providers.facility_id == Facilities.id)\
+                    .filter(Providers.id == data[6]).all()
+            provider = provider_facility[0][0]
+            facility = provider_facility[0][1]
+
+            patient_data = patient_list(
+                name=data[1] + " " + data[2],
+                external_id=data[0],
+                therapy_date=data[5].strftime("%d-%b-%Y") if data[5] is not None else None,
+                enrolled_on=data[4].strftime("%d-%b-%Y"),
+                provider_name=provider.first_name + " " + provider.last_name,
+                site=facility.name,
+                patient_id=data[7],
+                enrollment_status=data[3]
+            )
+
+            lists.append(patient_data._asdict())
+
+        return lists, data_count
+
+
+    def _base_query(self, name, id):
+        """
+        :return := Return the base query for patient list
+        """
+        patient_query = (db.session.query(Patient))
+
+        base_query = (
+            patient_query.join(Users, Users.id == Patient.user_id)
+            .join(UserRegister, UserRegister.id == Users.registration_id)
+            .join(UserStatus, Users.id == UserStatus.user_id, isouter=True)
+            .join(
+                UserStatusType, UserStatus.status_id == UserStatusType.id, isouter=True,
+            )
+            .join(PatientsProviders, PatientsProviders.patient_id == Patient.id, isouter=True)
+            .join(TherapyReport, TherapyReport.patient_id == Patient.id, isouter=True)
+        )
+
+        return base_query
+
+    def _filter_query(self, base_query, name, external_id):
+
+        if external_id is not None and len(external_id) > 0:
+            base_query = base_query.filter(Users.external_user_id == external_id)
+
+        if name is not None and len(name) > 0:
+            base_query = base_query.filter(Users.first_name.ilike(name) | Users.last_name.ilike(name))
+
+        base_query = base_query.filter(PatientsProviders.provider_role_id ==
+                                       ProviderRoleTypes.find_by_name("prescribing").id)
+        return base_query
 
 

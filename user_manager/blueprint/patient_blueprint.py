@@ -33,6 +33,10 @@ class PatientBluePrint(Blueprint):
                           'all patients',
                           self.patient_obj.patients,
                           methods=['GET'])
+        self.add_url_rule('/patients/patients_list',
+                          'Filtered list or a list of all patients',
+                          self.patient_obj.patients_list,
+                          methods=['POST'])
         self.add_url_rule('/patients/add/device',
                           'assign device to patient',
                           self.patient_obj.assign_device,

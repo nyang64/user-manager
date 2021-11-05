@@ -19,6 +19,7 @@ from schema.patient_schema import (
     assign_patches_schema,
     create_patient_schema,
     update_patient_schema,
+    patient_list_schema
 )
 from schema.patient_schema import patients_schema
 from schema.patients_devices_schema import PatientsDevicesSchema
@@ -26,7 +27,7 @@ from schema.providers_schema import ProvidersSchema
 from schema.register_schema import RegistrationSchema
 from schema.user_schema import UserSchema
 from services.patient_services import PatientServices
-from services.material_request_services import  MaterialRequestService
+from services.material_request_services import MaterialRequestService
 from utils.constants import ADMIN, PATIENT, PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER
 from utils.common import generate_random_password
 from utils.jwt import require_user_token
@@ -152,6 +153,30 @@ class PatientManager:
         patients = Patient.all()
 
         return jsonify(patient_schema.dump(patients))
+
+    @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER, PROVIDER)
+    def patients_list(self, token):
+        """
+        :param :- page_number, record_per_page, name, external ID
+        :return filtered patient list
+        """
+        request_data = validate_request()
+        logging.debug(
+            "User: {} with role: {} - is requesting a list of patients".format(token["user_email"],
+                                                                                   token["user_role"]))
+        filter_input = patient_list_schema.load(request_data)
+        patients_list, total = self.patient_obj.get_patients_list(*filter_input)
+
+        return (
+            {
+                "total": total,
+                "page_number": filter_input[0],
+                "record_per_page": filter_input[1],
+                "data": patients_list,
+                "status_code": http.client.OK,
+            },
+            http.client.OK,
+        )
 
     @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER, PROVIDER)
     def get_patient_by_id(self, token):

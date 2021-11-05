@@ -8,6 +8,7 @@ from model.facilities import Facilities
 from model.patient import Patient
 from model.patients_providers import PatientsProviders
 from model.provider_role_types import ProviderRoleTypes
+from model.providers import Providers
 from model.salvos import Salvos
 from model.therapy_reports import TherapyReport
 from model.user_registration import UserRegister
@@ -394,3 +395,65 @@ class ProviderService(DbRepository):
             updated = True
 
         return updated, user_from_db
+
+    def get_providers_list(self, page_number, record_per_page, name):
+        provider_list = namedtuple(
+            "ProviderList",
+            (
+                "provider_name",
+                "id",
+                "phone",
+                "site_name",
+                "email_address"
+            )
+        )
+        base_query = self._base_provider_query(name)
+        base_query = base_query.with_entities(
+            Users.first_name,
+            Users.last_name,
+            Providers.id,
+            Users.phone_number,
+            UserRegister.email,
+            Facilities.name
+        )
+
+        data_count = base_query.count()
+        query_data = []
+        lists = []
+
+        try:
+            query_data = (
+                base_query.order_by(Users.first_name).paginate(page_number + 1, record_per_page).items
+            )
+        except Exception as e:
+            logging.exception(e)
+
+        for data in query_data:
+            provider = provider_list(
+                provider_name=data[0] + " " + data[1],
+                id=data[2],
+                phone=data[3],
+                site_name=data[5],
+                email_address=data[4]
+            )
+            lists.append(provider._asdict())
+
+        return lists, data_count
+
+    def _base_provider_query(self, name):
+        """
+        :return := Return the base query for patient list
+        """
+        provider_query = (db.session.query(Providers))
+        provider_query = (
+            provider_query.join(Users, Users.id == Providers.user_id)
+            .join(UserRegister, UserRegister.id == Users.registration_id)
+            .join(UserStatus, Users.id == UserStatus.user_id, isouter=True)
+            .join(UserStatusType, UserStatus.status_id == UserStatusType.id, isouter=True)
+            .join(Facilities, Providers.facility_id == Facilities.id, isouter=True)
+        )
+
+        if name is not None and len(name) > 0:
+            provider_query = provider_query.filter(Users.first_name.ilike(name) | Users.last_name.ilike(name))
+
+        return provider_query

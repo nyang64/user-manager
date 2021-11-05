@@ -1,3 +1,5 @@
+import logging
+
 from schema.user_schema import CreateUserSchema
 from marshmallow import fields, ValidationError, post_load
 from ma import ma
@@ -51,3 +53,30 @@ class UpdateProviderSchema(BaseSchema):
 
 
 UpdateProviderSchema = UpdateProviderSchema()
+
+
+class ProviderListSchema(BaseSchema):
+    page_number = fields.Int(required=True, load_only=True)
+    record_per_page = fields.Int(load_only=True)
+    name = fields.Str(load_only=True)
+
+    @post_load
+    def post_data(self, data, **kwargs):
+        try:
+            name = data.get("name", None)
+            page_number = int(data.get("page_number", 0))
+            record_per_page = int(data.get("record_per_page", 10))
+        except ValueError as e:
+            logging.error(e)
+            page_number = 0
+            record_per_page = 10
+            name = ""
+        filter_input = (
+            page_number,
+            record_per_page,
+            name
+        )
+        return filter_input
+
+
+provider_list_schema = ProviderListSchema()

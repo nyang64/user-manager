@@ -15,7 +15,7 @@ from schema.patient_schema import (
     patient_id_schema,
 )
 from schema.providers_roles_schema import ProvidersRolesSchema
-from schema.providers_schema import ProvidersSchema, UpdateProviderSchema
+from schema.providers_schema import ProvidersSchema, UpdateProviderSchema, provider_list_schema
 from schema.register_schema import RegistrationSchema
 from schema.report_schema import patient_reports_schema, report_id_schema
 from schema.user_schema import UserSchema
@@ -360,5 +360,29 @@ class ProviderManager:
             return {"message": "Update failed. Please check logs for details"}, http.client.BAD_REQUEST
 
         return {"message": "Sucessfully updated"}, http.client.OK
+
+    @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER, PROVIDER)
+    def get_providers_list(self, token):
+        """
+        :param :- page_number, record_per_page, name, external ID
+        :return filtered patient list
+        """
+        request_data = validate_request()
+        logging.debug(
+            "User: {} with role: {} - is requesting a list of patients".format(token["user_email"],
+                                                                               token["user_role"]))
+        filter_input = provider_list_schema.load(request_data)
+        providers, total = self.provider_obj.get_providers_list(*filter_input)
+
+        return (
+            {
+                "total": total,
+                "page_number": filter_input[0],
+                "record_per_page": filter_input[1],
+                "data": providers,
+                "status_code": http.client.OK,
+            },
+            http.client.OK,
+        )
 
 

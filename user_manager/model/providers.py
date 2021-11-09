@@ -37,6 +37,10 @@ class Providers(BaseModel):
         return cls.query.filter_by(user_id=_user_id).first()
 
     @classmethod
+    def find_by_facility_id(cls, _facility_id) -> "Providers":
+        return cls.query.filter_by(facility_id=_facility_id).all()
+
+    @classmethod
     def find_by_email(cls, email: str) -> "Providers":
         user_registration = UserRegister.find_by_email(email)
         user = Users.find_by_registration_id(user_registration.id)

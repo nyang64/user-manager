@@ -8,6 +8,7 @@ from blueprint.auth_blueprint import AuthenticationBlueprint
 from blueprint.device_blueprint import DeviceBlueprint
 from blueprint.patient_blueprint import PatientBluePrint
 from blueprint.provider_blueprint import ProviderBlueprint
+from blueprint.facilities_blueprint import FacilitiesBlueprint
 from blueprint.user_blueprint import UserBluePrint
 from config import get_connection_url, read_environ_value
 from db import db
@@ -70,6 +71,9 @@ app.register_blueprint(user_blueprint)
 
 provider_blueprint = ProviderBlueprint()
 app.register_blueprint(provider_blueprint)
+
+facilities_blueprint = FacilitiesBlueprint()
+app.register_blueprint(facilities_blueprint)
 
 patient_blueprint = PatientBluePrint()
 app.register_blueprint(patient_blueprint)

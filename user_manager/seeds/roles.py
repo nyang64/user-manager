@@ -2,6 +2,8 @@ from model.provider_role_types import ProviderRoleTypes
 from model.roles import Roles
 from seeds.helpers import print_message_details, message_details
 from schema.provider_role_types_schema import ProviderRoleTypesSchema
+from utils.constants import OUTPATIENT_PROVIDER, PRESCRIBING_PROVIDER, STUDY_COORDINATOR
+
 
 
 def seed():
@@ -12,16 +14,26 @@ def seed():
 def provider():
     existing_provider_roles = ProviderRoleTypes.all()
 
-    if len(existing_provider_roles) >= 2:
-        message_details["provider_roles"] += f"Provider roles not added because 2 already exist. "
-    else:
-        provider_roles = [{"name": "outpatient"}, {"name": "prescribing"}]
+    provider_roles = [{"name": OUTPATIENT_PROVIDER},
+            {"name": PRESCRIBING_PROVIDER},
+            {"name": STUDY_COORDINATOR}]
 
-        for role in provider_roles:
-            provider_role_type_schema = ProviderRoleTypesSchema()
-            provider_role = provider_role_type_schema.load(role)
-            provider_role.save_to_db()
-            message_details["provider_roles"] += f"Provider role: {role['name']} was added. "
+    # Check if status_type exists
+    if len(existing_provider_roles) > 0:
+        # Iterate through dictionary and see if exists
+        for item in provider_roles:
+            for key, value in item.items():
+                if not ProviderRoleTypes.find_by_name(_name=value):
+                    new_role_type = ProviderRoleTypes(name=value)
+                    new_role_type.save_to_db()
+                    message_details["Provider Role Type"] = "Provider Role Type was created"
+            message_details["Provider Role Type"] = "Nothing else was added some roles already exist. "
+    else:
+        for item in provider_roles:
+            for key, value in item.items():
+                status_type = ProviderRoleTypes(name=value)
+                status_type.save_to_db()
+                message_details["Provider Role types"] = "Role types was created"
 
     print_message_details()
 

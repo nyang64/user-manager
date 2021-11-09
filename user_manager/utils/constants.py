@@ -22,6 +22,12 @@ SUSPENDED = "SUSPENDED"
 ENROLLED = "ENROLLED"
 DISENROLLED = "DISENROLLED"
 
+# ----- Provider roles ------------
+OUTPATIENT_PROVIDER = "outpatient"
+PRESCRIBING_PROVIDER = "prescribing"
+STUDY_COORDINATOR = "studycoordinator"
+
+
 # -------------- Report --------------
 REPORT_BUCKET_NAME = read_environ_value(value, "REPORT_BUCKET_NAME")
 

@@ -69,28 +69,3 @@ class ProviderBlueprint(Blueprint):
             self.provider_Obj.update_uploaded_ts,
             methods=["POST"],
         )
-        """------------------------ Facility Endpoint -------------------------"""
-        self.add_url_rule(
-            "/add/facility",
-            "Add Facility",
-            self.provider_Obj.add_facility,
-            methods=["POST"],
-        )
-        self.add_url_rule(
-            "/facilities",
-            "List all facilities",
-            self.provider_Obj.get_facilities_list,
-            methods=["GET"]
-        )
-        self.add_url_rule(
-            "/facilities/update",
-            "Update a facility",
-            self.provider_Obj.update_facility,
-            methods=["PUT"]
-        )
-        self.add_url_rule(
-            "/facility/detail",
-            "Get a facility",
-            self.provider_Obj.get_facility,
-            methods=["GET"],
-        )

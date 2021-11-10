@@ -21,6 +21,18 @@ class FacilitiesBlueprint(Blueprint):
             self.facilities_obj.get_facilities_list,
             methods=["GET"]
         )
+
+        # Used by:
+        # patient management portal: add/edit patient
+        self.add_url_rule(
+            "/facilities_providers",
+            "List all facilities and providers",
+            self.facilities_obj.get_facilities_providers,
+            methods=["GET"]
+        )
+
+        # Used by:
+        # patient management portal: sites list
         self.add_url_rule(
             "/facilities/list",
             "Paginated list of facilities",

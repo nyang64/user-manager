@@ -146,3 +146,18 @@ class FacilitiesManager:
             },
             http.client.OK,
         )
+
+    @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER, PROVIDER)
+    def get_facilities_providers(self, token):
+        logging.debug(
+            "User: {} with role: {} - is requesting a list of facilities and providers".format(token["user_email"],
+                                                                                               token["user_role"]))
+        data = self.facility_service_obj.get_all_facilities_providers()
+        return (
+            {
+                "total": len(data),
+                "data": data,
+                "status_code": http.client.OK
+            },
+            http.client.OK,
+        )

@@ -7,6 +7,7 @@ from model.facilities import Facilities
 from model.patient import Patient
 from model.patients_devices import PatientsDevices
 from model.patients_patches import PatientsPatches
+from schema.patient_details_schema import PatientDetailsSchema
 from model.patients_providers import PatientsProviders
 from model.provider_role_types import ProviderRoleTypes
 from model.providers import Providers
@@ -23,6 +24,7 @@ from schema.patient_schema import (
 )
 from schema.patient_schema import patients_schema
 from schema.patients_devices_schema import PatientsDevicesSchema
+from schema.patient_details_schema import PatientDetails
 from schema.providers_schema import ProvidersSchema
 from schema.register_schema import RegistrationSchema
 from schema.user_schema import UserSchema
@@ -58,10 +60,15 @@ class PatientManager:
             request_params
         )
 
-        patient_id = self.patient_obj.register_patient(
-            register_params, user_params, patient_params
-        )
+        # check if the device is already assigned to a patient before registering the patient
+        device_in_use = False
+        if request_params.get("device_serial_number"):
+            device_in_use = PatientsDevices.device_in_use(request_params["device_serial_number"])
 
+        if device_in_use:
+            raise Exception("Device is already in use")
+
+        patient_id = self.patient_obj.register_patient(register_params, user_params, patient_params)
         send_patient_registration_email(
             user_params[0],
             register_params[0],
@@ -73,8 +80,8 @@ class PatientManager:
         if request_params.get("device_serial_number"):
             self.assign_first_device(patient_id, request_params["device_serial_number"])
 
-        if request_params.get("patches"):
-            self.assign_patches(patient_id, request_params["patches"])
+        if patient_params.get("patches") is not None:
+            self.assign_patches(patient_id, patient_params["patches"])
 
         patient_schema = PatientSchema()
         patient = Patient.find_by_id(patient_id)
@@ -96,12 +103,28 @@ class PatientManager:
 
     def assign_patches(self, patient_id, patches):
         patches_to_persist = []
-        for patch in patches:
-            patch_lot_number = patch["patch_lot_number"]
-            patient_patch = assign_patches_schema.load(
-                {"patch_lot_number": patch_lot_number, "patient_id": patient_id}
+
+        applied_patch_lot_number = patches["applied_patch_lot_number"]
+        if applied_patch_lot_number is not None and len(applied_patch_lot_number) > 0:
+            patient_patch_applied = assign_patches_schema.load(
+                {
+                    "patch_lot_number": applied_patch_lot_number,
+                    "patient_id": patient_id,
+                    "is_applied": True
+                }
             )
-            patches_to_persist.append(patient_patch)
+            patches_to_persist.append(patient_patch_applied)
+
+        unused_patch_lot_number = patches["unused_patch_lot_number"]
+        if unused_patch_lot_number is not None and len(unused_patch_lot_number) > 0:
+            patient_patch_unused = assign_patches_schema.load(
+                {
+                    "patch_lot_number": unused_patch_lot_number,
+                    "patient_id": patient_id,
+                    "is_applied": False
+                }
+            )
+            patches_to_persist.append(patient_patch_unused)
 
         return self.patient_obj.save_patient_patches(patches_to_persist)
 
@@ -192,17 +215,16 @@ class PatientManager:
 
     @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER, PROVIDER)
     def get_patient_details_by_id(self, token):
-        #TODO Add more logic to get all needed data
         patient_id = request.args.get("id")
         patient_data = Patient.find_by_id(patient_id)
         if patient_id is None:
             return {"message": "No Such Patient Exist"}, 404
+
+        details = PatientDetails.find_by_patient_id(patient_id)
+        details_json = PatientDetailsSchema().dump(details)
         patient_json = PatientSchema().dump(patient_data)
 
         # TODO: Write a single query to get all these data from the database in one call
-        user = Users.find_by_patient_id(patient_data.user_id)
-        registration = UserRegister.find_by_id(user.registration_id)
-
         # outpatient provider
         outpatient_role_id = ProviderRoleTypes.find_by_name(_name="outpatient").id
         outpatient_provider = PatientsProviders.find_by_patient_and_role_id(
@@ -218,9 +240,9 @@ class PatientManager:
         response = {
             "patient": {
                 "patient": patient_json,
-                "registration": RegistrationSchema().dump(registration),
                 "outpatient_provider": outpatient_provider.provider_id,
-                "prescribing_provider": prescribing_provider.provider_id
+                "prescribing_provider": prescribing_provider.provider_id,
+                "details": details_json
             }
         }
         return jsonify(response), 200

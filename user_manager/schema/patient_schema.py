@@ -4,9 +4,10 @@ from ma import ma
 from marshmallow import ValidationError, fields, post_load
 from model.patient import Patient
 from model.users import Users
+from model.patient_details import PatientDetails
 from schema.address_schema import AddressSchema
+from schema.patient_details_schema import PatientDetailsSchema
 from schema.base_schema import BaseSchema, validate_number
-from schema.patients_providers_schema import PatientsProviders
 from schema.patients_devices_schema import PatientsDevices, PatientsDevicesSchema
 from schema.patients_patches_schema import PatientsPatches, PatientsPatchesSchema
 from schema.user_schema import CreateUserSchema, UserSchema, UpdateUserSchema
@@ -51,14 +52,15 @@ class PatientSchema(ma.SQLAlchemyAutoSchema):
     user_id = ma.auto_field()
     devices = ma.List(ma.Nested(PatientsDevicesSchema))
     patches = ma.List(ma.Nested(PatientsPatchesSchema))
+    details = ma.Nested(PatientDetailsSchema)
     user = ma.Nested(UserSchema)
-
 
 class CreatePatientSchema(CreateUserSchema):
     permanent_address = fields.Nested(AddressSchema, required=False)
     shipping_address = fields.Nested(AddressSchema, required=False)
     emergency_contact_name = fields.Str(required=True, validate=must_not_blank)
     emergency_contact_number = fields.Str(required=True, validate=validate_number)
+    emergency_contact_relationship = fields.Str(required=False)
     date_of_birth = fields.Str(required=True, validate=must_not_blank)
     gender = fields.Str(required=True, validate=must_not_blank)
     prescribing_provider = fields.Int(required=True, validate=must_not_blank)
@@ -66,7 +68,22 @@ class CreatePatientSchema(CreateUserSchema):
     indication = fields.Str(required=True, validate=must_not_blank)
     device_serial_number = fields.Str(required=False)
     mobile_app_user = fields.Bool(required=False)
-    patches = fields.List(fields.Nested(PatientsPatchesSchema, required=False))
+
+    # Patient details. Can be grouped later
+    upper_patch_setting = fields.Str(required=False)
+    pa_setting_back = fields.Str(required=False)
+    shoulder_strap_back = fields.Str(required=False)
+    other_phone = fields.Str(required=False)
+    shoulder_strap_front = fields.Str(required=False)
+    pa_setting_front = fields.Str(required=False)
+    starter_kit_lot_number = fields.Str(required=True)
+    mobile_model = fields.Str(required=False)
+    mobile_os_version = fields.Str(required=False)
+    enrollment_notes = fields.Str(required=False)
+
+    #Patches
+    applied_patch_lot_number = fields.Str(required=False)
+    unused_patch_lot_number = fields.Str(required=False)
 
     @post_load
     def make_post_load_object(self, data, **kwargs):
@@ -75,6 +92,7 @@ class CreatePatientSchema(CreateUserSchema):
             "patient": {
                 "emergency_contact_name": data.get("emergency_contact_name"),
                 "emergency_contact_number": data.get("emergency_contact_number"),
+                "emergency_contact_relationship": data.get("emergency_contact_relationship"),
                 "date_of_birth": data.get("date_of_birth"),
                 "gender": data.get("gender"),
                 "indication": data.get("indication"),
@@ -87,7 +105,22 @@ class CreatePatientSchema(CreateUserSchema):
                 "outpatient_provider_id": data.get("outpatient_provider"),
             },
             "device": {"serial_number": data.get("device_serial_number")},
-            "patches": {"patches": data.get("patches")}
+            "patches": {
+                "applied_patch_lot_number": data.get("applied_patch_lot_number"),
+                "unused_patch_lot_number": data.get("unused_patch_lot_number")
+            },
+            "details": {
+                "upper_patch_setting": data.get("upper_patch_setting"),
+                "pa_setting_back": data.get("pa_setting_back"),
+                "shoulder_strap_back": data.get("shoulder_strap_back"),
+                "other_phone": data.get("other_phone"),
+                "shoulder_strap_front": data.get("shoulder_strap_front"),
+                "pa_setting_front": data.get("pa_setting_front"),
+                "starter_kit_lot_number": data.get("starter_kit_lot_number"),
+                "mobile_model": data.get("mobile_model"),
+                "mobile_os_version": data.get("mobile_os_version"),
+                "enrollment_notes": data.get("enrollment_notes")
+            }
         }
 
         return register, user, patient_details
@@ -104,6 +137,7 @@ class UpdatePatientSchema(BaseSchema):
     shipping_address = fields.Nested(AddressSchema, required=False)
     emergency_contact_name = fields.Str(required=True, validate=must_not_blank)
     emergency_contact_number = fields.Str(required=True, validate=validate_number)
+    emergency_contact_relationship = fields.Str(required=False)
     date_of_birth = fields.Str(required=True, validate=must_not_blank)
     gender = fields.Str(required=True, validate=must_not_blank)
     prescribing_provider = fields.Int(required=True, validate=must_not_blank)
@@ -111,12 +145,27 @@ class UpdatePatientSchema(BaseSchema):
     indication = fields.Str(required=True, validate=must_not_blank)
     device_serial_number = fields.Str(required=False)
     mobile_app_user = fields.Bool(required=False)
-    patches = fields.List(fields.Nested(PatientsPatchesSchema, required=False))
     email = fields.Str(required=False)
     first_name = fields.Str(required=True, validate=must_not_blank)
     last_name = fields.Str(required=True, validate=must_not_blank)
     phone_number = fields.Str(required=True, validate=must_not_blank)
     external_user_id = fields.Str(required=False)
+
+    # Patient details. Can be grouped later
+    upper_patch_setting = fields.Str(required=False)
+    pa_setting_back = fields.Str(required=False)
+    shoulder_strap_back = fields.Str(required=False)
+    other_phone = fields.Str(required=False)
+    shoulder_strap_front = fields.Str(required=False)
+    pa_setting_front = fields.Str(required=False)
+    starter_kit_lot_number = fields.Str(required=True)
+    mobile_model = fields.Str(required=False)
+    mobile_os_version = fields.Str(required=False)
+    enrollment_notes = fields.Str(required=False)
+
+    # Patches
+    applied_patch_lot_number = fields.Str(required=False)
+    unused_patch_lot_number = fields.Str(required=False)
 
     @post_load
     def make_post_load_object(self, data, **kwargs):
@@ -128,6 +177,7 @@ class UpdatePatientSchema(BaseSchema):
         email = data.get("email")
         patient = Patient(emergency_contact_name=data.get("emergency_contact_name"),
                           emergency_contact_number=data.get("emergency_contact_number"),
+                          emergency_contact_relationship=data.get("emergency_contact_relationship"),
                           date_of_birth=data.get("date_of_birth"),
                           gender=data.get("gender"),
                           indication=data.get("indication"),
@@ -141,7 +191,22 @@ class UpdatePatientSchema(BaseSchema):
                 "outpatient_provider_id": data.get("outpatient_provider"),
             },
             "device": {"serial_number": data.get("device_serial_number")},
-            "patches": {"patches": data.get("patches")}
+            "details": {
+                "upper_patch_setting": data.get("upper_patch_setting"),
+                "pa_setting_back": data.get("pa_setting_back"),
+                "shoulder_strap_back": data.get("shoulder_strap_back"),
+                "other_phone": data.get("other_phone"),
+                "shoulder_strap_front": data.get("shoulder_strap_front"),
+                "pa_setting_front": data.get("pa_setting_front"),
+                "starter_kit_lot_number": data.get("starter_kit_lot_number"),
+                "mobile_model": data.get("mobile_model"),
+                "mobile_os_version": data.get("mobile_os_version"),
+                "enrollment_notes": data.get("enrollment_notes")
+            },
+            "patches": {
+                "applied_patch_lot_number": data.get("applied_patch_lot_number"),
+                "unused_patch_lot_number": data.get("unused_patch_lot_number")
+            }
         }
         return user, email, patient, patient_details
 

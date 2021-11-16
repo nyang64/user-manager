@@ -35,10 +35,10 @@ class CreateUserSchema(RegisterSchema):
         register = super().make_post_load_object(data)
         first_name = data.get("first_name")
         last_name = data.get("last_name")
-        phone_number = data.get("phone_number")
+        patient_mobile = data.get("phone_number")
         role_name = data.get("role_name")
         external_user_id = data.get("external_user_id")
-        user = (first_name, last_name, phone_number, role_name, external_user_id)
+        user = (first_name, last_name, patient_mobile, role_name, external_user_id)
         return register, user
 
 

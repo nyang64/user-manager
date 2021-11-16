@@ -58,7 +58,8 @@ class TestPatientServices(TestCase):
     @mock.patch("services.patient_services.PatientServices.assign_providers")
     @mock.patch("services.patient_services.PatientServices.save_address", return_value="1")
     @mock.patch("services.patient_services.PatientServices.save_patient", return_value="5")
-    def test_register_patient_success(self, mock_pat, mock_addr, mock_prov, mock_enroll, mock_user_svc):
+    @mock.patch("services.patient_services.PatientServices._save_patient_details")
+    def test_register_patient_success(self, mock_details, mock_pat, mock_addr, mock_prov, mock_enroll, mock_user_svc):
         register = UserRegister(email="123@es.com")
         user = Users(first_name="123")
         patient_details = {
@@ -75,6 +76,18 @@ class TestPatientServices(TestCase):
             "providers": {
                 "outpatient_provider_id": 5,
                 "prescribing_provider_id": 3
+            },
+            "details": {
+                "shoulder_strap_back": "14124",
+                "shoulder_strap_front": "124124",
+                "starter_kit_lot_number": "123456789",
+                "upper_patch_setting": "124",
+                "enrollment_notes": "Test",
+                "mobile_model": "",
+                "mobile_os_version": "",
+                "other_phone": "",
+                "pa_setting_back": "",
+                "pa_setting_front": ""
             }
         }
         app = create_test_app()
@@ -87,7 +100,8 @@ class TestPatientServices(TestCase):
     @mock.patch("services.patient_services.PatientServices.assign_providers")
     @mock.patch("services.patient_services.PatientServices.save_address", return_value="1")
     @mock.patch("services.patient_services.PatientServices.save_patient", return_value="5")
-    def test_register_patient_success_no_shipping_key(self, mock_pat, mock_addr, mock_prov, mock_enroll, mock_user_svc):
+    @mock.patch("services.patient_services.PatientServices._save_patient_details")
+    def test_register_patient_success_no_shipping_key(self, mock_det, mock_pat, mock_addr, mock_prov, mock_enroll, mock_user_svc):
         register = UserRegister(email="123@es.com")
         user = Users(first_name="123")
         patient_details = {
@@ -100,6 +114,9 @@ class TestPatientServices(TestCase):
             "providers": {
                 "outpatient_provider_id": 5,
                 "prescribing_provider_id": 3
+            },
+            "details": {
+                "shoulder_strap_back": "1212121"
             }
         }
         app = create_test_app()
@@ -112,7 +129,8 @@ class TestPatientServices(TestCase):
     @mock.patch("services.patient_services.PatientServices.assign_providers")
     @mock.patch("services.patient_services.PatientServices.save_address", return_value="1")
     @mock.patch("services.patient_services.PatientServices.save_patient", return_value="5")
-    def test_register_patient_success_with_shipping_key(self, mock_pat, mock_addr, mock_prov, mock_enroll, mock_user_svc):
+    @mock.patch("services.patient_services.PatientServices._save_patient_details")
+    def test_register_patient_success_with_shipping_key(self, mock_det, mock_pat, mock_addr, mock_prov, mock_enroll, mock_user_svc):
         register = UserRegister(email="123@es.com")
         user = Users(first_name="123")
         patient_details = {
@@ -128,6 +146,9 @@ class TestPatientServices(TestCase):
             "providers": {
                 "outpatient_provider_id": 5,
                 "prescribing_provider_id": 3
+            },
+            "details": {
+                "shoulder_strap_back": "1212121"
             }
         }
         app = create_test_app()

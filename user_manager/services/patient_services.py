@@ -7,6 +7,7 @@ from model.facilities import Facilities
 from model.therapy_reports import TherapyReport
 from model.patient import Patient
 from model.patients_devices import PatientsDevices
+from model.patients_patches import  PatientsPatches
 from model.provider_role_types import ProviderRoleTypes
 from model.user_registration import UserRegister
 from model.users import Users
@@ -15,9 +16,11 @@ from model.user_status_type import UserStatusType
 from model.address import Address
 from model.patients_providers import PatientsProviders
 from model.providers import Providers
+from model.patient_details import PatientDetails
 from model.newsletters import Newsletters
 from schema.newsletter_schema import NewsletterSchema
 from schema.patients_providers_schema import PatientsProvidersSchema
+from schema.patient_schema import assign_patches_schema
 from services.auth_services import AuthServices
 from services.device_manager_api import DeviceManagerApi
 from services.repository.db_repositories import DbRepository
@@ -69,6 +72,8 @@ class PatientServices(DbRepository):
             patient_details["patient"]["shipping_address_id"] = patient_details["patient"]["permanent_address_id"]
 
         patient_id = self.save_patient(patient_details["patient"])
+
+        self._save_patient_details(patient_id, patient_details["details"])
 
         self.assign_providers(
             patient_id,
@@ -127,6 +132,12 @@ class PatientServices(DbRepository):
         self.commit_db()
 
         return patient.id
+
+    def _save_patient_details(self, patient_id, patient_details):
+        patient_details = PatientDetails(**patient_details)
+        patient_details.patient_id = patient_id
+        self.flush_db(patient_details)
+        self.commit_db()
 
     def save_address(self, address):
         self.flush_db(address)
@@ -256,6 +267,7 @@ class PatientServices(DbRepository):
             - address:
             - patient-providers:
             - patient-patches:
+            - patient-details
 
             If the registration email changes (Security):
                 - Update database with the new email.
@@ -311,7 +323,6 @@ class PatientServices(DbRepository):
             # 5. Check address
             session = self.__update_patient_address(session, patient, patient_data_from_db)
 
-
             # 6. Check on patient and provider association
             prescribing_role = ProviderRoleTypes.find_by_name("prescribing")
             outpatient_role = ProviderRoleTypes.find_by_name("outpatient")
@@ -327,6 +338,12 @@ class PatientServices(DbRepository):
                 _role_id=outpatient_role.id)
             outpatient_provider_association.provider_id = patient_details["providers"]["outpatient_provider_id"]
             session.add(outpatient_provider_association)
+
+            # 7. Update Patient details table
+            session = self.__update_patient_details(session, patient_details["details"], patient_data_from_db.id)
+
+            # 8. Update patients and patches
+            session = self.__update_patch_details(session, patient_details["patches"], patient_data_from_db.id)
 
             session.commit()
         except Exception as ex:
@@ -436,6 +453,64 @@ class PatientServices(DbRepository):
 
         return session
 
+    def __update_patient_details(self, session, patient_details, patient_id):
+        details_in_db = PatientDetails.find_by_patient_id(patient_id)
+        details_in_db.update(**patient_details)
+        session.add(details_in_db)
+        return session
+
+    def __update_patch_details(self,  session, patches, patient_id):
+        applied_patch_lot_number = patches["applied_patch_lot_number"]
+        unused_patch_lot_number = patches["unused_patch_lot_number"]
+
+        # check if the patch numbers were empty and return if no information was entered
+        if (applied_patch_lot_number is None or len(applied_patch_lot_number) == 0) and \
+                (unused_patch_lot_number is None or len(unused_patch_lot_number) == 0):
+            return session
+
+        updated_patches = []
+        patches_in_db = PatientsPatches.find_by_patient_id(patient_id)
+        if patches_in_db is None or len(patches_in_db) == 0:
+            updated_patches = self.assign_patches(patient_id, patches)
+        else:
+            for patch in patches_in_db:
+                if patch.is_applied is True:
+                    patch.patch_lot_number = applied_patch_lot_number
+                else:
+                    patch.patch_lot_number = unused_patch_lot_number
+                updated_patches.append(patch)
+        for item in updated_patches:
+            session.add(item)
+        return session
+
+
+    def assign_patches(self, patient_id, patches):
+        patches_to_persist = []
+
+        applied_patch_lot_number = patches["applied_patch_lot_number"]
+        if applied_patch_lot_number is not None and len(applied_patch_lot_number) > 0:
+            patient_patch_applied = assign_patches_schema.load(
+                {
+                    "patch_lot_number": applied_patch_lot_number,
+                    "patient_id": patient_id,
+                    "is_applied": True
+                }
+            )
+            patches_to_persist.append(patient_patch_applied)
+
+        unused_patch_lot_number = patches["unused_patch_lot_number"]
+        if unused_patch_lot_number is not None and len(unused_patch_lot_number) > 0:
+            patient_patch_unused = assign_patches_schema.load(
+                {
+                    "patch_lot_number": unused_patch_lot_number,
+                    "patient_id": patient_id,
+                    "is_applied": False
+                }
+            )
+            patches_to_persist.append(patient_patch_unused)
+
+        return patches_to_persist
+
     def get_enrollment_status(self, user_data) -> bool:
         patient = Patient.find_by_user_id(user_data.id)
         if patient:
@@ -539,3 +614,33 @@ class PatientServices(DbRepository):
         return base_query
 
 
+    """
+    """
+    def get_patient_details(self, patient_id):
+
+        patient_query = (db.session.query(Patient)).distinct().filter(Patient.id == patient_id)
+
+        base_query = (
+            patient_query.join(Users, Users.id == Patient.user_id)
+                .join(UserRegister, UserRegister.id == Users.registration_id)
+                .join(UserStatus, Users.id == UserStatus.user_id, isouter=True)
+                .join(UserStatusType, UserStatus.status_id == UserStatusType.id, isouter=True)
+                .join(PatientsProviders, PatientsProviders.patient_id == Patient.id, isouter=True)
+                .join(PatientDetails, PatientDetails.patient_id == Patient.id, isouter=True)
+                .join(PatientsDevices, PatientsDevices.patient_id == Patient.id, isouter=True)
+                .join(PatientsPatches, PatientsPatches.patient_id == patient_id, isouter=True)
+        )
+
+        result = base_query.with_entities(
+            Users.external_user_id,
+            Users.first_name,
+            Users.last_name,
+            UserStatusType.name,
+            Patient.enrolled_date,
+            PatientsProviders.provider_id,
+            Patient.id,
+            Users.id
+
+        ).all()
+        print(base_query)
+        return None

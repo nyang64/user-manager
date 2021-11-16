@@ -9,6 +9,9 @@ class PatientsPatches(BaseModel):
     patch_lot_number = db.Column(
         "patch_lot_number", db.String(20), nullable=False
     )
+    is_applied = db.Column(
+        "is_applied", db.Boolean, default=False
+    )
     patient_id = db.Column(
         "patient_id",
         db.Integer,
@@ -28,5 +31,5 @@ class PatientsPatches(BaseModel):
         return cls.query.all()
 
     @classmethod
-    def find_by_patient_id(cls, _patient_id) -> "PatientsPatches":
-        return cls.query.filter_by(id=_patient_id).first()
+    def find_by_patient_id(cls, _patient_id):
+        return cls.query.filter_by(patient_id=_patient_id).all()

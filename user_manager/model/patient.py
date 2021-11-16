@@ -17,6 +17,9 @@ class Patient(BaseModel):
     emergency_contact_number = db.Column(
         "emergency_contact_phone", db.String(12), nullable=False
     )
+    emergency_contact_relationship = db.Column(
+        "emergency_contact_relationship", db.String(30), nullable=True
+    )
     gender = db.Column("gender", db.String(12))
     date_of_birth = db.Column("date_of_birth", db.String(30), nullable=False)
     enrolled_date = db.Column("enrolled_at", db.DateTime, default=db.func.now())
@@ -48,6 +51,9 @@ class Patient(BaseModel):
     )
     patches = db.relationship("PatientsPatches", backref="patients_id",
                               uselist=True, viewonly=True)
+
+    patient_details = db.relationship("PatientDetails", backref="patients_id",
+                                      uselist=True, viewonly=True)
 
     @classmethod
     def all(cls) -> "Patient":

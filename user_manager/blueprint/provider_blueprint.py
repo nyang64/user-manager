@@ -10,7 +10,7 @@ class ProviderBlueprint(Blueprint):
 
     def _add_routes(self):
         self.add_url_rule(
-            "/provider/register",
+            "/providers",
             "Register Provider",
             self.provider_Obj.register_provider,
             methods=["POST"],
@@ -28,7 +28,7 @@ class ProviderBlueprint(Blueprint):
             methods=["DELETE"],
         )
         self.add_url_rule(
-            "/provider/update",
+            "/providers",
             "Update the Provider",
             self.provider_Obj.update_provider,
             methods=["PUT"],

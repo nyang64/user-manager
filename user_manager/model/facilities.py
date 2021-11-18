@@ -19,7 +19,7 @@ class Facilities(BaseModel):
     on_call_phone = db.Column("on_call_phone", db.String(12), nullable=False)
     name = db.Column("name", db.String(100))
     is_active = db.Column(
-        "is_active", db.Boolean, nullable=True, default=True
+        "is_active", db.Boolean, nullable=False, default=True
     )
 
     @classmethod

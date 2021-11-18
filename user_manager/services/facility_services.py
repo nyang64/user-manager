@@ -176,6 +176,7 @@ class FacilityService(DbRepository):
                 "num_of_patients",
                 "study_coordinator",
                 "facility_id",
+                "is_active"
             ),
         )
 
@@ -194,6 +195,7 @@ class FacilityService(DbRepository):
             Address.state,
             Address.postal_code,
             Facilities.id,
+            Facilities.is_active
         )
 
         if external_id is not None and len(external_id) > 0:
@@ -243,6 +245,7 @@ class FacilityService(DbRepository):
                 phone=data[2],
                 address=data[3] + " " + data[4] + ", " + data[5] + " " + data[6],
                 facility_id=data[7],
+                is_active=data[8],
                 num_of_patients=patients_count,
                 study_coordinator=study_coordinator_name,
             )
@@ -268,6 +271,60 @@ class FacilityService(DbRepository):
             data_list.append(data)
 
         return data_list
+
+
+    def get_facility_and_providers(self, facility_id):
+        '''
+        return facility details and outpatient provider along with the site coordinator information
+        '''
+
+        facility = Facilities.find_by_id(_id=facility_id)
+        if facility is None:
+            return None
+
+        address = Address.find_by_id(facility.address_id)
+
+        facility_details = {
+            "id": facility.id,
+            "name": facility.name,
+            "on_call_phone": facility.on_call_phone,
+            "external_id": facility.external_facility_id,
+            "address_line_1": address.street_address_1,
+            "address_line_2": address.street_address_2,
+            "city": address.city,
+            "state": address.state,
+            "country": address.country,
+            "zipcode": address.postal_code,
+        }
+
+        study_coordinator, outpatient_providers, prescribing_providers = \
+            self.__get_all_providers_for_site(facility.id)
+
+        if study_coordinator is not None and len(study_coordinator) > 0:
+            prov_json = {
+                "first_name": study_coordinator[0].user.first_name,
+                "last_name": study_coordinator[0].user.last_name,
+                "id": study_coordinator[0].id,
+                "external_id": study_coordinator[0].user.external_user_id,
+                "email": study_coordinator[0].user.registration.email,
+                "phone": study_coordinator[0].user.phone_number,
+                "role": STUDY_COORDINATOR
+            }
+            facility_details["study_coordinator"] = prov_json
+
+        if outpatient_providers is not None and len(outpatient_providers) > 0:
+            prov_json = {
+                "first_name": outpatient_providers[0].user.first_name,
+                "last_name": outpatient_providers[0].user.last_name,
+                "id": outpatient_providers[0].id,
+                "external_id": outpatient_providers[0].user.external_user_id,
+                "email": outpatient_providers[0].user.registration.email,
+                "phone": outpatient_providers[0].user.phone_number,
+                "role": OUTPATIENT_PROVIDER
+            }
+            facility_details["site_investigator"] = prov_json
+
+        return facility_details
 
 
     def __update_address(self, address_from_db, new_address):
@@ -343,7 +400,6 @@ class FacilityService(DbRepository):
                     _provider_id=provider.id
                 )
                 if study_coordinator_role_id == provider_role[0].provider_role_id:
-                    study_coordinator_name = provider.user.first_name + " " + provider.user.last_name
                     study_coordinator.append(provider)
 
                 if outpatient_role_id ==  provider_role[0].provider_role_id:
@@ -358,14 +414,15 @@ class FacilityService(DbRepository):
     def __build_facilities_provider_obj(self, facility, study_coordinator,
                                         outpatient_providers, prescribing_providers):
         providers = []
-        for provider in prescribing_providers:
-            prov_json = {
-                "name": provider.user.first_name + " " + provider.user.last_name,
-                "id": provider.id,
-                "email": provider.user.registration.email,
-                "phone": provider.user.phone_number
-            }
-            providers.append(prov_json)
+        if prescribing_providers is not None and len(prescribing_providers) > 0:
+            for provider in prescribing_providers:
+                prov_json = {
+                    "name": provider.user.first_name + " " + provider.user.last_name,
+                    "id": provider.id,
+                    "email": provider.user.registration.email,
+                    "phone": provider.user.phone_number
+                }
+                providers.append(prov_json)
 
         pi_data = {}
         if len(outpatient_providers) > 0:
@@ -381,6 +438,7 @@ class FacilityService(DbRepository):
         data = {
             "site_name" : facility.name,
             "site_id": facility.id,
+            "is_active": facility.is_active,
             "external_id": facility.external_facility_id,
             "principal_investigator": pi_data,
             "study_coordinator": sc_data,

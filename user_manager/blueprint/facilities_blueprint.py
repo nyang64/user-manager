@@ -51,3 +51,12 @@ class FacilitiesBlueprint(Blueprint):
             self.facilities_obj.get_facility,
             methods=["GET"],
         )
+
+        # Used by:
+        # patient management portal: view/edit facilities
+        self.add_url_rule(
+            "/facilities/facility_providers",
+            "Get facility details along with outpatient provider and site coordinators",
+            self.facilities_obj.get_facility_and_providers,
+            methods=["GET"]
+        )

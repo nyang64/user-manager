@@ -533,6 +533,7 @@ class PatientServices(DbRepository):
                 "enrollment_status"
             )
         )
+       
         base_query = self._base_query(name, external_id)
         base_query = base_query.with_entities(
             Users.external_user_id,
@@ -550,9 +551,12 @@ class PatientServices(DbRepository):
         query_data = []
         lists = []
         try:
-            query_data = (
-                    filter_query.order_by(Users.first_name).paginate(page_number + 1, record_per_page).items
-            )
+            if record_per_page == 0 and page_number == 0:
+                query_data = (filter_query.order_by(Users.first_name)).all()
+            else:
+                query_data = (
+                        filter_query.order_by(Users.first_name).paginate(page_number + 1, record_per_page).items
+                )
         except Exception as e:
             logging.exception(e)
 

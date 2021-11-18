@@ -1,4 +1,5 @@
 import http
+import json
 import logging
 from flask import jsonify, request
 
@@ -156,6 +157,23 @@ class FacilitiesManager:
         return (
             {
                 "total": len(data),
+                "data": data,
+                "status_code": http.client.OK
+            },
+            http.client.OK,
+        )
+
+    @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER, PROVIDER)
+    def get_facility_and_providers(self, token):
+        logging.debug(
+            "User: {} with role: {} - is requesting details of the facility".format(token["user_email"],
+                                                                                               token["user_role"]))
+        request_data = request.args
+        facility_id = request_data["id"]
+
+        data = self.facility_service_obj.get_facility_and_providers(facility_id)
+        return (
+            {
                 "data": data,
                 "status_code": http.client.OK
             },

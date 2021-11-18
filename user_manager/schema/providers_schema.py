@@ -39,7 +39,7 @@ class UpdateProviderSchema(BaseSchema):
     external_user_id = fields.Str(required=False)
     phone_number = fields.Str(required=False)
     email = fields.Str(required=False)
-    facility_id = fields.Str(required=False)
+    facility_id = fields.Int(required=False)
 
     @post_load
     def load_data(self, data, **kwargs):

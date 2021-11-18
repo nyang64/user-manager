@@ -120,13 +120,24 @@ class ProviderManager:
 
     @require_user_token(ADMIN, PROVIDER)
     def get_provider_by_id(self, decrypt):
-        provider_id = request.args.get("provider_id")
-        provider_data = Providers.find_by_id(provider_id)
-        if provider_data is None:
+        provider_id = request.args.get("id")
+        provider = Providers.find_by_id(provider_id)
+        if provider is None:
             return {"message": "No Such Provider Exist"}, 404
-        provider_data_json = provider_data.__dict__
-        del provider_data_json["_sa_instance_state"]
-        return {"message": "Users Found", "Data": [provider_data_json]}, 200
+        user = Users.find_by_id(provider.user_id)
+        facility = Facilities.find_by_id(provider.facility_id)
+        registration = UserRegister.find_by_id(user.registration_id)
+        provider_dict = {
+            "id": provider.id,
+            "external_id": user.external_user_id,
+            "facility_id": provider.facility_id,
+            "facility_name": facility.name,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "phone_number": user.phone_number,
+            "email": registration.email,
+        }
+        return {"Data": [provider_dict]}, 200
 
     @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER, PROVIDER)
     def get_providers(self, decrypt):

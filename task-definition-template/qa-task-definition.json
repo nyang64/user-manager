@@ -124,8 +124,16 @@
           "value": "es-email-newsletter"
         },
         {
+          "name": "MATERIAL_REQUEST_S3_BUCKET",
+          "value": "qa-product-requests"
+        },
+        {
           "name": "SURVEY_LINK",
           "value": ""
+        },
+        {
+          "name": "CUSTOMER_SERVICE_EMAIL",
+          "value": "sw-eng@elementsci.com"
         }
       ],
       "secrets": [

@@ -7,7 +7,7 @@ from model.facilities import Facilities
 from model.therapy_reports import TherapyReport
 from model.patient import Patient
 from model.patients_devices import PatientsDevices
-from model.patients_patches import  PatientsPatches
+from model.patients_patches import PatientsPatches
 from model.provider_role_types import ProviderRoleTypes
 from model.user_registration import UserRegister
 from model.users import Users
@@ -25,8 +25,8 @@ from services.auth_services import AuthServices
 from services.device_manager_api import DeviceManagerApi
 from services.repository.db_repositories import DbRepository
 from services.user_services import UserServices
-from utils.constants import ASSIGNED, AVAILABLE, INACTIVE
-from werkzeug.exceptions import Conflict, InternalServerError, NotAcceptable, NotFound
+from utils.constants import ASSIGNED, INACTIVE, PRESCRIBING_PROVIDER
+from werkzeug.exceptions import Conflict, InternalServerError, NotFound
 
 from utils.common import generate_random_password, encPass
 from utils.send_mail import send_patient_registration_email
@@ -85,7 +85,6 @@ class PatientServices(DbRepository):
 
         return patient_id
 
-
     def enroll_newsletter(self, user_id):
         user_newsletter_schema = NewsletterSchema()
         user_newsletter = user_newsletter_schema.load(
@@ -98,7 +97,7 @@ class PatientServices(DbRepository):
         self.commit_db()
 
     def assign_providers(
-        self, patient_id, outpatient_provider_id, prescribing_provider_id
+            self, patient_id, outpatient_provider_id, prescribing_provider_id
     ):
         prescribing_role = ProviderRoleTypes.find_by_name("prescribing")
         outpatient_role = ProviderRoleTypes.find_by_name("outpatient")
@@ -148,8 +147,8 @@ class PatientServices(DbRepository):
     def count_device_assigned(self, patient_id):
         devices = (
             db.session.query(PatientsDevices.device_serial_number)
-            .filter(PatientsDevices.patient_id == patient_id)
-            .all()
+                .filter(PatientsDevices.patient_id == patient_id)
+                .all()
         )
 
         assigned_count = len(devices)
@@ -236,16 +235,16 @@ class PatientServices(DbRepository):
 
         serial_numbers_query = (
             db.session.query(Users)
-            .join(
+                .join(
                 UserRegister,
                 and_(
                     UserRegister.id == Users.registration_id,
                     UserRegister.email == token.get("user_email"),
                 ),
             )
-            .join(Patient, Users.id == Patient.user_id)
-            .join(PatientsDevices, Patient.id == PatientsDevices.patient_id)
-            .with_entities(PatientsDevices.device_serial_number, Users.id)
+                .join(Patient, Users.id == Patient.user_id)
+                .join(PatientsDevices, Patient.id == PatientsDevices.patient_id)
+                .with_entities(PatientsDevices.device_serial_number, Users.id)
         )
         device_serial_numbers = serial_numbers_query.filter_by(is_active=True).all()
         devices = []
@@ -328,8 +327,8 @@ class PatientServices(DbRepository):
             outpatient_role = ProviderRoleTypes.find_by_name("outpatient")
 
             prescribing_provider_association = PatientsProviders.find_by_patient_and_role_id(
-                                                    _patient_id=patient_data_from_db.id,
-                                                    _role_id=prescribing_role.id)
+                _patient_id=patient_data_from_db.id,
+                _role_id=prescribing_role.id)
             prescribing_provider_association.provider_id = patient_details["providers"]["prescribing_provider_id"]
             session.add(prescribing_provider_association)
 
@@ -375,7 +374,7 @@ class PatientServices(DbRepository):
             user_from_db.first_name = user_from_req.first_name
             updated = True
 
-        if user_from_db.last_name !=  user_from_req.last_name:
+        if user_from_db.last_name != user_from_req.last_name:
             user_from_db.last_name = user_from_req.last_name
             updated = True
 
@@ -459,7 +458,7 @@ class PatientServices(DbRepository):
         session.add(details_in_db)
         return session
 
-    def __update_patch_details(self,  session, patches, patient_id):
+    def __update_patch_details(self, session, patches, patient_id):
         applied_patch_lot_number = patches["applied_patch_lot_number"]
         unused_patch_lot_number = patches["unused_patch_lot_number"]
 
@@ -482,7 +481,6 @@ class PatientServices(DbRepository):
         for item in updated_patches:
             session.add(item)
         return session
-
 
     def assign_patches(self, patient_id, patches):
         patches_to_persist = []
@@ -519,7 +517,7 @@ class PatientServices(DbRepository):
 
         return True
 
-    def get_patients_list(self, page_number, record_per_page, name, external_id):
+    def get_patients_list(self, page_number, record_per_page, name, external_id, facility_id, provider_id, status):
         patient_list = namedtuple(
             "PatientList",
             (
@@ -533,8 +531,8 @@ class PatientServices(DbRepository):
                 "enrollment_status"
             )
         )
-       
-        base_query = self._base_query(name, external_id)
+
+        base_query = self._base_query()
         base_query = base_query.with_entities(
             Users.external_user_id,
             Users.first_name,
@@ -546,66 +544,77 @@ class PatientServices(DbRepository):
             Patient.id
         )
 
-        filter_query = self._filter_query(base_query, name, external_id)
+        filter_query = self._filter_query(base_query, name, external_id, status)
         data_count = filter_query.count()
         query_data = []
         lists = []
+
         try:
             if record_per_page == 0 and page_number == 0:
-                query_data = (filter_query.order_by(Users.first_name)).all()
+                query_data = (filter_query.order_by(Users.id, Users.first_name)).all()
             else:
                 query_data = (
-                        filter_query.order_by(Users.first_name).paginate(page_number + 1, record_per_page).items
+                    filter_query.order_by(Users.id, Users.first_name).
+                        paginate(page_number + 1, record_per_page).items
                 )
         except Exception as e:
             logging.exception(e)
 
         # For each of the patients get the prescribing providers and facility name
         # There will be only one facility associated with a provider
-        for data in query_data:
-            provider_facility = db.session.query(Users, Facilities)\
-                    .join(Providers, Providers.user_id == Users.id)\
-                    .join(Facilities, Providers.facility_id == Facilities.id)\
+        if query_data is not None and len(query_data) > 0:
+            for data in query_data:
+                provider_facility = db.session.query(Users, Facilities, Providers) \
+                    .join(Providers, Providers.user_id == Users.id) \
+                    .join(Facilities, Providers.facility_id == Facilities.id) \
                     .filter(Providers.id == data[6]).all()
-            provider = provider_facility[0][0]
-            facility = provider_facility[0][1]
 
-            patient_data = patient_list(
-                name=data[1] + " " + data[2],
-                external_id=data[0],
-                therapy_date=data[5].strftime("%d-%b-%Y") if data[5] is not None else None,
-                enrolled_on=data[4].strftime("%d-%b-%Y"),
-                provider_name=provider.first_name + " " + provider.last_name,
-                site=facility.name,
-                patient_id=data[7],
-                enrollment_status=data[3]
-            )
+                user = provider_facility[0][0]
+                facility = provider_facility[0][1]
+                provider = provider_facility[0][2]
 
-            lists.append(patient_data._asdict())
+                add_to_list = True
+
+                if 0 < facility_id != facility.id:
+                    add_to_list = False
+
+                if 0 < provider_id != provider.id:
+                    add_to_list = False
+
+                if add_to_list:
+                    patient_data = patient_list(
+                        name=data[1] + " " + data[2],
+                        external_id=data[0],
+                        therapy_date=data[5].strftime("%d-%b-%Y") if data[5] is not None else None,
+                        enrolled_on=data[4].strftime("%d-%b-%Y"),
+                        provider_name=user.first_name + " " + user.last_name,
+                        site=facility.name,
+                        patient_id=data[7],
+                        enrollment_status=data[3]
+                    )
+
+                    lists.append(patient_data._asdict())
 
         return lists, data_count
 
-
-    def _base_query(self, name, id):
+    def _base_query(self):
         """
         :return := Return the base query for patient list
         """
         patient_query = (db.session.query(Patient))
 
         base_query = (
-            patient_query.join(Users, Users.id == Patient.user_id)
-            .join(UserRegister, UserRegister.id == Users.registration_id)
-            .join(UserStatus, Users.id == UserStatus.user_id, isouter=True)
-            .join(
-                UserStatusType, UserStatus.status_id == UserStatusType.id, isouter=True,
-            )
-            .join(PatientsProviders, PatientsProviders.patient_id == Patient.id, isouter=True)
-            .join(TherapyReport, TherapyReport.patient_id == Patient.id, isouter=True)
+            patient_query.join(Users, Users.id == Patient.user_id).distinct(Users.id)
+                .join(UserRegister, UserRegister.id == Users.registration_id)
+                .join(UserStatus, Users.id == UserStatus.user_id, isouter=True)
+                .join(UserStatusType, UserStatus.status_id == UserStatusType.id, isouter=True)
+                .join(PatientsProviders, PatientsProviders.patient_id == Patient.id, isouter=True)
+                .join(TherapyReport, TherapyReport.patient_id == Patient.id, isouter=True)
         )
 
         return base_query
 
-    def _filter_query(self, base_query, name, external_id):
+    def _filter_query(self, base_query, name, external_id, status):
 
         if external_id is not None and len(external_id) > 0:
             base_query = base_query.filter(Users.external_user_id == external_id)
@@ -613,13 +622,17 @@ class PatientServices(DbRepository):
         if name is not None and len(name) > 0:
             base_query = base_query.filter(Users.first_name.ilike(name) | Users.last_name.ilike(name))
 
+        if status is not None and len(status) > 0:
+            base_query = base_query.filter(UserStatusType.name.ilike(status))
+
         base_query = base_query.filter(PatientsProviders.provider_role_id ==
-                                       ProviderRoleTypes.find_by_name("prescribing").id)
+                                       ProviderRoleTypes.find_by_name(PRESCRIBING_PROVIDER).id)
+
         return base_query
 
+    """
+    """
 
-    """
-    """
     def get_patient_details(self, patient_id):
 
         patient_query = (db.session.query(Patient)).distinct().filter(Patient.id == patient_id)

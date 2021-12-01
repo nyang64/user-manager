@@ -41,7 +41,7 @@ class PatientManager:
     def __init__(self):
         self.patient_obj = PatientServices()
 
-    @require_user_token(ADMIN, STUDY_MANAGER, CUSTOMER_SERVICE)
+    @require_user_token(ADMIN, STUDY_MANAGER, CUSTOMER_SERVICE, PROVIDER)
     def create_patient(self, token):
         from utils.send_mail import send_patient_registration_email
 
@@ -128,7 +128,7 @@ class PatientManager:
 
         return self.patient_obj.save_patient_patches(patches_to_persist)
 
-    @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER)
+    @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER, PROVIDER)
     def update_patient(self, token):
         patient_id = request.args.get("id")
         if patient_id is None:
@@ -148,7 +148,7 @@ class PatientManager:
 
         return {"message": "Successfully updated"}, http.client.OK
 
-    @require_user_token(ADMIN, PROVIDER)
+    @require_user_token(ADMIN, PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER)
     def delete_patient(self, token):
         patient_id = request.args.get("id")
         if patient_id is None:
@@ -156,7 +156,7 @@ class PatientManager:
         self.patient_obj.delete_patient_data(patient_id)
         return {"message": "Patient deleted"}, http.client.OK
 
-    @require_user_token(ADMIN, PROVIDER)
+    @require_user_token(ADMIN, PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER)
     def assign_device(self, decrypt):
         request_data = validate_request()
         print(request_data)
@@ -180,7 +180,7 @@ class PatientManager:
     @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER, PROVIDER)
     def patients_list(self, token):
         """
-        :param :- page_number, record_per_page, name, external ID
+        :param :- page_number, record_per_page, name, external ID, site id, provider id, status
         :return filtered patient list
         """
         request_data = validate_request()

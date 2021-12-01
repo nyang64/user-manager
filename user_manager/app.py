@@ -9,6 +9,7 @@ from blueprint.device_blueprint import DeviceBlueprint
 from blueprint.patient_blueprint import PatientBluePrint
 from blueprint.provider_blueprint import ProviderBlueprint
 from blueprint.facilities_blueprint import FacilitiesBlueprint
+from blueprint.materials_blueprint import MaterialsBlueprint
 from blueprint.user_blueprint import UserBluePrint
 from config import get_connection_url, read_environ_value
 from db import db
@@ -80,6 +81,9 @@ app.register_blueprint(patient_blueprint)
 
 device_blueprint = DeviceBlueprint()
 app.register_blueprint(device_blueprint)
+
+materials_blueprint = MaterialsBlueprint()
+app.register_blueprint(materials_blueprint)
 
 # Create a scheduler
 cron_minute = int(os.environ.get("CRON_MINUTE"))

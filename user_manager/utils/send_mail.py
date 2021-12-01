@@ -229,9 +229,8 @@ def send_user_registration_email(first_name, last_name, to_address,
         raise InternalServerError("Something went wrong. {0}".format(e))
 
 
-
-def send_product_request_email(docx_content, csv_content, sender):
-    print("Sending email.")
+def send_product_request_email(seq_number, docx_content, csv_content, sender):
+    logging.info("Sending email.")
     from_address = read_environ_value(value, "SMTP_FROM")
     receivers_mail = [CUSTOMER_SERVICE_EMAIL, sender]
     to_address = ", ".join(receivers_mail)
@@ -240,20 +239,20 @@ def send_product_request_email(docx_content, csv_content, sender):
     msg['From'] = from_address
     msg['To'] = to_address
     msg['Subject'] = "Product Request Form"
-    body = MIMEText("Test", "html")
+    body = MIMEText("Product Request Form", "html")
     msg.attach(body)
 
     part = MIMEBase("application", "octate-stream")
     part.set_payload(docx_content)
     encoders.encode_base64(part)
     part.add_header("Content-Disposition",
-                    f"attachment; filename=Test.docx")
+                    f"attachment; filename=ProductRequestForm-{seq_number}.docx")
     msg.attach(part)
 
     part1 = MIMEBase("application", "octate-stream")
     part1.set_payload(csv_content)
     encoders.encode_base64(part1)
-    part1.add_header("Content-Disposition", f"attachment; filename=Test.csv")
+    part1.add_header("Content-Disposition", f"attachment; filename=ProductRequestForm-{seq_number}.csv")
     msg.attach(part1)
 
     try:

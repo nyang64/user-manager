@@ -168,7 +168,7 @@ class ProviderManager:
         provider_json = request.json
         if have_keys(provider_json, "provider_id") is False:
             return {"message": "Invalid Request Parameters"}, 400
-        provider_data = Providers.find_by_id(id=provider_json["provider_id"])
+        provider_data = Providers.find_by_id(_id=provider_json["provider_id"])
         if provider_data is None:
             return {"message": "Unable To Delete, No Such Provider Exist"}, 404
         self.userObj.delete_user_byid(provider_data.user_id)

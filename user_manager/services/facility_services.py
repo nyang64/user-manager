@@ -79,12 +79,21 @@ class FacilityService(DbRepository):
                         facility_address.country,
                         facility_address.postal_code,
                     )
+                    address_json = {}
+                    address_json["street_address_1"] = facility_address.street_address_1
+                    address_json["street_address_2"] = facility_address.street_address_2
+                    address_json["city"] = facility_address.city
+                    address_json["state"] = facility_address.state
+                    address_json["country"] = facility_address.country
+                    address_json["postal_code"] = facility_address.postal_code
                 facilites_dict = {}
                 facilites_dict["name"] = facility.name
                 facilites_dict["on_call_phone"] = facility.on_call_phone
                 facilites_dict["external_facility_id"] = facility.external_facility_id
                 facilites_dict["id"] = facility.id
                 facilites_dict["address"] = address
+                facilites_dict["address_json"] = address_json
+                facilites_dict["address_id"] = facility.address_id
                 f_list.append(facilites_dict)
 
             return f_list, data_count

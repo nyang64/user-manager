@@ -144,6 +144,10 @@
           "value": "es-email-newsletter"
         },
         {
+          "name": "MATERIAL_REQUEST_S3_BUCKET",
+          "value": "dev-product-requests"
+        },
+        {
           "name": "SURVEY_LINK",
           "value": ""
         },

@@ -58,7 +58,7 @@ class TestUserServices(TestCase):
         app = create_test_app()
         with app.app_context():
             with pytest.raises(NotFound) as e:
-                self.user_service.delete_user_byid(1)
+                self.user_service.delete_user_byid(1, "", "", None)
             self.assertIsInstance(e.value, NotFound)
 
     @mock.patch.object(UserRegister, "find_by_email")

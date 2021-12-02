@@ -51,7 +51,7 @@ class TestAuthServices(TestCase):
         app = create_test_app()
         with app.app_context():
             with pytest.raises(NotFound) as e:
-                self.auth_service.delete_regtration(1)
+                self.auth_service.delete_registration(1, None)
             self.assertIsInstance(e.value, NotFound)
 
     @mock.patch.object(AuthServices, "save_db")

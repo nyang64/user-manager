@@ -1,7 +1,7 @@
 import http
 from test.flask_app1 import create_test_app
 from unittest import TestCase, mock
-
+from db import db
 import pytest
 from resources.user_manager import UserManager
 from services.user_services import UserServices
@@ -71,7 +71,7 @@ class TestUserManager(TestCase):
                 UserManager.update_user.__wrapped__(self.user, "")
             self.assertIsInstance(e.value, BadRequest)
 
-    @mock.patch.object(UserServices, "delete_user_byid")
+    @mock.patch("services.user_services.UserServices.delete_user_byid", return_value=db.session)
     @mock.patch("resources.user_manager.request", spec={})
     def test_delete_user(self, request, mock_user):
         request.args = {"id": 1}
@@ -81,7 +81,6 @@ class TestUserManager(TestCase):
         )
         app = create_test_app()
         with app.test_request_context():
-            mock_user.return_value = None
             resp = UserManager.delete_user.__wrapped__(self.user, "")
             self.assertEqual(resp, expected_resp)
 

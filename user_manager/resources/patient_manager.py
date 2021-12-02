@@ -1,5 +1,6 @@
 import http
 import logging
+import json
 
 from flask import jsonify, request
 from model.address import Address
@@ -13,6 +14,7 @@ from model.provider_role_types import ProviderRoleTypes
 from model.providers import Providers
 from model.user_registration import UserRegister
 from model.users import Users
+from model.user_status_type import UserStatusType
 from schema.address_schema import AddressSchema
 from schema.patient_schema import (
     PatientSchema,
@@ -20,7 +22,8 @@ from schema.patient_schema import (
     assign_patches_schema,
     create_patient_schema,
     update_patient_schema,
-    patient_list_schema
+    patient_list_schema,
+    deactivate_patient_schema
 )
 from schema.patient_schema import patients_schema
 from schema.patients_devices_schema import PatientsDevicesSchema
@@ -30,8 +33,8 @@ from schema.register_schema import RegistrationSchema
 from schema.user_schema import UserSchema
 from services.patient_services import PatientServices
 from services.material_request_services import MaterialRequestService
-from utils.constants import ADMIN, PATIENT, PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER
-from utils.common import generate_random_password
+from utils.constants import ADMIN, PATIENT, PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER, ENROLLED, DISENROLLED
+from utils.common import generate_random_password, have_keys
 from utils.jwt import require_user_token
 from utils.validation import validate_request
 from werkzeug.exceptions import BadRequest
@@ -148,12 +151,16 @@ class PatientManager:
 
         return {"message": "Successfully updated"}, http.client.OK
 
-    @require_user_token(ADMIN, PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER)
+    @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER)
     def delete_patient(self, token):
-        patient_id = request.args.get("id")
-        if patient_id is None:
-            raise BadRequest("parameter id is missing")
-        self.patient_obj.delete_patient_data(patient_id)
+        try:
+            request_data = validate_request()
+            patient_id, deactivation_reason, deactivation_notes = deactivate_patient_schema.load(request_data)
+            self.patient_obj.delete_patient_data(patient_id, deactivation_reason, deactivation_notes)
+        except Exception as e:
+            print(e)
+            return {"message": str(e)}, http.client.BAD_REQUEST
+
         return {"message": "Patient deleted"}, http.client.OK
 
     @require_user_token(ADMIN, PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER)
@@ -223,6 +230,17 @@ class PatientManager:
         details = PatientDetails.find_by_patient_id(patient_id)
         details_json = PatientDetailsSchema().dump(details)
         patient_json = PatientSchema().dump(patient_data)
+
+        # Get the notes and deactivation reason
+        enrolled_status = UserStatusType.find_by_name(ENROLLED)
+        disenrolled_status = UserStatusType.find_by_name(DISENROLLED)
+        for status in patient_data.user.statuses:
+            if status.status_id == enrolled_status.id:
+                patient_json["enrollment_notes"] = status.notes
+            elif status.status_id == disenrolled_status.id:
+                patient_json["deactivation_reason"] = json.loads(status.deactivation_reason)
+                patient_json["deactivation_notes"] = status.notes
+
 
         # TODO: Write a single query to get all these data from the database in one call
         # outpatient provider

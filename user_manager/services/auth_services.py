@@ -39,12 +39,16 @@ class AuthServices(DbRepository):
             logging.error(error)
             raise InternalServerError(str(error))
 
-    def delete_regtration(self, reg_id):
+    def delete_registration(self, reg_id, session):
         exist_data = UserRegister.find_by_id(reg_id)
         if bool(exist_data) is False:
             raise NotFound("user record not found")
         exist_data.deactivated = True
-        self.save_db(exist_data)
+        if session:
+            session.add(exist_data)
+            return session
+        else:
+            self.save_db(exist_data)
 
     def add_otp(self, user_otp):
         self.save_db(user_otp)

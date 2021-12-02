@@ -1,3 +1,4 @@
+import json
 import logging
 
 from db import db
@@ -74,13 +75,14 @@ class UserServices(DbRepository):
             logging.error(error)
             raise InternalServerError(error)
 
-    def delete_user_byid(self, user_id):
+    def delete_user_byid(self, user_id, reason, notes, session):
         exist_user = Users.check_user_exist(user_id)
         if bool(exist_user) is False:
             raise NotFound("user does not exist")
-        self.auth_obj.delete_regtration(exist_user.registration_id)
-        self.change_user_status(user_id, DISENROLLED)
-        self.commit_db()
+        session = self.auth_obj.delete_registration(exist_user.registration_id, session)
+        session = self.change_user_status(user_id, DISENROLLED, reason, notes, session)
+
+        return session
 
     def assign_role(self, user_id, role_name="PATIENT"):
         role_id = Roles.get_roleid(role_name)
@@ -134,17 +136,16 @@ class UserServices(DbRepository):
             logging.error(str(error))
             raise InternalServerError("Something Went Wrong")
 
-    def change_user_status(self, user_id, status):
+    def change_user_status(self, user_id, status, reason, _notes, session):
         status_type = UserStatusType.find_by_name(status)
-        user_status_obj = UserStatus.get_user_status_by_user_id(_user_id=user_id)
 
-        # Check if new user
-        if not user_status_obj:
-            # Create new user_status object and commit to table
-            new_user_status_obj = UserStatus(status_id=status_type.id, user_id=user_id)
+        # Create new user_status object and commit to table
+        new_user_status_obj = UserStatus(status_id=status_type.id, user_id=user_id,
+                                         notes=_notes,
+                                         deactivation_reason=json.dumps(reason))
+        if session:
+            session.add(new_user_status_obj)
+            return session
+        else:
             self.flush_db(new_user_status_obj)
-            return status_type.id
-
-        user_status_obj.status_id = status_type.id
-        self.flush_db(user_status_obj)
-        return user_status_obj.status
+            return new_user_status_obj.id

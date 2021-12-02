@@ -21,6 +21,8 @@ class UserStatus(BaseModel):
         db.ForeignKey("ES.users.id", ondelete="CASCADE"),
         nullable=False,
     )
+    notes = db.Column("notes", db.String(200), nullable=True)
+    deactivation_reason = db.Column("deactivation_reason", db.String(500), nullable=True)
     status = db.relationship(
         "UserStatusType", backref="user_status_types", uselist=False
     )

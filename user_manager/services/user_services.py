@@ -7,11 +7,12 @@ from model.user_roles import UserRoles
 from model.user_status import UserStatus
 from model.user_status_type import UserStatusType
 from model.users import Users
+from model.study_managers import StudyManagers
 from services.auth_services import AuthServices
 from services.repository.db_repositories import DbRepository
 from sqlalchemy.exc import SQLAlchemyError
 from utils.common import generate_uuid
-from utils.constants import ENROLLED, DISENROLLED
+from utils.constants import ENROLLED, DISENROLLED, STUDY_MANAGER
 from werkzeug.exceptions import InternalServerError, NotFound
 
 
@@ -28,7 +29,12 @@ class UserServices(DbRepository):
                                             reg_id=reg_id)
 
         self.assign_role(user_id, role_name=user[3])
-        self.change_user_status(user_id, ENROLLED)
+
+        # check the role name
+        if user[3] == STUDY_MANAGER:
+            self.__register_study_manager(user_id, user)
+
+        self.change_user_status(user_id, ENROLLED, "", "", None)
         self.commit_db()
 
         return user_id, user_uuid
@@ -149,3 +155,9 @@ class UserServices(DbRepository):
         else:
             self.flush_db(new_user_status_obj)
             return new_user_status_obj.id
+
+    def __register_study_manager(cls, user_id, user):
+        # check if there is any address
+        len(user)
+        sm = StudyManagers()
+        sm.user_id = user_id

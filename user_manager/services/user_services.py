@@ -156,8 +156,20 @@ class UserServices(DbRepository):
             self.flush_db(new_user_status_obj)
             return new_user_status_obj.id
 
-    def __register_study_manager(cls, user_id, user):
-        # check if there is any address
-        len(user)
+    def __register_study_manager(self, user_id, user):
         sm = StudyManagers()
         sm.user_id = user_id
+
+        # check if there is any address -
+        # TODO We need to convert to an object instead of an array
+        address = None
+        if len(user) > 5:
+            address = user[5]
+
+        if address is not None:
+            self.flush_db(address)
+            breakpoint()
+            sm.address_id = address.id
+
+        self.flush_db(sm)
+

@@ -1,6 +1,7 @@
 import http
 from test.flask_app1 import create_test_app
 from unittest import TestCase, mock
+from http import HTTPStatus
 
 import pytest
 from model.address import Address
@@ -48,9 +49,14 @@ class TestPatientManager(TestCase):
             self.assertEqual("Test Assigned", resp)
 
     @mock.patch.object(PatientServices, "delete_patient_data")
-    @mock.patch("resources.patient_manager.request", spec={})
+    @mock.patch("utils.validation.request", spec={})
     def test_delete_patient(self, request, delete_patient_data):
-        request.args = {"id": 1}
+        request.is_json = True
+        request.json = {
+            "patient_id": 1,
+            "deactivation_reason": ["I dont know"],
+            "notes": "Testing delete"
+        }
         expected_resp = ({"message": "Patient deleted"}, http.client.OK)
         app = create_test_app()
         with app.test_request_context():
@@ -58,16 +64,19 @@ class TestPatientManager(TestCase):
             self.assertEqual(resp, expected_resp)
 
     @mock.patch.object(PatientServices, "delete_patient_data")
-    @mock.patch("resources.patient_manager.request", spec={})
+    @mock.patch("utils.validation.request", spec={})
     def test_delete_patient_for_non_value(
-        self, delete_patient_data, patient_manager_request
+        self, patient_manager_request, delete_patient_data
     ):
-        delete_patient_data.args = {"ida": 1}
+        patient_manager_request.is_json = True
+        patient_manager_request.json = {
+            "deactivation_reason": "I dont know",
+            "notes": "Testing delete"
+        }
         app = create_test_app()
         with app.test_request_context():
-            with pytest.raises(BadRequest) as e:
-                PatientManager.delete_patient.__wrapped__(self.patient, "")
-            self.assertIsInstance(e.value, BadRequest)
+            response = PatientManager.delete_patient.__wrapped__(self.patient, "")
+            self.assertEqual(response[1], HTTPStatus.BAD_REQUEST)
 
 
     @mock.patch.object(Patient, "find_by_id")

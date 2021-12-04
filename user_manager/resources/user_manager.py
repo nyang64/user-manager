@@ -1,7 +1,10 @@
 from werkzeug.exceptions import BadRequest
 from flask import jsonify
+
+from db import db
 import http.client
 import logging
+
 from services.user_services import UserServices
 from schema.user_schema import create_user_schema, update_user_schema, UserSchema
 from utils.validation import validate_request
@@ -9,6 +12,7 @@ from utils.jwt import require_user_token
 from utils.constants import ADMIN, PROVIDER, PATIENT, ESUSER
 from flask import request
 from model.users import Users
+from model.study_managers import StudyManagers
 from utils.common import generate_random_password
 from utils.send_mail import send_user_registration_email
 
@@ -82,7 +86,9 @@ class UserManager:
         user_id = request.args.get('id')
         if user_id is None:
             raise BadRequest("parameter id is missing")
-        self.user_obj.delete_user_byid(user_id)
+        session = db.session
+        session = self.user_obj.delete_user_byid(user_id, session)
+        session.commit()
         return {'message': 'user deleted',
                 'status_code': '202'}, http.client.ACCEPTED
 

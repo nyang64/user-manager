@@ -350,7 +350,7 @@ class PatientServices(DbRepository):
             logging.error("Error occurred: {}".format(str(ex)))
             raise InternalServerError(str(ex))
 
-    def delete_patient_data(self, patient_id):
+    def delete_patient_data(self, patient_id, deactivation_reason, notes):
         exist_patient = Patient.find_by_id(patient_id)
         if bool(exist_patient) is False:
             raise NotFound("patient record not found")
@@ -359,12 +359,19 @@ class PatientServices(DbRepository):
         if exist_patient.unenrolled_at:
             raise Conflict("patient already unenrolled")
 
-        # Unenroll patient from patients table
-        exist_patient.unenrolled_at = datetime.now()
-        self.save_db(exist_patient)
+        session = db.session
+        try:
+            # Unenroll patient from patients table
+            exist_patient.unenrolled_at = datetime.now()
+            session.add(exist_patient)
 
-        # Proceed to soft delete from user table
-        self.user_obj.delete_user_byid(exist_patient.user_id)
+            # Proceed to soft delete from user table
+            session = self.user_obj.delete_user_byid(exist_patient.user_id, deactivation_reason, notes, session)
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logging.error("Error occurred: {}".format(str(e)))
+            raise InternalServerError(str(e))
 
     # TODO: Consolidate this in the user schema/model
     def __update_user(self, user_from_db, user_from_req):

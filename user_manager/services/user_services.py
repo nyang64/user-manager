@@ -1,3 +1,4 @@
+import json
 import logging
 
 from db import db
@@ -6,11 +7,12 @@ from model.user_roles import UserRoles
 from model.user_status import UserStatus
 from model.user_status_type import UserStatusType
 from model.users import Users
+from model.study_managers import StudyManagers
 from services.auth_services import AuthServices
 from services.repository.db_repositories import DbRepository
 from sqlalchemy.exc import SQLAlchemyError
 from utils.common import generate_uuid
-from utils.constants import ENROLLED, DISENROLLED
+from utils.constants import ENROLLED, DISENROLLED, STUDY_MANAGER
 from werkzeug.exceptions import InternalServerError, NotFound
 
 
@@ -27,7 +29,12 @@ class UserServices(DbRepository):
                                             reg_id=reg_id)
 
         self.assign_role(user_id, role_name=user[3])
-        self.change_user_status(user_id, ENROLLED)
+
+        # check the role name
+        if user[3] == STUDY_MANAGER:
+            self.__register_study_manager(user_id, user)
+
+        self.change_user_status(user_id, ENROLLED, "", "", None)
         self.commit_db()
 
         return user_id, user_uuid
@@ -74,13 +81,14 @@ class UserServices(DbRepository):
             logging.error(error)
             raise InternalServerError(error)
 
-    def delete_user_byid(self, user_id):
+    def delete_user_byid(self, user_id, reason, notes, session):
         exist_user = Users.check_user_exist(user_id)
         if bool(exist_user) is False:
             raise NotFound("user does not exist")
-        self.auth_obj.delete_regtration(exist_user.registration_id)
-        self.change_user_status(user_id, DISENROLLED)
-        self.commit_db()
+        session = self.auth_obj.delete_registration(exist_user.registration_id, session)
+        session = self.change_user_status(user_id, DISENROLLED, reason, notes, session)
+
+        return session
 
     def assign_role(self, user_id, role_name="PATIENT"):
         role_id = Roles.get_roleid(role_name)
@@ -134,17 +142,34 @@ class UserServices(DbRepository):
             logging.error(str(error))
             raise InternalServerError("Something Went Wrong")
 
-    def change_user_status(self, user_id, status):
+    def change_user_status(self, user_id, status, reason, _notes, session):
         status_type = UserStatusType.find_by_name(status)
-        user_status_obj = UserStatus.get_user_status_by_user_id(_user_id=user_id)
 
-        # Check if new user
-        if not user_status_obj:
-            # Create new user_status object and commit to table
-            new_user_status_obj = UserStatus(status_id=status_type.id, user_id=user_id)
+        # Create new user_status object and commit to table
+        new_user_status_obj = UserStatus(status_id=status_type.id, user_id=user_id,
+                                         notes=_notes,
+                                         deactivation_reason=json.dumps(reason))
+        if session:
+            session.add(new_user_status_obj)
+            return session
+        else:
             self.flush_db(new_user_status_obj)
-            return status_type.id
+            return new_user_status_obj.id
 
-        user_status_obj.status_id = status_type.id
-        self.flush_db(user_status_obj)
-        return user_status_obj.status
+    def __register_study_manager(self, user_id, user):
+        sm = StudyManagers()
+        sm.user_id = user_id
+
+        # check if there is any address -
+        # TODO We need to convert to an object instead of an array
+        address = None
+        if len(user) > 5:
+            address = user[5]
+
+        if address is not None:
+            self.flush_db(address)
+            breakpoint()
+            sm.address_id = address.id
+
+        self.flush_db(sm)
+

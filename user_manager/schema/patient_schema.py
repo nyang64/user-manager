@@ -348,3 +348,25 @@ class PatientIdSchema(BaseSchema):
 
 
 patient_id_schema = PatientIdSchema()
+
+
+class DeactivatePatientSchema(BaseSchema):
+    patient_id = fields.Int(required=True, load_only=True)
+    deactivation_reason = fields.List(fields.String, load_only=True)
+    notes = fields.Str(load_only=True)
+
+    @post_load
+    def post_data(self, data, **kwargs):
+        try:
+            patient_id = int(data.get("patient_id", None))
+            deactivation_reason = data.get("deactivation_reason", "")
+            notes = data.get("notes", "")
+        except ValueError as e:
+            logging.error(e)
+
+        filter_input = (patient_id, deactivation_reason, notes)
+        return filter_input
+
+
+deactivate_patient_schema = DeactivatePatientSchema()
+

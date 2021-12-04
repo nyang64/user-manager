@@ -1,5 +1,6 @@
 import http
 import logging
+from db import db
 
 from flask import jsonify, request
 from model.address import Address
@@ -171,7 +172,10 @@ class ProviderManager:
         provider_data = Providers.find_by_id(_id=provider_json["provider_id"])
         if provider_data is None:
             return {"message": "Unable To Delete, No Such Provider Exist"}, 404
-        self.userObj.delete_user_byid(provider_data.user_id)
+
+        session = db.session
+        session = self.userObj.delete_user_byid(provider_data.user_id, session)
+        session.commit()
         return {"message": "Provider Deleted"}, 200
 
     @require_user_token(ADMIN, STUDY_MANAGER)

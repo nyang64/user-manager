@@ -282,13 +282,13 @@ class TestPatientServices(TestCase):
         app = create_test_app()
         with app.app_context():
             patient = self.populate_db.create_patient("patient@gmail.com")
-            self.patient_service.delete_patient_data(patient.id)
+            self.patient_service.delete_patient_data(patient.id, "", "")
 
     def test_delete_patient_data_raise_exception(self):
         app = create_test_app()
         with app.app_context():
             with pytest.raises(NotFound) as e:
-                self.patient_service.delete_patient_data(1)
+                self.patient_service.delete_patient_data(1, "", "")
             self.assertIsInstance(e.value, NotFound)
 
     @mock.patch.object(Users, "find_by_id", return_value=None)

@@ -28,6 +28,10 @@
           "value": "https://dev.clinical.elementscience.com/"
         },
         {
+          "name": "MANAGEMENT_PORTAL_URL",
+          "value": "$MANAGEMENT_PORTAL_URL"
+        },
+        {
           "name": "POSTGRES_DB_HOST",
           "value": "$DB_URL"
         },

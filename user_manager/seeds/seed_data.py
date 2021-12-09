@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 
 from config import read_environ_value
-from utils.constants import ADMIN, FLASK_ENV, PATIENT, PROVIDER, STUDY_MANAGER
+from utils.constants import ADMIN, FLASK_ENV, PATIENT, PROVIDER, STUDY_MANAGER, CUSTOMER_SERVICE
 
 value = os.getenv("SECRET_MANAGER_ARN")
 
@@ -202,5 +202,20 @@ STUDY_MANAGER = {
         "password": read_environ_value(value, "STUDY_MANAGER_PASSWORD"),
     },
 }
+
+CUSTOMER_SERVICE = {
+    "user": {
+        "first_name": "ES",
+        "last_name": "CustomerService",
+        "phone_number": "4158726500",
+        "role_name": CUSTOMER_SERVICE,
+        "external_user_id": "000-00"
+    },
+    "register": {
+        "email": read_environ_value(value, "CUSTOMER_SERVICE_EMAIL"),
+        "password": read_environ_value(value, "CUSTOMER_SERVICE_PASSWORD"),
+    },
+}
+
 
 PATIENTS = [PATIENT_1_DICTIONARY, PATIENT_2_DICTIONARY, APPLE_USER]

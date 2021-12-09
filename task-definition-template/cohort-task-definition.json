@@ -21,7 +21,7 @@
       "environment": [
         {
           "name": "APP_LINK",
-          "value": "https://testflight.apple.com/join/BfvzYBfY"
+          "value": "$APP_LINK"
         },
         {
           "name": "CLINICAL_PORTAL_URL",
@@ -154,6 +154,10 @@
         {
           "name": "SURVEY_LINK",
           "value": ""
+        },
+        {
+          "name": "CUSTOMER_SERVICE_EMAIL",
+          "value": "customerservice@elementsci.com"
         }
       ],
       "secrets": [

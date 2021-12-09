@@ -25,23 +25,10 @@ def send_otp(
     msg['To'] = to_address
     msg['Subject'] = "Notification: {}".format(subject)
     body = """
-
-
-
     Hello {0},
 
-
-
-    {1} is Your ES-Cloud OTP. OTP is confidential.
-    For Security Reasons, DO NOT share this OTP with anyone.
-
-
-
-    Thanks & Regards,
-
-    Me
-
-
+    <p>{1} is Your ES-Cloud OTP. OTP is confidential. </p>
+    <p>For Security Reasons, DO NOT share this OTP with anyone.</p>
 
     """.format(name, otp)
     msg.attach(MIMEText(body, 'plain'))
@@ -153,10 +140,9 @@ def send_provider_registration_email(first_name, last_name, to_address,
               You have been assigned as a user in Element Science clinical portal.
             </p>
             <p>URL for the portal is: {}</p>
-            <p>
-              Login with the credentials:<br/>
-                        username: {}
-                        password: {}
+            <p>Login with the credentials:
+            <br>username: {} </br>
+            <br>password: {} </br>
             </p>
           </body>
         </html>

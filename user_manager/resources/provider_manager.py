@@ -24,7 +24,7 @@ from services.provider_services import ProviderService
 from services.user_services import UserServices
 from services.facility_services import FacilityService
 from utils.common import have_keys
-from utils.constants import ADMIN, PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER
+from utils.constants import ADMIN, PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER, STUDY_COORDINATOR
 from utils.jwt import require_user_token
 from utils.validation import validate_request
 from utils.common import generate_random_password
@@ -97,13 +97,16 @@ class ProviderManager:
         user = Users.find_by_id(provider.user_id)
         registration = UserRegister.find_by_id(user.registration_id)
 
-        send_provider_registration_email(
-            first_name=user.first_name,
-            last_name=user.last_name,
-            to_address=registration.email,
-            username=registration.email,
-            password=pwd
-        )
+        # Do not send registration email to the study coordinator. The clinical portal does not allow study coordinators
+        # to view any patients due to the role.
+        if role_name != STUDY_COORDINATOR:
+            send_provider_registration_email(
+                first_name=user.first_name,
+                last_name=user.last_name,
+                to_address=registration.email,
+                username=registration.email,
+                password=pwd
+            )
 
         response = {
             "registration": register_schema.dump(registration),

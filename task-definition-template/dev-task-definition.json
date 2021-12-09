@@ -21,7 +21,7 @@
       "environment": [
         {
           "name": "APP_LINK",
-          "value": "http://applink"
+          "value": "$APP_LINK"
         },
         {
           "name": "CLINICAL_PORTAL_URL",
@@ -157,7 +157,7 @@
         },
         {
           "name": "CUSTOMER_SERVICE_EMAIL",
-          "value": "jyothi@elementsci.com"
+          "value": "sw-eng@elementsci.com"
         }
       ],
       "secrets": [

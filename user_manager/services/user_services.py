@@ -168,7 +168,6 @@ class UserServices(DbRepository):
 
         if address is not None:
             self.flush_db(address)
-            breakpoint()
             sm.address_id = address.id
 
         self.flush_db(sm)

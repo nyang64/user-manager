@@ -17,6 +17,7 @@ from utils.common import encPass, generateOTP, have_keys, have_keys_NotForce
 from utils.constants import ADMIN, ESUSER, PATIENT, PROVIDER
 from utils.jwt import encoded_Token, require_refresh_token, require_user_token
 from utils.send_mail import send_otp
+from utils.validation import validate_request
 from werkzeug.exceptions import InternalServerError
 from datetime import timedelta
 
@@ -40,6 +41,20 @@ class AuthOperation:
             },
             200,
         )
+
+    @require_refresh_token
+    def user_refresh_token(self, decrypt):
+        request_data = validate_request()
+        role = request_data["role"]
+        encoded_accessToken = encoded_Token(False, decrypt["user_email"], user_role=role)
+        return (
+            {
+                "message": "Token Generated Successfully",
+                "id_token": encoded_accessToken,
+            },
+            200,
+        )
+
 
     @require_user_token(ADMIN, PROVIDER, PATIENT, ESUSER)
     def update_user_password(self, decrypt):

@@ -20,6 +20,9 @@ class AuthenticationBlueprint(Blueprint):
         self.add_url_rule('/refresh', 'Refresh Token',
                           self.auth_login.refresh_token,
                           methods=['POST'])
+        self.add_url_rule('/refresh_user_token', 'Refresh User Token',
+                          self.auth_login.user_refresh_token,
+                          methods=['POST'])
         self.add_url_rule('/resetpassword', 'Reset Password',
                           self.auth_login.reset_user_password,
                           methods=['PUT'])

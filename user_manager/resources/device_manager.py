@@ -27,26 +27,29 @@ class DeviceManager:
            :return: Http response code with a message
         """
         logging.info('Saving device ui status')
-        status_json = request.get_json()
+        status_json = request.json
         logging.info(status_json)
         statuses = status_json.get('statuses')
 
-        for status in statuses:
-            ui_status = {}
-            ui_status['device_serial_number'] = status_json.get('device_serial_number')
-            ui_status['receiver_recorded_at'] = status_json.get('received_at')
-            ui_status['receiver_id'] = status_json.get('receiver_id')
-            ui_status['recorded_at'] = status.get('recorded_at')
-            status_type = DeviceUiStatusType.find_by_ui_id(status["ui_id"])
+        if statuses:
+            for status in statuses:
+                ui_status = {}
+                ui_status['device_serial_number'] = status_json.get('device_serial_number')
+                ui_status['receiver_recorded_at'] = status_json.get('received_at')
+                ui_status['receiver_id'] = status_json.get('receiver_id')
+                ui_status['recorded_at'] = status.get('recorded_at')
+                status_type = DeviceUiStatusType.find_by_ui_id(status["ui_id"])
 
-            if status_type is not None:
-                ui_status["status_id"] = status_type.id
-            else:
-                logging.error("Could not find status type for {}".format(status["ui_id"]))
+                if status_type is not None:
+                    ui_status["status_id"] = status_type.id
+                else:
+                    logging.error("Could not find status type for {}".format(status["ui_id"]))
 
-            status_schema = DeviceUiStatusSchema()
-            status_model = status_schema.load(ui_status)
-            status_model.save_to_db()
+                status_schema = DeviceUiStatusSchema()
+                status_model = status_schema.load(ui_status)
+                status_model.save_to_db()
+        else:
+            logging.info("No status messages were present in the message")
 
         return {"message": "Device ui status persisted"}, 201
 
@@ -113,7 +116,7 @@ class DeviceManager:
 
     def create_status_type(self):
         print('Device status type')
-        status_type_json = request.get_json()
+        status_type_json = request.json
 
         status_type_schema = DeviceUiStatusTypeSchema()
         status_type = status_type_schema.load(status_type_json)
@@ -125,7 +128,7 @@ class DeviceManager:
 
     def create_metric_type(self):
         print('Device metric type')
-        metric_type_json = request.get_json()
+        metric_type_json = request.json
         metric_type_schema = DeviceMetricTypeSchema()
         metric_type = metric_type_schema.load(metric_type_json)
 

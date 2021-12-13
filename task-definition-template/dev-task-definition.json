@@ -21,7 +21,15 @@
       "environment": [
         {
           "name": "APP_LINK",
-          "value": "http://applink"
+          "value": "$APP_LINK"
+        },
+        {
+          "name": "CLINICAL_PORTAL_URL",
+          "value": "https://dev.clinical.elementscience.com/"
+        },
+        {
+          "name": "MANAGEMENT_PORTAL_URL",
+          "value": "$MANAGEMENT_PORTAL_URL"
         },
         {
           "name": "POSTGRES_DB_HOST",
@@ -106,6 +114,50 @@
         {
           "name": "LOG_LEVEL",
           "value": "$LOG_LEVEL"
+        },
+        {
+          "name": "TEST_POSTGRES_DB_HOST",
+          "value": "$TEST_POSTGRES_DB_HOST"
+        },
+        {
+          "name": "TEST_POSTGRES_DB_USER_KEY",
+          "value": "$TEST_POSTGRES_DB_USER_KEY"
+        },
+        {
+          "name": "TEST_POSTGRES_DB_NAME",
+          "value": "$TEST_POSTGRES_DB_NAME"
+        },
+        {
+          "name": "TEST_POSTGRES_DB_PORT",
+          "value": "$TEST_POSTGRES_DB_PORT"
+        },
+        {
+          "name": "TEST_POSTGRES_DB_PASSWORD_KEY",
+          "value": "$TEST_POSTGRES_DB_PASSWORD_KEY"
+        },
+        {
+          "name": "CRON_MINUTE",
+          "value": "30"
+        },
+        {
+          "name": "CRON_HOUR",
+          "value": "0"
+        },
+        {
+          "name": "NEWSLETTER_S3_BUCKET",
+          "value": "es-email-newsletter"
+        },
+        {
+          "name": "MATERIAL_REQUEST_S3_BUCKET",
+          "value": "dev-product-requests"
+        },
+        {
+          "name": "SURVEY_LINK",
+          "value": ""
+        },
+        {
+          "name": "CUSTOMER_SERVICE_EMAIL",
+          "value": "sw-eng@elementsci.com"
         }
       ],
       "secrets": [
@@ -124,13 +176,13 @@
     }
   ],
   "placementConstraints": [],
-  "memory": "1024",
+  "memory": "4096",
   "taskRoleArn": "arn:aws:iam::488323030461:role/ECS-Managed-Policy",
   "family": "$DEPLOYMENT_ENVIRONMENT-user-manager",
   "requiresCompatibilities": [
     "FARGATE"
   ],
   "networkMode": "awsvpc",
-  "cpu": "512",
+  "cpu": "2048",
   "volumes": []
 }

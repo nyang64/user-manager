@@ -2,23 +2,7 @@ import os
 from datetime import datetime
 
 from config import read_environ_value
-from utils.constants import ADMIN, FLASK_ENV, PATIENT, PROVIDER
-
-if not FLASK_ENV:
-    message = """
-                - you must assign a value to 'FLASK_ENV'.
-                - in terminal run 'export FLASK_ENV = local' or 'set FLASK_ENV = local'
-                - 'local' can be replaced with 'development', 'production' or 'qa'.
-                - ensure that you have corresponding .env files.
-                - see README.md
-              """
-    raise Exception(message)
-
-# if flask_env != "production":
-#     from dotenv import load_dotenv
-#
-#     print(f".env.{flask_env}")
-#     load_dotenv(f".env.{flask_env}")
+from utils.constants import ADMIN, FLASK_ENV, PATIENT, PROVIDER, STUDY_MANAGER, CUSTOMER_SERVICE
 
 value = os.getenv("SECRET_MANAGER_ARN")
 
@@ -90,6 +74,7 @@ PROVIDER_OUTPATIENT = {
         "facility": {
             "name": "Healthy Hearts",
             "on_call_phone": "5556667777",
+            "external_facility_id": "101",
             "address": {
                 "street_address_1": "Market St",
                 "street_address_2": "",
@@ -100,6 +85,7 @@ PROVIDER_OUTPATIENT = {
             },
         },
         "role_name": "outpatient",
+        "external_user_id": "101-102"
     },
 }
 
@@ -118,6 +104,7 @@ PROVIDER_OUTPATIENT_2 = {
         "facility": {
             "name": "Happy Heart",
             "on_call_phone": "5554443333",
+            "external_facility_id": "102",
             "address": {
                 "street_address_1": "Townsend St.",
                 "street_address_2": "",
@@ -128,6 +115,7 @@ PROVIDER_OUTPATIENT_2 = {
             },
         },
         "role_name": "outpatient",
+        "external_user_id": "101-102"
     },
 }
 
@@ -193,11 +181,41 @@ ADMIN_USER = {
         "last_name": "admin",
         "phone_number": "8097810754",
         "role_name": ADMIN,
+        "external_user_id": "000-00"
     },
     "register": {
-        "email": read_environ_value(value, "ADMIN_EMAIL"),
+        "email": read_environ_value(value, "ADMIN_USERNAME"),
         "password": read_environ_value(value, "ADMIN_PASSWORD"),
     },
 }
+
+STUDY_MANAGER = {
+    "user": {
+        "first_name": "ES",
+        "last_name": "StudyMgr",
+        "phone_number": "4158726500",
+        "role_name": STUDY_MANAGER,
+        "external_user_id": "000-00"
+    },
+    "register": {
+        "email": read_environ_value(value, "STUDY_MANAGER_USERNAME"),
+        "password": read_environ_value(value, "STUDY_MANAGER_PASSWORD"),
+    },
+}
+
+CUSTOMER_SERVICE = {
+    "user": {
+        "first_name": "ES",
+        "last_name": "CustomerService",
+        "phone_number": "4158726500",
+        "role_name": CUSTOMER_SERVICE,
+        "external_user_id": "000-00"
+    },
+    "register": {
+        "email": read_environ_value(value, "CUSTOMER_SERVICE_EMAIL"),
+        "password": read_environ_value(value, "CUSTOMER_SERVICE_PASSWORD"),
+    },
+}
+
 
 PATIENTS = [PATIENT_1_DICTIONARY, PATIENT_2_DICTIONARY, APPLE_USER]

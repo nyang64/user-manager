@@ -26,3 +26,11 @@ class Address(BaseModel):
     def save_to_db(self) -> None:
         db.session.add(self)
         db.session.commit()
+
+    def copy(self, input) -> None:
+        self.street_address_1 = input.street_address_1
+        self.street_address_2 = input.street_address_2
+        self.city = input.city
+        self.state = input.state
+        self.country = input.country
+        self.postal_code = input.postal_code

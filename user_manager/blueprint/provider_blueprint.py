@@ -10,7 +10,7 @@ class ProviderBlueprint(Blueprint):
 
     def _add_routes(self):
         self.add_url_rule(
-            "/provider/register",
+            "/providers",
             "Register Provider",
             self.provider_Obj.register_provider,
             methods=["POST"],
@@ -28,7 +28,7 @@ class ProviderBlueprint(Blueprint):
             methods=["DELETE"],
         )
         self.add_url_rule(
-            "/provider/update",
+            "/providers",
             "Update the Provider",
             self.provider_Obj.update_provider,
             methods=["PUT"],
@@ -38,6 +38,12 @@ class ProviderBlueprint(Blueprint):
             "Get List of Providers",
             self.provider_Obj.get_providers,
             methods=["GET"],
+        )
+        self.add_url_rule(
+            "/providers/list",
+            "Get paginated list of providers",
+            self.provider_Obj.get_providers_list,
+            methods=["POST"],
         )
         self.add_url_rule(
             "/patients/list",
@@ -61,12 +67,5 @@ class ProviderBlueprint(Blueprint):
             "/report/update",
             "Update uploaded ts",
             self.provider_Obj.update_uploaded_ts,
-            methods=["POST"],
-        )
-        """------------------------ Facility Endpoint -------------------------"""
-        self.add_url_rule(
-            "/add/facility",
-            "Add Facility",
-            self.provider_Obj.add_facility,
             methods=["POST"],
         )

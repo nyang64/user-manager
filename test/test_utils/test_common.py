@@ -1,9 +1,15 @@
 # generate_signed_url
 
-from utils.common import (
-    is_json, have_keys, generate_signed_url, timeDiff, responseModel)
-import pytest
 import datetime
+
+import pytest
+from utils.common import (
+    generate_signed_url,
+    have_keys,
+    is_json,
+    responseModel,
+    timeDiff,
+)
 
 
 class TestCommonUtils:
@@ -24,7 +30,7 @@ class TestCommonUtils:
 
     def test_generate_signed_url_none_invalid_data(self):
         with pytest.raises(Exception) as e:
-            assert generate_signed_url('')
+            assert generate_signed_url("")
         assert "expected string or bytes-like object" in str(e.value)
 
     def test_time_differance_none_invalid_data(self):

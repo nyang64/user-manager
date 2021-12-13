@@ -3,6 +3,8 @@ import json
 import logging
 import math
 import random
+import secrets
+import string
 import uuid
 from json import JSONEncoder
 
@@ -117,8 +119,11 @@ class auth_response_model:
         first_name: str = "",
         last_name: str = "",
         refresh_token: str = "",
-        user_status: str = "Provider",
+        user_status: str = "",
+        user_role: str = "",
         isFirstTimeLogin: bool = False,
+        locked: bool = False,
+        deactivated: bool = False,
     ):
         self.message = message
         self.id_token = id_token
@@ -127,6 +132,9 @@ class auth_response_model:
         self.user_status = user_status.capitalize()
         self.first_name = first_name.capitalize()
         self.last_name = last_name.capitalize()
+        self.locked = locked
+        self.deactivated = deactivated
+        self.user_role = user_role.capitalize()
 
     def toJsonObj(obj):
         return json.loads(json.dumps(obj, default=lambda o: o.__dict__))
@@ -158,3 +166,9 @@ def generate_signed_url(report_key=None):
     except ClientError:
         logging.error("Error while generation URL")
         return "Error while generation URL"
+
+
+def generate_random_password():
+    alphabet = string.ascii_letters + string.digits
+    password = ''.join(secrets.choice(alphabet) for i in range(8))
+    return password

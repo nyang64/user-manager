@@ -13,12 +13,16 @@ def registration_exists(user_email):
 
 
 def create_and_register_user(user_details):
-    if registration_exists(user_details["register"]["email"]):
+    # Returns reg obj
+    exists = registration_exists(user_details["register"]["email"])
+
+    if exists:
         message_details[
             "registration"
         ] += "Registration already exists. Did not create user."
         print_message_details()
-
+        user = Users.find_by_registration_id(registration_id=exists.id)
+        return user.id
     else:
         registration_details = [
             user_details["register"]["email"],
@@ -29,6 +33,7 @@ def create_and_register_user(user_details):
             user_details["user"]["last_name"],
             user_details["user"]["phone_number"],
             user_details["user"]["role_name"],
+            user_details["user"]["external_user_id"]
         ]
         user_id, user_uuid = user_obj.register_user(registration_details, user_details)
         user = Users.find_by_id(user_id)

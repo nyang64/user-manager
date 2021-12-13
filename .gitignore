@@ -1,5 +1,8 @@
 __pycache__/
 node_modules/
+static/
+.png
+*.png
 .zip
 *.zip
 env/

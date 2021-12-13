@@ -21,10 +21,22 @@ class PatientBluePrint(Blueprint):
                           'delete patient',
                           self.patient_obj.delete_patient,
                           methods=['DELETE'])
+        self.add_url_rule('/patients/get',
+                          'get patient',
+                          self.patient_obj.get_patient_by_id,
+                          methods=['GET'])
+        self.add_url_rule('/patient/details',
+                          'get patient details',
+                          self.patient_obj.get_patient_details_by_id,
+                          methods=['GET'])
         self.add_url_rule('/patients',
                           'all patients',
                           self.patient_obj.patients,
                           methods=['GET'])
+        self.add_url_rule('/patients/patients_list',
+                          'Filtered list or a list of all patients',
+                          self.patient_obj.patients_list,
+                          methods=['POST'])
         self.add_url_rule('/patients/add/device',
                           'assign device to patient',
                           self.patient_obj.assign_device,
@@ -37,3 +49,7 @@ class PatientBluePrint(Blueprint):
                           'patient therapy report details',
                           self.patient_obj.therapy_report_details,
                           methods=['GET'])
+        self.add_url_rule('/patient/device',
+                          'disassociate device from patient',
+                          self.patient_obj.patient_remove_device,
+                          methods=['DELETE'])

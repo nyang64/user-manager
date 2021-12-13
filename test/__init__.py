@@ -1,2 +1,3 @@
 import sys
-sys.path.insert(0, './user_manager/')
+
+sys.path.insert(0, "./user_manager/")

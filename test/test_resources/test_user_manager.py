@@ -1,7 +1,7 @@
 import http
 from test.flask_app1 import create_test_app
 from unittest import TestCase, mock
-
+from db import db
 import pytest
 from resources.user_manager import UserManager
 from services.user_services import UserServices
@@ -14,8 +14,9 @@ class TestUserManager(TestCase):
         self.user = UserManager()
 
     @mock.patch.object(UserServices, "register_user")
+    @mock.patch("resources.user_manager.send_user_registration_email")
     @mock.patch("utils.validation.request", spec={})
-    def test_create_user(self, request, mock_user):
+    def test_create_user(self, request, mock_email, mock_user):
         reqdata = {
             "email": "avilash@gmail.com",
             "password": "test1234",
@@ -37,7 +38,8 @@ class TestUserManager(TestCase):
         app = create_test_app()
         with app.test_request_context():
             mock_user.return_value = "1", "1212"
-            resp = UserManager.create_user.__wrapped__(self.user, "")
+            args = {"user_role": "R", "user_email": "E"}
+            resp = UserManager.create_user.__wrapped__(self.user, args)
             self.assertEqual(resp, expected_resp)
 
     @mock.patch.object(UserServices, "update_user_byid")
@@ -69,7 +71,7 @@ class TestUserManager(TestCase):
                 UserManager.update_user.__wrapped__(self.user, "")
             self.assertIsInstance(e.value, BadRequest)
 
-    @mock.patch.object(UserServices, "delete_user_byid")
+    @mock.patch("services.user_services.UserServices.delete_user_byid", return_value=db.session)
     @mock.patch("resources.user_manager.request", spec={})
     def test_delete_user(self, request, mock_user):
         request.args = {"id": 1}
@@ -79,7 +81,6 @@ class TestUserManager(TestCase):
         )
         app = create_test_app()
         with app.test_request_context():
-            mock_user.return_value = None
             resp = UserManager.delete_user.__wrapped__(self.user, "")
             self.assertEqual(resp, expected_resp)
 

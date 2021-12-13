@@ -23,7 +23,7 @@ class RegisterSchema(BaseSchema):
     email = fields.Str(required=True,
                        validate=validate.Email(error="Not a valid email"),
                        load_only=True)
-    password = fields.Str(required=True,
+    password = fields.Str(required=False,
                           validate=must_not_blank,
                           load_only=True)
 

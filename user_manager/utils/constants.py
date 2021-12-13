@@ -13,11 +13,20 @@ ADMIN = "ADMIN"
 ESUSER = "USER"
 PROVIDER = "PROVIDER"
 PATIENT = "PATIENT"
+CUSTOMER_SERVICE = "CUSTOMER_SERVICE"
+STUDY_MANAGER = "STUDY_MANAGER"
+SITE_COORDINATOR = "SITE_COORDINATOR"
 DISABLED = "DISABLED"
 ACTIVE = "ACTIVE"
 SUSPENDED = "SUSPENDED"
 ENROLLED = "ENROLLED"
 DISENROLLED = "DISENROLLED"
+
+# ----- Provider roles ------------
+OUTPATIENT_PROVIDER = "outpatient"
+PRESCRIBING_PROVIDER = "prescribing"
+STUDY_COORDINATOR = "studycoordinator"
+
 
 # -------------- Report --------------
 REPORT_BUCKET_NAME = read_environ_value(value, "REPORT_BUCKET_NAME")
@@ -32,6 +41,7 @@ DEVICE_BASE_URL = read_environ_value(value, "DEVICE_BASE_URL")
 # Statuses from device-manager
 ASSIGNED = "Assigned"
 AVAILABLE = "Available"
+INACTIVE = "Inactive"
 
 # Metrics
 DEVICE_BUTTON_PRESS = "buttonPresses"
@@ -41,9 +51,19 @@ DEVICE_ROLLING_MEAN_32 = "rollingMean32"
 DEVICE_ROLLING_MEAN_100 = "rollingMean100"
 DEVICE_METRICS_TIMESTAMP = "timestamp"
 
+FLASK_SECRET_KEY = b'P\x883\xae\xb1\xe3\xf9X\xaa\x15\xb2A\x08fw\x04'
+MAX_FAILED_LOGINS_ALLOWED = 5
+SESSION_EXPIRATION_TIME_IN_MINUTES = 5
+
 # Mock
 DEVICE_INFO_MOCK = {
     "key": "32413046393134373030313234433230",
     "serial_number": "22222222",
 }
 FAKE_TOKEN = "12345ABCDEF"
+
+PATIENT_PORTAL_LOGIN_PASSWORD = read_environ_value(value, "PATIENT_PORTAL_PASSWORD")
+
+# Constants for product distribution request
+PDR_PROTOCOL_NUMBER = 2053
+CUSTOMER_SERVICE_EMAIL= read_environ_value(value, "CUSTOMER_SERVICE_EMAIL")

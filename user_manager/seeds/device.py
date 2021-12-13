@@ -58,14 +58,30 @@ DEVICE_STATUS_TYPES = {
     "111": "NOTIF_STATUS_M1_DISCONNECT",
     "113": "NOTIF_STATUS_NO_THERAPY_MRA_HIGH",
     "116": "NOTIF_STATUS_DEVICE_REMOVAL_NO_THERAPY_REPLACE_DEV",
-    "118": "NOTIF_STATUS_REMOVAL_EXIT_TO_SHIPPING_DEFIB"
+    "118": "NOTIF_STATUS_REMOVAL_EXIT_TO_SHIPPING_DEFIB",
+    "E1": "DEVICE_DISCONNECTED_PENDING",
+    "E2": "DEVICE_DISCONNECTED",
+    "E3": "DEVICE_CONNECTION_ERROR",
+    "E4": "NETWORK_UNAVAILABLE",
+    "E5": "UNABLE_TO_TRANSMIT",
+    "E6": "BLUETOOTH_DISABLED",
+    "E7": "BLUETOOTH_DISALLOWED",
+    "E8": "UNKNOWN_SERIAL_NUMBER",
 }
 def device_status_types():
     print("Device Status types seed")
     data_from_db = DeviceUiStatusType.all()
 
+    # Check if status_type exists
     if len(data_from_db) > 0:
-        message_details["device_status_types"] = "Nothing was added some metrics already exist. "
+        # Iterate through dictionary and see if exists
+        for key, value in DEVICE_STATUS_TYPES.items():
+            if not DeviceUiStatusType.find_by_ui_id(_ui_id=key):
+                message_details["device_status_types"] = "Status type was created"
+                new_status_type = DeviceUiStatusType(name=value, ui_id=key)
+                new_status_type.save_to_db()
+                message_details["Device ui status types"] = "Status types were created"
+        message_details["device_status_types"] = "Nothing else was added some metrics already exist. "
     else:
         for key, value in DEVICE_STATUS_TYPES.items():
             status_type = DeviceUiStatusType(name=value, ui_id=key)

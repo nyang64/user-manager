@@ -25,7 +25,10 @@ class Users(BaseModel):
     first_name = db.Column("first_name", String(30), nullable=False)
     last_name = db.Column("last_name", String(30), nullable=False)
     phone_number = db.Column("phone_number", String(12), nullable=False)
-    uuid = db.Column(UUID(as_uuid=True), default=uuid.uuid4, unique=True)
+    uuid = db.Column(
+        UUID(as_uuid=True), default=uuid.uuid4, unique=True, nullable=False
+    )
+    external_user_id = db.Column("external_user_id", String(10), nullable=True)
     registration = db.relationship("UserRegister", backref="registrations")
     roles = db.relationship("UserRoles", lazy="joined", uselist=True)
     statuses = db.relationship(
@@ -58,7 +61,7 @@ class Users(BaseModel):
         return db.session.query(cls).filter_by(id=user_id).first()
 
     @classmethod
-    def getUserById(cls, user_reg_id):
+    def get_user_by_registration_id(cls, user_reg_id):
         try:
             user = cls.find_by_registration_id(registration_id=user_reg_id)
             if user is None:

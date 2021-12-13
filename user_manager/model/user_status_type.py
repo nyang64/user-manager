@@ -12,6 +12,10 @@ class UserStatusType(BaseModel):
         return cls.query.all()
 
     @classmethod
+    def find_by_id(cls, _id) -> "UserStatusType":
+        return db.session.query(cls).filter_by(id=_id).first()
+
+    @classmethod
     def find_by_name(cls, _name):
         return db.session.query(cls).filter_by(name=_name).first()
 

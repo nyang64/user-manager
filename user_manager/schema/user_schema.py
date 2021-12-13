@@ -2,6 +2,7 @@ from ma import ma
 from marshmallow import ValidationError, fields, post_load
 from model.users import Users
 from schema.base_schema import BaseSchema, validate_number
+from schema.address_schema import AddressSchema
 from schema.register_schema import RegisterSchema, RegistrationSchema
 from schema.role_schema import RoleSchema
 
@@ -28,15 +29,19 @@ class CreateUserSchema(RegisterSchema):
     last_name = fields.Str(required=True, validate=must_not_blank)
     phone_number = fields.Str(required=True, validate=validate_number)
     role_name = fields.Str(required=True, validate=must_not_blank)
+    external_user_id = fields.Str(reqired=True)
+    address = fields.Nested(AddressSchema, required=False)
 
     @post_load
     def make_post_load_object(self, data, **kwargs):
         register = super().make_post_load_object(data)
         first_name = data.get("first_name")
         last_name = data.get("last_name")
-        phone_number = data.get("phone_number")
+        patient_mobile = data.get("phone_number")
         role_name = data.get("role_name")
-        user = (first_name, last_name, phone_number, role_name)
+        external_user_id = data.get("external_user_id")
+        address = data.get("address")
+        user = (first_name, last_name, patient_mobile, role_name, external_user_id, address)
         return register, user
 
 

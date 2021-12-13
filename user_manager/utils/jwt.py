@@ -27,6 +27,20 @@ def encoded_Token(
                 "iat": datetime.datetime.now()
                 }, secret)
 
+def encoded_user_token(
+        isrefreshToken: bool,
+        user_email: str,
+        user_role: str):
+    if isrefreshToken:
+        secret = read_environ_value(value, "REFRESH_TOKEN_KEY")
+    else:
+        secret = read_environ_value(value, "ACCESS_TOKEN_KEY")
+    return jwt.encode({
+                "user_email": user_email,
+                "user_role": user_role,
+                "exp": (tokenTime(isrefreshToken)),
+                "iat": datetime.datetime.now()
+                }, secret)
 
 def require_user_token(*args):
     def require_user_token_validator(func):

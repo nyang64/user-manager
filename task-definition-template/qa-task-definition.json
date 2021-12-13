@@ -21,7 +21,15 @@
       "environment": [
         {
           "name": "APP_LINK",
-          "value": "https://testflight.apple.com/join/QidKZCuu"
+          "value": "$APP_LINK"
+        },
+        {
+          "name": "CLINICAL_PORTAL_URL",
+          "value": "https://qa.clinical.elementscience.com/"
+        },
+        {
+          "name": "MANAGEMENT_PORTAL_URL",
+          "value": "$MANAGEMENT_PORTAL_URL"
         },
         {
           "name": "POSTGRES_DB_HOST",
@@ -106,6 +114,30 @@
         {
           "name": "LOG_LEVEL",
           "value": "$LOG_LEVEL"
+        },
+        {
+          "name": "CRON_MINUTE",
+          "value": "0"
+        },
+        {
+          "name": "CRON_HOUR",
+          "value": "1"
+        },
+        {
+          "name": "NEWSLETTER_S3_BUCKET",
+          "value": "es-email-newsletter"
+        },
+        {
+          "name": "MATERIAL_REQUEST_S3_BUCKET",
+          "value": "qa-product-requests"
+        },
+        {
+          "name": "SURVEY_LINK",
+          "value": ""
+        },
+        {
+          "name": "CUSTOMER_SERVICE_EMAIL",
+          "value": "sqa@elementsci.com"
         }
       ],
       "secrets": [

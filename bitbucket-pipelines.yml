@@ -44,6 +44,9 @@ definitions:
           - export DEPLOYMENT_ENVIRONMENT="$BITBUCKET_DEPLOYMENT_ENVIRONMENT"
           - export LOG_LEVEL="$FLASK_LOG_LEVEL"
           - export MANAGEMENT_PORTAL_URL="$PATIENT_MANAGEMENT_PORTAL_URL"
+          - export CLINICAL_PORTAL_URL="$CLINICAL_PORTAL_URL"
+          - export TESTFLIGHT_LINK="$TESTFLIGHT_LINK"
+          - export DEVICE_BASE_URL="$DEVICE_BASE_URL"
           - envsubst < task-definition-template/"$BITBUCKET_DEPLOYMENT_ENVIRONMENT"-task-definition.json >  task-definition.json
 
     # Update the task definition.

@@ -27,6 +27,8 @@ class AddMaterialSchema(BaseSchema):
     recipient_email = fields.Str(required=True, validate=must_not_blank)
     special_instructions = fields.Str(required=False)
     requested_product = fields.Dict(keys=fields.Str(), values=fields.Int())
+    requested_return_product = fields.Dict(keys=fields.Str(), values=fields.Int())
+    complaint_request = fields.Bool(required=False)
 
     @post_load
     def load_data(self, data, **kwargs):
@@ -43,18 +45,30 @@ class AddMaterialSchema(BaseSchema):
         req_obj.zip = data.get("address").postal_code
         req_obj.phone = data.get("recipient_phone")
         req_obj.email = data.get("recipient_email")
-        req_obj.double_patch_qty = data.get("requested_product").get("double_patch_shipper")
-        req_obj.single_patch_qty = data.get("requested_product").get("single_patch_shipper")
+
+        # requested new products
+        req_obj.patch_kit_qty = data.get("requested_product").get("patch_unit")
         req_obj.mdu_qty = data.get("requested_product").get("mdu")
         req_obj.starter_kit_qty = data.get("requested_product").get("starter_kit")
         req_obj.skin_prep_kit_qty = data.get("requested_product").get("skin_prep_kit")
         req_obj.removal_kit_qty = data.get("requested_product").get("removal_kit")
         req_obj.placement_accessory_qty = data.get("requested_product").get("placement_accessory")
-        req_obj.ht_qty = 0
+        req_obj.ht_qty = data.get("requested_product").get("hair_trimmer")
         req_obj.ifu_qty = data.get("requested_product").get("ifu")
         req_obj.adhesive_laminate_qty = data.get("requested_product").get("adhesive_laminate")
-        req_obj.patcher_shipper_return_box_qty = data.get("requested_product").get("patcher_shipper_return_box")
-        req_obj.su_qty = 0
+
+        req_obj.mdu_return_qty = data.get("requested_return_product").get("mdu_return")
+        req_obj.patch_return_qty = data.get("requested_return_product").get("patch_unit_return")
+        req_obj.placement_accessory_return_qty = data.get("requested_return_product").get("placement_accessory_return")
+        req_obj.return_label_qty = data.get("requested_return_product").get("return_label")
+
+        req_obj.special_instructions = data.get("special_instructions")
+
+        if data.get("complaint_request") is True:
+            req_obj.complaint_request = "Yes"
+        else:
+            req_obj.complaint_request = "No"
+
         req_obj.site_id = data.get("site_id")
         req_obj.patient_id = data.get("patient_id")
 

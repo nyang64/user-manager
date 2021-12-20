@@ -24,8 +24,12 @@
           "value": "$APP_LINK"
         },
         {
+          "name": "TESTFLIGHT_LINK",
+          "value": "$TESTFLIGHT_LINK"
+        },
+        {
           "name": "CLINICAL_PORTAL_URL",
-          "value": "https://cohort.clinical.elementscience.com/"
+          "value": "$CLINICAL_PORTAL_URL"
         },
         {
           "name": "MANAGEMENT_PORTAL_URL",
@@ -101,7 +105,7 @@
         },
         {
           "name": "DEVICE_BASE_URL",
-          "value": "https://xthqtsljcj.execute-api.us-west-2.amazonaws.com/prod/v1"
+          "value": "$DEVICE_BASE_URL"
         },
         {
           "name": "DEBUG",

@@ -67,3 +67,4 @@ PATIENT_PORTAL_LOGIN_PASSWORD = read_environ_value(value, "PATIENT_PORTAL_PASSWO
 # Constants for product distribution request
 PDR_PROTOCOL_NUMBER = 2053
 CUSTOMER_SERVICE_EMAIL= read_environ_value(value, "CUSTOMER_SERVICE_EMAIL")
+INITIAL_SHIPPING_DAYS=3

@@ -64,7 +64,7 @@ class TestProviderServices(TestCase):
             user = self.populate_data.create_user("user@gmail.com")
             fac = self.populate_data.create_facility()
             self.populate_data.provider_role_types()
-            resp = self.provider_service.add_provider(user.id, fac.id, "prescribing")
+            resp = self.provider_service.add_provider(user.id, fac.id, "prescribing", False)
             self.assertIsNotNone(resp)
             self.assertEqual(1, resp)
 
@@ -74,7 +74,7 @@ class TestProviderServices(TestCase):
             user = self.populate_data.create_user("user@gmail.com")
             fac = self.populate_data.create_facility()
             with pytest.raises(NotFound) as e:
-                self.provider_service.add_provider(user.id, fac.id, "outpat")
+                self.provider_service.add_provider(user.id, fac.id, "outpat", False)
             self.assertIsInstance(e.value, NotFound)
 
     @mock.patch.object(Facilities, "find_by_id")
@@ -83,7 +83,7 @@ class TestProviderServices(TestCase):
         app = create_test_app()
         with app.app_context():
             with pytest.raises(NotFound) as e:
-                self.provider_service.add_provider(1, 1, "")
+                self.provider_service.add_provider(1, 1, "", False)
             self.assertIsInstance(e.value, NotFound)
 
     def test_report_signed_link_for_none(self):
@@ -144,7 +144,7 @@ class TestProviderServices(TestCase):
         with app.app_context():
             self.populate_data.add_roles()
             resp = self.provider_service.register_provider_service(
-                reg, user, 1, "PROVIDER"
+                reg, user, 1, "PROVIDER", False
             )
             self.assertIsNotNone(resp)
             self.assertEqual(2, resp)
@@ -152,6 +152,6 @@ class TestProviderServices(TestCase):
         with app.app_context():
             with pytest.raises(InternalServerError) as e:
                 self.provider_service.register_provider_service(
-                    reg, user, 1, "PROVIDER"
+                    reg, user, 1, "PROVIDER", True
                 )
             self.assertIsInstance(e.value, InternalServerError)

@@ -12,7 +12,6 @@ class StudyManagers(BaseModel):
     address_id = db.Column(
         "address_id", db.Integer, db.ForeignKey("ES.addresses.id", ondelete="CASCADE")
     )
-    facility_id = db.Column("facility_id", db.String(50),  nullable=True)
     user = db.relationship("Users", backref=backref("user_study_manager", uselist=False))
     address = db.relationship("Address", backref=backref("address_study_manager", uselist=False))
 

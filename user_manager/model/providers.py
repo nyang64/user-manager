@@ -15,6 +15,7 @@ class Providers(BaseModel):
         "facility_id", db.Integer, db.ForeignKey("ES.facilities.id", ondelete="CASCADE")
     )
     user = db.relationship("Users", backref=backref("user_provider", uselist=False))
+    is_primary = db.Column("is_primary", db.Boolean, nullable=False, default=False)
 
     @classmethod
     def all(cls) -> "Providers":

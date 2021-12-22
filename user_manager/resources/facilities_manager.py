@@ -25,7 +25,8 @@ class FacilitiesManager:
 
         logging.info("Request Received to add facility")
         request_data = validate_request()
-        address, facility_name, on_call_phone, external_facility_id = add_facility_schema.load(request_data)
+        address, facility_name, on_call_phone, external_facility_id, primary_contact_id = \
+            add_facility_schema.load(request_data)
         logging.debug(
             "User: {} with role: {} - adding new facility: {}::{}".format(token["user_email"], token["user_role"],
                                                                           facility_name, external_facility_id))
@@ -41,7 +42,8 @@ class FacilitiesManager:
                     http.client.CONFLICT,
                 )
 
-        aid, fid = facility_obj.register_facility(address, facility_name, on_call_phone, external_facility_id)
+        aid, fid = facility_obj.register_facility(address, facility_name, on_call_phone,
+                                                  external_facility_id, primary_contact_id)
         return (
             {"address_id": aid, "facility_id": fid, "external_facility_id": external_facility_id,
              "status_code": http.client.CREATED},
@@ -114,10 +116,12 @@ class FacilitiesManager:
 
         try:
             request_data = validate_request()
-            address, facility_name, on_call_phone, external_facility_id = update_facility_schema.load(request_data)
+            address, facility_name, on_call_phone, external_facility_id, primary_contact_id = \
+                update_facility_schema.load(request_data)
 
             facility_svc = FacilityService()
-            facility_svc.update_facility(facility_id, address, facility_name, on_call_phone, external_facility_id)
+            facility_svc.update_facility(facility_id, address, facility_name, on_call_phone,
+                                         external_facility_id, primary_contact_id)
         except Exception as ex:
             return {"message": "Update failed. Please check logs for details"}, http.client.BAD_REQUEST
 

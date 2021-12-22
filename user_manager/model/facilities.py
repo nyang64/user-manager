@@ -21,6 +21,12 @@ class Facilities(BaseModel):
     is_active = db.Column(
         "is_active", db.Boolean, nullable=False, default=True
     )
+    primary_contact_id = db.Column(
+        "primary_contact_id",
+        db.Integer,
+        db.ForeignKey("ES.users.id", ondelete="CASCADE"),
+        nullable=True,
+    )
 
     @classmethod
     def find_by_id(cls, _id) -> "Facilities":

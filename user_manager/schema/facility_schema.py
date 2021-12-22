@@ -16,6 +16,7 @@ class AddFacilitySchema(BaseSchema):
     facility_name = fields.Str(required=True, validate=must_not_blank)
     on_call_phone = fields.Str(required=True, validate=must_not_blank)
     external_facility_id = fields.Str(required=True, validate=must_not_blank)
+    primary_contact_id = fields.Int(required=False)
 
     @post_load
     def load_data(self, data, **kwargs):
@@ -24,6 +25,7 @@ class AddFacilitySchema(BaseSchema):
             data.get("facility_name"),
             data.get("on_call_phone"),
             data.get("external_facility_id"),
+            data.get("primary_contact_id"),
         )
 
 

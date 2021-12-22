@@ -175,12 +175,28 @@ class FacilityService(DbRepository):
             raise InternalServerError(str(error))
 
     def get_filtered_facilities(self, page_number, record_per_page, name, external_id):
+        address_tuple = namedtuple(
+            "Address",
+            (
+                "street_address_1",
+                "street_address_2",
+                "city",
+                "state",
+                "country",
+                "postal_code"
+            )
+        )
         facilities_list = namedtuple(
             "FacilitiesList",
             (
                 "name",
                 "external_id",
-                "address",
+                "street_address_1",
+                "street_address_2",
+                "city",
+                "state",
+                "postal_code",
+                "country",
                 "phone",
                 "num_of_patients",
                 "study_coordinator",
@@ -200,9 +216,11 @@ class FacilityService(DbRepository):
             Facilities.name,
             Facilities.on_call_phone,
             Address.street_address_1,
+            Address.street_address_2,
             Address.city,
             Address.state,
             Address.postal_code,
+            Address.country,
             Facilities.id,
             Facilities.is_active
         )
@@ -236,12 +254,11 @@ class FacilityService(DbRepository):
 
         for data in query_data:
             # Get the study coordinator name
-
             (
                 study_coordinators,
                 patients_count,
             ) = self.__find_study_coordinator_and_patients_count(
-                data[7], study_coordinator_role_id, outpatient_role_id
+                data[9], study_coordinator_role_id, outpatient_role_id
             )
 
             study_coordinator_name = ""
@@ -252,9 +269,14 @@ class FacilityService(DbRepository):
                 external_id=data[0],
                 name=data[1],
                 phone=data[2],
-                address=data[3] + " " + data[4] + ", " + data[5] + " " + data[6],
-                facility_id=data[7],
-                is_active=data[8],
+                street_address_1=data[3],
+                street_address_2=data[4],
+                city=data[5],
+                state=data[6],
+                postal_code=data[7],
+                country=data[8],
+                facility_id=data[9],
+                is_active=data[10],
                 num_of_patients=patients_count,
                 study_coordinator=study_coordinator_name,
             )

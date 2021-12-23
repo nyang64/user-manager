@@ -385,11 +385,13 @@ class FacilityService(DbRepository):
         name,
         on_call_phone,
         external_facility_id,
+        primary_contact_id,
         address_id=None,
     ):
         facility_from_db.name = name
         facility_from_db.on_call_phone = on_call_phone
         facility_from_db.external_facility_id = external_facility_id
+        facility_from_db.primary_contact_id = primary_contact_id
         if address_id:
             facility_from_db.address_id = address_id
 

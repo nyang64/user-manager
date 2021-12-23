@@ -338,18 +338,21 @@ class FacilityService(DbRepository):
         study_coordinator, outpatient_providers, prescribing_providers = \
             self.__get_all_providers_for_site(facility.id)
 
+        study_coordinators = []
         if study_coordinator is not None and len(study_coordinator) > 0:
-            prov_json = {
-                "first_name": study_coordinator[0].user.first_name,
-                "last_name": study_coordinator[0].user.last_name,
-                "id": study_coordinator[0].id,
-                "external_id": study_coordinator[0].user.external_user_id,
-                "email": study_coordinator[0].user.registration.email,
-                "phone": study_coordinator[0].user.phone_number,
-                "role": STUDY_COORDINATOR,
-                "is_primary": study_coordinator[0].is_primary
-            }
-            facility_details["study_coordinator"] = prov_json
+            for sc in study_coordinator:
+                sc_json = {
+                    "first_name": sc.user.first_name,
+                    "last_name": sc.user.last_name,
+                    "id": sc.id,
+                    "external_id": sc.user.external_user_id,
+                    "email": sc.user.registration.email,
+                    "phone": sc.user.phone_number,
+                    "role": STUDY_COORDINATOR,
+                    "is_primary": sc.is_primary
+                }
+                study_coordinators.append(sc_json)
+            facility_details["study_coordinator"] = study_coordinators
 
         if outpatient_providers is not None and len(outpatient_providers) > 0:
             prov_json = {

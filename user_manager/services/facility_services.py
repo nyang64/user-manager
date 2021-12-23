@@ -194,7 +194,8 @@ class FacilityService(DbRepository):
                 "primary_study_coordinator_name",
                 "site_manager_name",
                 "facility_id",
-                "is_active"
+                "is_active",
+                "study_coordinator_count"
             ),
         )
 
@@ -274,7 +275,8 @@ class FacilityService(DbRepository):
                 is_active=data[10],
                 num_of_patients=patients_count,
                 primary_study_coordinator_name=primary_study_coordinator_name,
-                site_manager_name=study_manager_name
+                site_manager_name=study_manager_name,
+                study_coordinator_count=len(study_coordinators)
             )
 
             lists.append(facilities._asdict())

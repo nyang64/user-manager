@@ -48,6 +48,7 @@ class ProviderManager:
     @require_user_token(ADMIN, STUDY_MANAGER, CUSTOMER_SERVICE)
     def register_provider(self, token):
         provider_json = request.json
+        # TODO - Move to schema based validation
         if (
                 have_keys(
                     provider_json,
@@ -56,6 +57,7 @@ class ProviderManager:
                     "facility_id",
                     "email",
                     "role",
+                    "is_primary"
                 )
                 is False
         ):
@@ -86,8 +88,11 @@ class ProviderManager:
 
         facility_id = provider_json["facility_id"]
         role_name = provider_json["role"]
+
+        # Currently this is applicable only for study coordinators
+        is_primary_provider = provider_json["is_primary"]
         provider_id = self.provider_obj.register_provider_service(
-            register, user, facility_id, role_name
+            register, user, facility_id, role_name, is_primary_provider
         )
 
         provider = Providers.find_by_id(provider_id)

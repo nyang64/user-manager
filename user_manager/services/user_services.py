@@ -185,6 +185,11 @@ class UserServices(DbRepository):
 
         # Update the existing status object. Do not add a new row.
         user_status_obj = UserStatus.get_user_status_by_user_id(user_id)
+
+        if not user_status_obj:
+            user_status_obj = UserStatus()
+            user_status_obj.user_id = user_id
+
         user_status_obj.status_id = status_type.id
         user_status_obj.notes = notes
         user_status_obj.deactivation_reason = json.dumps(reason)

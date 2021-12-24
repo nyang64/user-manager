@@ -23,7 +23,7 @@ class FacilitiesBlueprint(Blueprint):
         )
 
         # Used by:
-        # patient management portal: add/edit patient
+        # patient management portal: add/edit facilities
         self.add_url_rule(
             "/facilities_providers",
             "List all facilities and providers",

@@ -8,6 +8,7 @@ from model.providers import Providers
 from model.patients_providers import PatientsProviders
 from model.provider_role_types import ProviderRoleTypes
 from model.providers_roles import ProviderRoles
+from model.users import Users
 from services.repository.db_repositories import DbRepository
 from utils.constants import STUDY_COORDINATOR, OUTPATIENT_PROVIDER, PRESCRIBING_PROVIDER
 
@@ -20,7 +21,7 @@ class FacilityService(DbRepository):
         pass
 
     def register_facility(
-        self, address, facility_name, on_call_phone, external_facility_id
+        self, address, facility_name, on_call_phone, external_facility_id, primary_contact_id
     ):
         """ Commit the transcation"""
         logging.info("Transcation Started.")
@@ -30,7 +31,7 @@ class FacilityService(DbRepository):
             else:
                 address_id = None
             facility_id = self.save_facility(
-                facility_name, address_id, on_call_phone, external_facility_id
+                facility_name, address_id, on_call_phone, external_facility_id, primary_contact_id
             )
             self.commit_db()
             logging.info("Transcation Completed")
@@ -116,7 +117,7 @@ class FacilityService(DbRepository):
             raise InternalServerError(str(error))
 
     def save_facility(
-        self, facility_name, address_id, on_call_phone, external_facility_id
+        self, facility_name, address_id, on_call_phone, external_facility_id, primary_contact_id
     ):
         """ Flush the Facility transcation"""
         logging.info("Binding Facility Data")
@@ -126,6 +127,7 @@ class FacilityService(DbRepository):
                 name=facility_name,
                 on_call_phone=on_call_phone,
                 external_facility_id=external_facility_id,
+                primary_contact_id=primary_contact_id
             )
             self.flush_db(facilities)
             logging.info("Flushed the Facility data")
@@ -138,7 +140,7 @@ class FacilityService(DbRepository):
             raise InternalServerError(str(error))
 
     def update_facility(
-        self, facility_id, address, facility_name, on_call_phone, external_facility_id
+        self, facility_id, address, facility_name, on_call_phone, external_facility_id, primary_contact_id
     ):
         logging.info("Updating Facility Data")
         try:
@@ -167,6 +169,7 @@ class FacilityService(DbRepository):
                 on_call_phone=on_call_phone,
                 external_facility_id=external_facility_id,
                 address_id=address.id,
+                primary_contact_id=primary_contact_id
             )
 
             self.commit_db()
@@ -175,17 +178,6 @@ class FacilityService(DbRepository):
             raise InternalServerError(str(error))
 
     def get_filtered_facilities(self, page_number, record_per_page, name, external_id):
-        address_tuple = namedtuple(
-            "Address",
-            (
-                "street_address_1",
-                "street_address_2",
-                "city",
-                "state",
-                "country",
-                "postal_code"
-            )
-        )
         facilities_list = namedtuple(
             "FacilitiesList",
             (
@@ -199,17 +191,18 @@ class FacilityService(DbRepository):
                 "country",
                 "phone",
                 "num_of_patients",
-                "study_coordinator",
+                "primary_study_coordinator_name",
+                "site_manager_name",
                 "facility_id",
-                "is_active"
+                "is_active",
+                "study_coordinator_count"
             ),
         )
 
         # Get all facilities and address
         facilities_query = db.session.query(Facilities)
-        facilities_query = facilities_query.join(
-            Address, Facilities.address_id == Address.id
-        )
+        facilities_query = facilities_query.join(Address, Facilities.address_id == Address.id)\
+                            .join(Users, Users.id == Facilities.primary_contact_id, isouter=True)
 
         facilities_query = facilities_query.with_entities(
             Facilities.external_facility_id,
@@ -222,7 +215,9 @@ class FacilityService(DbRepository):
             Address.postal_code,
             Address.country,
             Facilities.id,
-            Facilities.is_active
+            Facilities.is_active,
+            Users.first_name,
+            Users.last_name
         )
 
         if external_id is not None and len(external_id) > 0:
@@ -257,13 +252,14 @@ class FacilityService(DbRepository):
             (
                 study_coordinators,
                 patients_count,
+                primary_study_coordinator_name
             ) = self.__find_study_coordinator_and_patients_count(
                 data[9], study_coordinator_role_id, outpatient_role_id
             )
 
-            study_coordinator_name = ""
-            if len(study_coordinators) > 0:
-                study_coordinator_name = study_coordinators[0]
+            study_manager_name = ""
+            if data[11] and data[12]:
+                study_manager_name = data[11] + " " + data[12]
 
             facilities = facilities_list(
                 external_id=data[0],
@@ -278,7 +274,9 @@ class FacilityService(DbRepository):
                 facility_id=data[9],
                 is_active=data[10],
                 num_of_patients=patients_count,
-                study_coordinator=study_coordinator_name,
+                primary_study_coordinator_name=primary_study_coordinator_name,
+                site_manager_name=study_manager_name,
+                study_coordinator_count=len(study_coordinators)
             )
 
             lists.append(facilities._asdict())
@@ -314,7 +312,6 @@ class FacilityService(DbRepository):
             return None
 
         address = Address.find_by_id(facility.address_id)
-
         facility_details = {
             "id": facility.id,
             "name": facility.name,
@@ -328,20 +325,34 @@ class FacilityService(DbRepository):
             "zipcode": address.postal_code,
         }
 
+        site_manager = Users.find_by_id(facility.primary_contact_id)
+        site_mgr_json = {}
+        if site_manager:
+            site_mgr_json = {
+                "first_name": site_manager.first_name,
+                "last_name": site_manager.last_name,
+                "id": site_manager.id
+            }
+        facility_details["site_manager"] = site_mgr_json
+
         study_coordinator, outpatient_providers, prescribing_providers = \
             self.__get_all_providers_for_site(facility.id)
 
+        study_coordinators = []
         if study_coordinator is not None and len(study_coordinator) > 0:
-            prov_json = {
-                "first_name": study_coordinator[0].user.first_name,
-                "last_name": study_coordinator[0].user.last_name,
-                "id": study_coordinator[0].id,
-                "external_id": study_coordinator[0].user.external_user_id,
-                "email": study_coordinator[0].user.registration.email,
-                "phone": study_coordinator[0].user.phone_number,
-                "role": STUDY_COORDINATOR
-            }
-            facility_details["study_coordinator"] = prov_json
+            for sc in study_coordinator:
+                sc_json = {
+                    "first_name": sc.user.first_name,
+                    "last_name": sc.user.last_name,
+                    "id": sc.id,
+                    "external_id": sc.user.external_user_id,
+                    "email": sc.user.registration.email,
+                    "phone": sc.user.phone_number,
+                    "role": STUDY_COORDINATOR,
+                    "is_primary": sc.is_primary
+                }
+                study_coordinators.append(sc_json)
+            facility_details["study_coordinator"] = study_coordinators
 
         if outpatient_providers is not None and len(outpatient_providers) > 0:
             prov_json = {
@@ -374,11 +385,13 @@ class FacilityService(DbRepository):
         name,
         on_call_phone,
         external_facility_id,
+        primary_contact_id,
         address_id=None,
     ):
         facility_from_db.name = name
         facility_from_db.on_call_phone = on_call_phone
         facility_from_db.external_facility_id = external_facility_id
+        facility_from_db.primary_contact_id = primary_contact_id
         if address_id:
             facility_from_db.address_id = address_id
 
@@ -390,10 +403,12 @@ class FacilityService(DbRepository):
         providers = Providers.find_by_facility_id(facility_id)
 
         study_coordinators = []
+        primary_study_coordinator_name = ""
         patients_count = 0
 
         if providers is not None and len(providers) > 0:
             for provider in providers:
+
                 patients = PatientsProviders.find_patients_by_provider_and_role_id(
                     provider.id, outpatient_role_id
                 )
@@ -402,12 +417,14 @@ class FacilityService(DbRepository):
                 provider_role = ProviderRoles.find_by_provider_id(
                     _provider_id=provider.id
                 )
-                if study_coordinator_role_id == provider_role[0].provider_role_id:
-                    study_coordinators.append(
-                        provider.user.first_name + " " + provider.user.last_name
-                    )
 
-        return study_coordinators, patients_count
+                if provider_role:
+                    if study_coordinator_role_id == provider_role[0].provider_role_id:
+                        study_coordinators.append(provider)
+                        if provider.is_primary is True:
+                            primary_study_coordinator_name = provider.user.first_name + " " + provider.user.last_name
+
+        return study_coordinators, patients_count, primary_study_coordinator_name
 
 
     def __get_all_providers_for_site(self, facility_id):
@@ -430,14 +447,15 @@ class FacilityService(DbRepository):
                 provider_role = ProviderRoles.find_by_provider_id(
                     _provider_id=provider.id
                 )
-                if study_coordinator_role_id == provider_role[0].provider_role_id:
-                    study_coordinator.append(provider)
+                if provider_role:
+                    if study_coordinator_role_id == provider_role[0].provider_role_id:
+                        study_coordinator.append(provider)
 
-                if outpatient_role_id ==  provider_role[0].provider_role_id:
-                    outpatient_provider.append(provider)
+                    if outpatient_role_id ==  provider_role[0].provider_role_id:
+                        outpatient_provider.append(provider)
 
-                if prescribing_role_id == provider_role[0].provider_role_id:
-                    prescribing_provider.append(provider)
+                    if prescribing_role_id == provider_role[0].provider_role_id:
+                        prescribing_provider.append(provider)
 
         return study_coordinator, outpatient_provider, prescribing_provider
 

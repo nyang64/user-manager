@@ -255,7 +255,9 @@ class MaterialRequestService:
 
             # Since this is the site manager, get the address
             sm = StudyManagers.find_by_user_id(_user_id=user_obj.id)
-            address = Address.find_by_id(sm.address_id)
+            address = None
+            if sm is not None:
+                address = Address.find_by_id(sm.address_id)
 
             if address is not None:
                 req.address = address.street_address_1
@@ -292,29 +294,20 @@ class MaterialRequestService:
                 .join(Facilities, Providers.facility_id == Facilities.id) \
                 .filter(Patient.id == patient.id).all()
 
-            # Assumption is that both outpatient and prescribing providers will be assigned to the same site.
-            # The query above will have to change if the assumption changes
-            outpatient_provider = None
+            primary_provider = None
             facility = None
             if provider_facility is None:
                 logging.error("Could not find the facility information.")
             else:
                 facility = provider_facility[0][0]
 
-                # Find the outpatient provider
-                providers = [provider_facility[0][1]]
-                if len(provider_facility) > 1:
-                    providers.append(provider_facility[1][1])
+                providers = Providers.find_by_facility_id(facility.id)
 
-                outpatient_role_id = \
-                    ProviderRoleTypes.find_by_name(_name=OUTPATIENT_PROVIDER).id
+                # Find the primary study coordinator
 
                 for provider in providers:
-                    provider_role = ProviderRoles.find_by_provider_id(
-                        _provider_id=provider.id
-                    )
-                    if provider_role[0].provider_role_id == outpatient_role_id:
-                        outpatient_provider = provider
+                    if provider.is_primary:
+                        primary_provider = provider
 
             material_requests_db = MaterialRequests()
             material_requests_db.num_items = 3
@@ -334,9 +327,9 @@ class MaterialRequestService:
             req.sequence_number = obj_from_db.request_number
 
             # This request is going to the site. Use the outpatient provider name
-            if outpatient_provider is not None:
-                req.recipient_name = outpatient_provider.user.first_name + " " \
-                                     + outpatient_provider.user.last_name
+            if primary_provider is not None:
+                req.recipient_name = primary_provider.user.first_name + " " \
+                                     + primary_provider.user.last_name
             else:
                 req.recipient_name = user_obj.first_name + " " + user_obj.last_name
             req.phone = user_obj.phone_number
@@ -353,7 +346,7 @@ class MaterialRequestService:
                 req.country = address.country
                 req.state = address.state
 
-            req.mdu_qty = 1
+            req.starter_kit_qty = 1
             req.patch_kit_qty = 2
             req_json = json.dumps(req.__dict__)
             logging.debug(req_json)

@@ -287,11 +287,12 @@ class FacilityService(DbRepository):
         """
         Return a list of all facilities with all types of providers
         """
+        data_list = []
+
         facilities = Facilities.all()
         if facilities is None or len(facilities) == 0:
-            return None
+            return data_list
 
-        data_list = []
         for facility in facilities:
             study_coordinator, outpatient_providers, prescribing_providers = \
                     self.__get_all_providers_for_site(facility.id)

@@ -14,14 +14,14 @@ class MaterialRequests(BaseModel):
                                server_default=MATERIAL_REQ_SEQUENCE.next_value())
     num_items = db.Column("num_items", db.Integer, nullable=False, default=0)
     request_date = db.Column("request_date", db.DateTime)
-    requested_user_id = db.Column("requested_user", db.Integer,
-                                  db.ForeignKey("ES.users.id", ondelete="CASCADE"), nullable=False)
+    requested_user_id = db.Column("requested_user_id", db.Integer,
+                                  db.ForeignKey("ES.users.id", ondelete="CASCADE"), nullable=True)
     request_log_location = db.Column("request_log_location", db.String(200))
     recipient = db.Column("recipient", db.String(100))
     site_id = db.Column("site_id", db.Integer,
                                   db.ForeignKey("ES.facilities.id", ondelete="CASCADE"), nullable=True)
-    patient_id = db.Column("patient_id", db.Integer,
-                           db.ForeignKey("ES.patients.id", ondelete="CASCADE"), nullable=True)
+    recipient_user_id = db.Column("recipient_user_id", db.Integer,
+                           db.ForeignKey("ES.users.id", ondelete="CASCADE"), nullable=True)
 
     @classmethod
     def all(cls) -> "MaterialRequests":
@@ -44,5 +44,4 @@ class MaterialRequests(BaseModel):
         db.session.commit()
         db.session.flush()
         db.session.refresh(self)
-        print(self)
         return self

@@ -24,12 +24,20 @@
           "value": "$APP_LINK"
         },
         {
+          "name": "TESTFLIGHT_LINK",
+          "value": "$TESTFLIGHT_LINK"
+        },
+        {
           "name": "CLINICAL_PORTAL_URL",
-          "value": "https://dev.clinical.elementscience.com/"
+          "value": "$CLINICAL_PORTAL_URL"
         },
         {
           "name": "MANAGEMENT_PORTAL_URL",
           "value": "$MANAGEMENT_PORTAL_URL"
+        },
+        {
+          "name": "PATIENT_PORTAL_PASSWORD",
+          "value": "$PATIENT_PORTAL_PASSWORD"
         },
         {
           "name": "POSTGRES_DB_HOST",
@@ -101,7 +109,7 @@
         },
         {
           "name": "DEVICE_BASE_URL",
-          "value": "https://kqmcepc0ri.execute-api.us-west-1.amazonaws.com/dev/v1"
+          "value": "$DEVICE_BASE_URL"
         },
         {
           "name": "DEBUG",

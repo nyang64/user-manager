@@ -36,7 +36,7 @@ class ProviderService(DbRepository):
         self.auth_obj = AuthServices()
         self.user_obj = UserServices()
 
-    def register_provider_service(self, register, user, facility_id, role):
+    def register_provider_service(self, register, user, facility_id, role, is_primary_provider):
         try:
             # Save data in the registration table
             reg_id = self.auth_obj.register_new_user(register[0], register[1])
@@ -52,7 +52,7 @@ class ProviderService(DbRepository):
             self.user_obj.assign_role(user_id, PROVIDER)
 
             # Create and assign a provider, provider facility and provider role.
-            provider_id = self.add_provider(user_id, facility_id, role)
+            provider_id = self.add_provider(user_id, facility_id, role, is_primary_provider)
 
             # return the id of the provider created.
             return provider_id
@@ -61,7 +61,7 @@ class ProviderService(DbRepository):
             logging.error(str(error))
             raise InternalServerError(str(error))
 
-    def add_provider(self, user_id, facility_id, role_name):
+    def add_provider(self, user_id, facility_id, role_name, is_primary_provider):
         exist_facility = Facilities.find_by_id(facility_id)
         # raise if invalid facility id was received
         if not exist_facility:
@@ -76,7 +76,7 @@ class ProviderService(DbRepository):
 
         # create and save provider
         provider = provider_schema.load(
-            {"user_id": user_id, "facility_id": facility_id}
+            {"user_id": user_id, "facility_id": facility_id, "is_primary": is_primary_provider}
         )
         provider.save_to_db()
 

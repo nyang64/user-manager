@@ -22,6 +22,7 @@ class ProvidersSchema(ma.SQLAlchemyAutoSchema):
     id = ma.auto_field(dump_only=True)
     user_id = ma.auto_field()
     facility_id = ma.auto_field()
+    is_primary = ma.auto_field()
 
 
 class CreateProviderSchema(CreateUserSchema):

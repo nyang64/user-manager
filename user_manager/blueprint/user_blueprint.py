@@ -21,6 +21,10 @@ class UserBluePrint(Blueprint):
                           'List users',
                           self.userObj.get_users,
                           methods=['GET'])
+        self.add_url_rule('/users/role',
+                          'List users by role',
+                          self.userObj.get_users_by_role,
+                          methods=['GET'])
         self.add_url_rule('/user',
                           'Delete users',
                           self.userObj.delete_user,
@@ -30,6 +34,10 @@ class UserBluePrint(Blueprint):
                           self.userObj.get_detail_bytoken,
                           methods=['GET'])
         self.add_url_rule('/user/details',
+                          'show user by id',
+                          self.userObj.show,
+                          methods=['GET'])
+        self.add_url_rule('/users/role',
                           'show user by id',
                           self.userObj.show,
                           methods=['GET'])

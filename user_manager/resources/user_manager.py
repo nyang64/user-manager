@@ -9,7 +9,7 @@ from services.user_services import UserServices
 from schema.user_schema import create_user_schema, update_user_schema, UserSchema
 from utils.validation import validate_request
 from utils.jwt import require_user_token
-from utils.constants import ADMIN, PROVIDER, PATIENT, ESUSER
+from utils.constants import ADMIN, PROVIDER, PATIENT, ESUSER, CUSTOMER_SERVICE, STUDY_MANAGER
 from flask import request
 from model.users import Users
 from model.study_managers import StudyManagers
@@ -79,6 +79,16 @@ class UserManager:
     def get_users(self):
         user_data = self.user_obj.list_users()
         return {'data': user_data,
+                'status_code': '200'}, http.client.OK
+
+    @require_user_token(ADMIN, STUDY_MANAGER, CUSTOMER_SERVICE)
+    def get_users_by_role(self, token):
+        role_name = request.args.get('name')
+        if role_name is None:
+            raise BadRequest("parameter role is missing")
+
+        users = self.user_obj.get_users_by_role(role_name)
+        return {'data': users,
                 'status_code': '200'}, http.client.OK
 
     @require_user_token(ADMIN)

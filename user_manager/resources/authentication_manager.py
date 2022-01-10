@@ -14,7 +14,7 @@ from schema.login_schema import user_login_schema
 from schema.update_password_schema import user_update_schema
 from services.auth_services import AuthServices
 from utils.common import encPass, generateOTP, have_keys, have_keys_NotForce
-from utils.constants import ADMIN, ESUSER, PATIENT, PROVIDER
+from utils.constants import ADMIN, ESUSER, PATIENT, PROVIDER, STUDY_MANAGER, CUSTOMER_SERVICE
 from utils.jwt import encoded_Token, require_refresh_token, require_user_token
 from utils.send_mail import send_otp
 from utils.validation import validate_request
@@ -79,7 +79,7 @@ class AuthOperation:
         self.auth_obj.reset_session(decrypt["user_email"])
         return {"message": "Logged out"}, 200
 
-    @require_user_token(ADMIN, PROVIDER, PATIENT, ESUSER)
+    @require_user_token(ADMIN, PROVIDER, PATIENT, ESUSER, STUDY_MANAGER, CUSTOMER_SERVICE)
     def validate_token(self, decrypt):
         return {"message": "Token is valid"}, 200
 

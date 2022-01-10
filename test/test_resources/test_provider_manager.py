@@ -23,7 +23,8 @@ def create_provider_req_value():
         "phone_number": "9988776111",
         "email": "laura@elementsci.com",
         "role": "outpatient",
-        "external_user_id": "101-103"
+        "external_user_id": "101-103",
+        "is_primary": False
     }
 
 def create_facility_req_value():

@@ -5,6 +5,7 @@ from db import db
 from model.roles import Roles
 from model.user_roles import UserRoles
 from model.user_status import UserStatus
+from model.address import Address
 from model.user_status_type import UserStatusType
 from model.users import Users
 from model.study_managers import StudyManagers
@@ -64,6 +65,43 @@ class UserServices(DbRepository):
         except (TypeError, AttributeError) as error:
             logging.error(error)
             raise InternalServerError(str(error))
+
+    def get_users_by_role(self, role_name):
+        if role_name == STUDY_MANAGER:
+            return self.__get_study_managers()
+
+
+    def __get_study_managers(self):
+        study_managers = db.session.query(Users, StudyManagers, Address) \
+            .join(Users, StudyManagers.user_id == Users.id) \
+            .join(Address, Address.id == StudyManagers.address_id).distinct(Users.id).all()
+
+        users_list = []
+        if study_managers is None or len(study_managers) == 0:
+            return users_list, 0
+
+        for x in study_managers:
+            address = x[2]
+            address_json = {}
+            address_json["street_address_1"] = address.street_address_1
+            address_json["street_address_2"] = address.street_address_2
+            address_json["city"] = address.city
+            address_json["state"] = address.state
+            address_json["country"] = address.country
+            address_json["postal_code"] = address.postal_code
+
+            user = x[0]
+            users_dict = {}
+            users_dict["address"] = address_json
+            users_dict["user_id"] = user.id
+            users_dict["first_name"] = user.first_name
+            users_dict["last_name"] = user.last_name
+            users_dict["phone_number"] = user.phone_number
+            users_dict["email"] = user.registration.email
+
+            users_list.append(users_dict)
+
+        return users_list, len(study_managers)
 
     def list_users(self):
         try:
@@ -142,19 +180,26 @@ class UserServices(DbRepository):
             logging.error(str(error))
             raise InternalServerError("Something Went Wrong")
 
-    def change_user_status(self, user_id, status, reason, _notes, session):
+    def change_user_status(self, user_id, status, reason, notes, session):
         status_type = UserStatusType.find_by_name(status)
 
-        # Create new user_status object and commit to table
-        new_user_status_obj = UserStatus(status_id=status_type.id, user_id=user_id,
-                                         notes=_notes,
-                                         deactivation_reason=json.dumps(reason))
+        # Update the existing status object. Do not add a new row.
+        user_status_obj = UserStatus.get_user_status_by_user_id(user_id)
+
+        if not user_status_obj:
+            user_status_obj = UserStatus()
+            user_status_obj.user_id = user_id
+
+        user_status_obj.status_id = status_type.id
+        user_status_obj.notes = notes
+        user_status_obj.deactivation_reason = json.dumps(reason)
+
         if session:
-            session.add(new_user_status_obj)
+            session.add(user_status_obj)
             return session
         else:
-            self.flush_db(new_user_status_obj)
-            return new_user_status_obj.id
+            self.flush_db(user_status_obj)
+            return user_status_obj.id
 
     def __register_study_manager(self, user_id, user):
         sm = StudyManagers()

@@ -17,6 +17,9 @@ class AuthenticationBlueprint(Blueprint):
         self.add_url_rule('/updatepassword', 'Update user password',
                           self.auth_login.update_user_password,
                           methods=['PUT'])
+        self.add_url_rule('/setpassword', 'Set known password',
+                          self.auth_login.update_and_email_set_password,
+                          methods=['POST'])
         self.add_url_rule('/refresh', 'Refresh Token',
                           self.auth_login.refresh_token,
                           methods=['POST'])

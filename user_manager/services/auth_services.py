@@ -13,6 +13,7 @@ from utils.common import auth_response_model, checkPass, encPass
 from utils.jwt import encoded_Token
 from utils import constants
 from utils.cache import cache
+from utils.send_mail import send_password_reset_email
 from werkzeug.exceptions import Conflict, InternalServerError, NotFound, Unauthorized
 
 utc = pytz.UTC
@@ -214,7 +215,7 @@ class AuthServices(DbRepository):
         response_model = auth_response_model(message=msg, id_token=encoded_access_token)
         return response_model.toJsonObj()
 
-    def update_password(self, user_email, newpassword):
+    def update_password(self, user_email, newpassword, send_email):
         user_data = UserRegister.find_by_email(user_email)
         if user_data is None:
             raise NotFound("No Such User Exist")
@@ -222,6 +223,10 @@ class AuthServices(DbRepository):
         user_data.isFirst = False
         self.update_db(user_data)
         UserOTPModel.deleteAll_OTP(user_id=user_data.id)
+
+        if send_email:
+            user = Users.find_by_registration_id(user_data.id)
+            send_password_reset_email(user.first_name, user.last_name, user_email, user_email, newpassword)
         return {"message": "Password Updated"}, 200
 
     def update_otp_data(self, otp_data):

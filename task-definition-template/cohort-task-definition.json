@@ -36,6 +36,10 @@
           "value": "$MANAGEMENT_PORTAL_URL"
         },
         {
+          "name": "PATIENT_PORTAL_PASSWORD",
+          "value": "$PATIENT_PORTAL_PASSWORD"
+        },
+        {
           "name": "POSTGRES_DB_HOST",
           "value": "$DB_URL"
         },

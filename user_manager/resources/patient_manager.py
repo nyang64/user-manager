@@ -171,7 +171,7 @@ class PatientManager:
         self.patient_obj.assign_device_to_patient(patient_device)
         return {"message": "Device assigned", "status_code": "201"}, http.client.CREATED
 
-    @require_user_token(PATIENT, ADMIN, PROVIDER)
+    @require_user_token(PATIENT, ADMIN, PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER)
     def patient_device_list(self, token):
         device_list = self.patient_obj.patient_device_list(token)
         resp = {"devices": device_list}
@@ -265,8 +265,7 @@ class PatientManager:
         }
         return jsonify(response), 200
 
-
-    @require_user_token(ADMIN, PROVIDER)
+    @require_user_token(ADMIN, PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER)
     def patient_remove_device(self, token):
         device_sn = request.args.get("device_serial_number")
         if device_sn is None:

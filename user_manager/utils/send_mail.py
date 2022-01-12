@@ -255,3 +255,44 @@ def send_product_request_email(seq_number, docx_content, csv_content, sender):
     except Exception as e:
         logging.error(e)
         raise InternalServerError("Something went wrong. {0}".format(e))
+
+
+def send_password_reset_email(first_name, last_name, to_address, username, password):
+    from_address = read_environ_value(value, "SMTP_FROM")
+    msg = MIMEMultipart()
+    msg['From'] = from_address
+    msg['To'] = to_address
+    msg['Subject'] = "Password reset"
+    body = """
+        <html>
+          <body>
+              Hi {} {},
+              
+              <br>
+              Your password was updated recently by our clinical team upon your request. Please use the following
+              credentials for the login.
+              <br>
+            </p>
+            <br>username: {} </br>
+            <br>password: {} </br>
+            </p>
+          </body>
+        </html>
+        """.format(first_name, last_name, username, password)
+    msg.attach(MIMEText(body, 'html'))
+
+    try:
+        server = smtplib.SMTP(
+            read_environ_value(value, "SMTP_SERVER"),
+            read_environ_value(value, "SMTP_PORT"))
+        server.starttls()
+        server.login(read_environ_value(value, "SMTP_USERNAME"),
+                     read_environ_value(value, "SMTP_PASSWORD"))
+        text = msg.as_string()
+        print(f"sending email to: {to_address}")
+        server.sendmail(from_address, to_address, text)
+        server.quit()
+        return True
+    except Exception as e:
+        logging.error(e)
+        raise InternalServerError("Something went wrong. {0}".format(e))

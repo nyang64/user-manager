@@ -81,7 +81,7 @@ class UserManager:
         return {'data': user_data,
                 'status_code': '200'}, http.client.OK
 
-    @require_user_token(ADMIN, STUDY_MANAGER, CUSTOMER_SERVICE)
+    @require_user_token(ADMIN, STUDY_MANAGER, CUSTOMER_SERVICE, PROVIDER)
     def get_users_by_role(self, token):
         role_name = request.args.get('name')
         if role_name is None:
@@ -102,7 +102,7 @@ class UserManager:
         return {'message': 'user deleted',
                 'status_code': '202'}, http.client.ACCEPTED
 
-    @require_user_token(ADMIN, PROVIDER, PATIENT, ESUSER)
+    @require_user_token(ADMIN, PROVIDER, PATIENT, ESUSER, STUDY_MANAGER)
     def show(self, token):
         user_id = request.args.get('id')
         user = Users.find_by_id(user_id)

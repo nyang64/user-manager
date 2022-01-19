@@ -271,8 +271,11 @@ class AuthServices(DbRepository):
 
         role_name = user_roles[0].role.role_name
         logger.debug(role_name)
+        logger.debug(f"Default Study Manager email {constants.DEFAULT_STUDY_MANAGER_EMAIL}")
 
-        if role_name not in [constants.PATIENT, constants.PROVIDER]:
+        if constants.DEFAULT_STUDY_MANAGER_EMAIL == str(data.email).lower():
+            logging.info(f"Logged in with default customer service email {data.email}")
+        elif role_name not in [constants.PATIENT, constants.PROVIDER]:
             response = auth_response_model(
                 message="User with role " + role_name + " is not allowed to access this content",
                 locked=False,

@@ -166,6 +166,10 @@
         {
           "name": "CUSTOMER_SERVICE_EMAIL",
           "value": "customerservice@elementsci.com"
+        },
+        {
+          "name": "DEFAULT_STUDY_MANAGER_USERNAME",
+          "value": "$DEFAULT_STUDY_MANAGER_USERNAME"
         }
       ],
       "secrets": [

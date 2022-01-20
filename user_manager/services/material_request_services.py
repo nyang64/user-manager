@@ -22,9 +22,10 @@ from model.material_requests import MaterialRequests
 from model.provider_role_types import ProviderRoleTypes
 from model.providers_roles import ProviderRoles
 
+from utils.common import format_phone_number
 from utils.send_mail import send_product_request_email
 from utils.constants import PDR_PROTOCOL_NUMBER, INITIAL_SHIPPING_DAYS, PRESCRIBING_PROVIDER, OUTPATIENT_PROVIDER
-from utils.s3_api import  S3Api
+from utils.s3_api import S3Api
 
 class MaterialRequestObj:
     def __init__(self):
@@ -57,7 +58,7 @@ class MaterialRequestObj:
         self.site_id = 0
         self.user_id = 0
         self.special_instructions = ""
-        self.complaint_request = False
+        self.complaint_request = ""
 
     def count_items(self):
         count = self.patch_kit_qty + \
@@ -203,7 +204,7 @@ class MaterialRequestService:
             # Find the patient name
             user = Users.find_by_id(patient.user_id)
             req.recipient_name = user.first_name + " " + user.last_name
-            req.phone = user.phone_number
+            req.phone = format_phone_number(user.phone_number)
             req.email = patient_email
 
             # Since this is the first request, the product will be shipped to a patient.
@@ -215,6 +216,8 @@ class MaterialRequestService:
             req.state = address.state
 
             req.patch_kit_qty = 2
+            req.complaint_request = "No"
+            req.special_instructions = "N/A"
             req_json = json.dumps(req.__dict__)
             logging.debug(req_json)
 
@@ -250,7 +253,7 @@ class MaterialRequestService:
             req.site_name = "N/A"
             # Logged in user is the CSM
             req.recipient_name = user_obj.first_name + " " + user_obj.last_name
-            req.phone = user_obj.phone_number
+            req.phone = format_phone_number(user_obj.phone_number)
             req.email = logged_in_user_email
 
             # Since this is the site manager, get the address
@@ -265,10 +268,12 @@ class MaterialRequestService:
                 req.zip = address.postal_code
                 req.country = address.country
                 req.state = address.state
+                req.special_instructions = "N/A"
             else:
                 req.special_instructions = "Could not find the address for the study manager"
 
             req.mdu_qty = 1
+            req.complaint_request = "No"
             req_json = json.dumps(req.__dict__)
             logging.debug(req_json)
 
@@ -304,7 +309,6 @@ class MaterialRequestService:
                 providers = Providers.find_by_facility_id(facility.id)
 
                 # Find the primary study coordinator
-
                 for provider in providers:
                     if provider.is_primary:
                         primary_provider = provider
@@ -332,8 +336,8 @@ class MaterialRequestService:
                                      + primary_provider.user.last_name
             else:
                 req.recipient_name = user_obj.first_name + " " + user_obj.last_name
-            req.phone = user_obj.phone_number
-            req.email = logged_in_user_email
+            req.phone = format_phone_number(primary_provider.user.phone_number)
+            req.email = primary_provider.user.registration.email
 
             if facility is not None:
                 req.site_name = facility.name
@@ -348,6 +352,8 @@ class MaterialRequestService:
 
             req.starter_kit_qty = 1
             req.patch_kit_qty = 2
+            req.complaint_request = "No"
+            req.special_instructions = "N/A"
             req_json = json.dumps(req.__dict__)
             logging.debug(req_json)
 
@@ -396,7 +402,7 @@ class MaterialRequestService:
         data.to_dict(data_dict)
         address = data.address + ", " + data.city + ", " + data.state + ", " + data.zip + ", " + data.country
         csv_data = [data.sequence_number, data.loggedin_user, data.today, data.needed_by_date,
-                    PDR_PROTOCOL_NUMBER, address, data.phone, data.email, data.patch_kit_qty,
+                    PDR_PROTOCOL_NUMBER, address, format_phone_number(data.phone), data.email, data.patch_kit_qty,
                     data.mdu_qty, data.starter_kit_qty, data.skin_prep_kit_qty, data.removal_kit_qty,
                     data.placement_accessory_qty, data.ht_qty, data.ifu_qty, data.adhesive_laminate_qty,
                     data.mdu_return_qty, data.patch_return_qty, data.placement_accessory_return_qty,

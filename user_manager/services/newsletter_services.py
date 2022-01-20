@@ -37,7 +37,7 @@ class NewsletterServices(DbRepository):
                 self.valid_days[valid_day] = {}
                 self.valid_days[valid_day]["HTML_FILE"] = valid_html_file
                 self.valid_days[valid_day]["SUBJECT_LINE"] = \
-                    valid_html_file.split(".")[0].replace("-", " ").capitalize()
+                    ' '.join(valid_html_file.split(".")[0].replace("-", " ").split()[2:]).capitalize()
 
         # Iterate through newsletters records to check if users need emails
         # user_id = user_id column in newsletters table -> should also be general user_id

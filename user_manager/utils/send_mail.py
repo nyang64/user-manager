@@ -224,8 +224,8 @@ def send_product_request_email(seq_number, docx_content, csv_content, sender):
 
     msg['From'] = from_address
     msg['To'] = to_address
-    msg['Subject'] = "Product Request Form"
-    body = MIMEText("Product Request Form", "html")
+    msg['Subject'] = f"Product Request Form - R{seq_number}"
+    body = MIMEText(f"Product Request Form", "html")
     msg.attach(body)
 
     part = MIMEBase("application", "octate-stream")

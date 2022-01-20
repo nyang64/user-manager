@@ -2,6 +2,7 @@ import datetime
 import json
 import logging
 import math
+import phonenumbers
 import random
 import secrets
 import string
@@ -172,4 +173,14 @@ def generate_random_password():
     alphabet = string.ascii_letters + string.digits
     password = ''.join(secrets.choice(alphabet) for i in range(8))
     return password
+
+
+def format_phone_number(ph_number):
+    try:
+        number = phonenumbers.parse(ph_number, 'US')
+        formatted_number = phonenumbers.format_number(number, "-")
+        return formatted_number
+    except Exception as e:
+        print(e)
+        return "-"
 

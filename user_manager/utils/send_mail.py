@@ -257,11 +257,14 @@ def send_product_request_email(seq_number, docx_content, csv_content, sender):
         raise InternalServerError("Something went wrong. {0}".format(e))
 
 
-def send_password_reset_email(first_name, last_name, to_address, username, password):
+def send_password_reset_email(first_name, last_name, to_address, username, password, send_to_cs):
     from_address = read_environ_value(value, "SMTP_FROM")
     msg = MIMEMultipart()
     msg['From'] = from_address
     msg['To'] = to_address
+
+    if send_to_cs is True:
+        msg['Cc'] = CUSTOMER_SERVICE_EMAIL
     msg['Subject'] = "Password reset"
     body = """
         <html>

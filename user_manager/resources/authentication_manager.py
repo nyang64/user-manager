@@ -174,3 +174,17 @@ class AuthOperation:
     def patient_portal_login(self):
         login_object = user_login_schema.validate_data(request.json)
         return self.auth_obj.patient_portal_login(login_object)
+
+    @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER)
+    def send_password_to_cs(self, token):
+        user_json = validate_request()
+        try:
+            user_email = user_json["user_email"]
+        except Exception as ex:
+            logging.error(ex)
+            return {"message": "Invalid Request Parameters"}, 400
+
+        self.auth_obj.send_user_password_to_cs(user_email)
+        return {"message": "Success"}, 200
+
+

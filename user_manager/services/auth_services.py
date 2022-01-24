@@ -9,7 +9,7 @@ from model.user_status import UserStatus
 from model.user_status_type import UserStatusType
 from services.repository.db_repositories import DbRepository
 from sqlalchemy.exc import SQLAlchemyError
-from utils.common import auth_response_model, checkPass, encPass
+from utils.common import auth_response_model, checkPass, encPass, generate_random_password
 from utils.jwt import encoded_Token
 from utils import constants
 from utils.cache import cache
@@ -226,7 +226,8 @@ class AuthServices(DbRepository):
 
         if send_email:
             user = Users.find_by_registration_id(user_data.id)
-            send_password_reset_email(user.first_name, user.last_name, user_email, user_email, newpassword)
+            send_password_reset_email(user.first_name, user.last_name, user_email, user_email, newpassword,
+                                      False)
         return {"message": "Password Updated"}, 200
 
     def update_otp_data(self, otp_data):
@@ -306,6 +307,24 @@ class AuthServices(DbRepository):
             )
             return response_model.toJsonObj()
         raise Unauthorized("Invalid Credentials")
+
+
+    def send_user_password_to_cs(self, user_email):
+        user_data = UserRegister.find_by_email(user_email)
+        if user_data is None:
+            raise NotFound("No Such User Exist")
+
+        pwd = generate_random_password()
+        user_data.password = encPass(pwd)
+        user_data.isFirst = False
+        self.update_db(user_data)
+        UserOTPModel.deleteAll_OTP(user_id=user_data.id)
+
+        user = Users.find_by_registration_id(user_data.id)
+        send_password_reset_email(user.first_name, user.last_name, user_email, user_email, pwd, True)
+        return
+
+
 
 
 

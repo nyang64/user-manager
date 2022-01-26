@@ -10,7 +10,7 @@ from werkzeug.exceptions import InternalServerError
 
 from config import read_environ_value
 from utils.s3_api import S3Api
-from utils.constants import CUSTOMER_SERVICE_EMAIL
+from utils.constants import CUSTOMER_SERVICE_EMAIL, PATIENT, PROVIDER
 
 value = os.environ.get('SECRET_MANAGER_ARN')
 
@@ -25,11 +25,17 @@ def send_otp(
     msg['To'] = to_address
     msg['Subject'] = "Notification: {}".format(subject)
     body = """
-    Hello {0},
-
-    <p>{1} is Your ES-Cloud OTP. OTP is confidential. </p>
-    <p>For Security Reasons, DO NOT share this OTP with anyone.</p>
-
+    <html>
+          <head>
+          Element Science
+          </head>
+          <body>
+            Hello {0},
+        
+            <p>{1} is Your ES-Cloud OTP. OTP is confidential. </p>
+            <p>For Security Reasons, DO NOT share this OTP with anyone.</p>
+        </body>
+    </html>
     """.format(name, otp)
     msg.attach(MIMEText(body, 'plain'))
     try:
@@ -257,31 +263,58 @@ def send_product_request_email(seq_number, docx_content, csv_content, sender):
         raise InternalServerError("Something went wrong. {0}".format(e))
 
 
-def send_password_reset_email(first_name, last_name, to_address, username, password, send_to_cs):
+def send_password_reset_email(first_name, last_name, to_address, username, password,
+                              send_to_cs, role):
     from_address = read_environ_value(value, "SMTP_FROM")
     msg = MIMEMultipart()
     msg['From'] = from_address
     msg['To'] = to_address
-
+    msg['Subject'] = "Password reset"
     if send_to_cs is True:
         msg['Cc'] = CUSTOMER_SERVICE_EMAIL
-    msg['Subject'] = "Password reset"
+
+    app_url = None
+    testflight_url = None
+
+    if role == PATIENT:
+        testflight_url = read_environ_value(value, "TESTFLIGHT_LINK")
+        app_url = read_environ_value(value, "APP_LINK")
+    elif role == PROVIDER:
+        app_url = read_environ_value(value, "CLINICAL_PORTAL_URL")
+
     body = """
         <html>
           <body>
-              Hi {} {},
-              
-              <br>
-              Your password was updated recently by our clinical team upon your request. Please use the following
-              credentials for the login.
-              <br>
-            </p>
-            <br>username: {} </br>
-            <br>password: {} </br>
+              Hello {} {},
+              <p>
+                  Please use the below credentials for login. If you did not initiate the request for password, please 
+                  call 1-800-985-5702 to report the incident. 
+             </p>
+            <br>Username: {} </br>
+            <br>Password: {} </br>
+            """
+    if testflight_url is not None:
+        body += """
+                <br>Test Flight Link: {} </br>
+               """
+    if app_url is not None:
+        body += """
+            <br>Application Link: {} </br>
+            <br>
+            """
+    body += """
             </p>
           </body>
         </html>
-        """.format(first_name, last_name, username, password)
+        """
+
+    if testflight_url is not None:
+        body = body.format(first_name, last_name, username, password, testflight_url, app_url)
+    elif app_url is not None:
+        body = body.format(first_name, last_name, username, password, app_url)
+    else:
+        body = body.format(first_name, last_name, username, password)
+
     msg.attach(MIMEText(body, 'html'))
 
     try:

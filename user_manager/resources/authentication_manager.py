@@ -187,4 +187,15 @@ class AuthOperation:
         self.auth_obj.send_user_password_to_cs(user_email)
         return {"message": "Success"}, 200
 
+    def resend_patients_portal_password(self):
+        user_json = validate_request()
+        try:
+            user_email = user_json["user_email"]
+            self.auth_obj.resend_patients_portal_password(user_email)
+        except Exception as ex:
+            logging.error(ex)
+            return {"message": str(ex)}, 401
+
+        return {"message": "Success"}, 200
+
 

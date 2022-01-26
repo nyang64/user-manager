@@ -227,7 +227,7 @@ class AuthServices(DbRepository):
         if send_email:
             user = Users.find_by_registration_id(user_data.id)
             send_password_reset_email(user.first_name, user.last_name, user_email, user_email, newpassword,
-                                      False)
+                                      False, user.roles[0].role.role_name)
         return {"message": "Password Updated"}, 200
 
     def update_otp_data(self, otp_data):
@@ -321,10 +321,21 @@ class AuthServices(DbRepository):
         UserOTPModel.deleteAll_OTP(user_id=user_data.id)
 
         user = Users.find_by_registration_id(user_data.id)
-        send_password_reset_email(user.first_name, user.last_name, user_email, user_email, pwd, True)
+        send_password_reset_email(user.first_name, user.last_name, user_email,
+                                  user_email, pwd, True,
+                                  user.roles[0].role.role_name)
         return
 
+    def resend_patients_portal_password(self, user_email):
+        user_data = UserRegister.find_by_email(user_email)
+        if user_data is None:
+            raise NotFound("No Such User Exist")
 
+        user = Users.find_by_registration_id(user_data.id)
+        if user.roles[0].role.role_name != constants.PATIENT:
+            raise Exception("User not allowed access")
 
-
-
+        send_password_reset_email(user.first_name, user.last_name, user_email, user_email,
+                                  constants.PATIENT_PORTAL_LOGIN_PASSWORD,
+                                  True, None)
+        return

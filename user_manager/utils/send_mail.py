@@ -288,18 +288,25 @@ def send_password_reset_email(first_name, last_name, to_address, username, passw
               Hello {} {},
               <p>
                   Please use the below credentials for login. If you did not initiate the request for password, please 
-                  call 1-800-985-5702 to report the incident. 
-             </p>
+                  call 1-800-985-5702 to report the incident. <br>
             <br>Username: {} </br>
             <br>Password: {} </br>
+            
             """
-    if testflight_url is not None:
+    if role == PATIENT:
         body += """
-                <br>Test Flight Link: {} </br>
+                 <p>
+                 <b> App set up instructions </b>
+                 <li>In order to download the Jewel App, you need to download TestFlight first. 
+                 Download TestFlight using this link: {}
+                 <li>After downloading TestFlight, you will be able to download the Jewel App with this 
+                 link: {}
+                 <li>Bluetooth must be enabled and notifications allowed in order for the Jewel App to function properly.
+                 </p>
                """
-    if app_url is not None:
+    if role == PROVIDER:
         body += """
-            <br>Application Link: {} </br>
+            <br>Link to the clinical portal: {} </br>
             <br>
             """
     body += """

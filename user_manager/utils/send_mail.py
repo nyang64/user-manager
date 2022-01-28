@@ -90,6 +90,7 @@ def send_patient_registration_email(
         server.login(read_environ_value(value, "SMTP_USERNAME"),
                      read_environ_value(value, "SMTP_PASSWORD"))
         text = msg.as_string()
+        logging.info(f"Patients: sending email to: {to_address}")
         server.sendmail(from_address, to_address, text)
         server.quit()
         return True

@@ -287,8 +287,8 @@ def send_password_reset_email(first_name, last_name, to_address, username, passw
           <body>
               Hello {} {},
               <p>
-                  Please use the below credentials for login. If you did not initiate the request for password, please 
-                  call 1-800-985-5702 to report the incident. <br>
+                  Please use the below credentials to login. If you did not initiate this request for login credentials,
+                   please call 1-800-985-5702 to report the incident. <br>
             <br>Username: {} </br>
             <br>Password: {} </br>
             

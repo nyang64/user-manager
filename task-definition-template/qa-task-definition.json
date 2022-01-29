@@ -145,7 +145,7 @@
         },
         {
           "name": "CUSTOMER_SERVICE_EMAIL",
-          "value": "sqa@elementsci.com"
+          "value": "$CUSTOMER_SERVICE_EMAIL"
         },
         {
           "name": "DEFAULT_STUDY_MANAGER_USERNAME",

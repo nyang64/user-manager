@@ -41,3 +41,9 @@ class AuthenticationBlueprint(Blueprint):
         self.add_url_rule('/patients/portal_login', 'Verify Patient for login',
                           self.auth_login.patient_portal_login,
                           methods=['POST'])
+        self.add_url_rule('/patients/resend_portal_password', 'Resend Patients Portal Password',
+                          self.auth_login.resend_patients_portal_password,
+                          methods=['POST'])
+        self.add_url_rule('/customerservice/resend_password', 'Send Users Current Password to Customer Service',
+                          self.auth_login.send_password_to_cs,
+                          methods=['POST'])

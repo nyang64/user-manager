@@ -56,7 +56,25 @@ class AuthOperation:
         )
 
 
-    @require_user_token(ADMIN, PROVIDER, PATIENT, ESUSER)
+    @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER)
+    def update_and_email_set_password(self, decrypt):
+        logging.info("Updating User Password")
+        user_json = request.json
+        try:
+            user_email = user_json["user_login"]
+            newpassword = user_json["password"]
+        except Exception as ex:
+            logging.error(ex)
+            raise InternalServerError("Invalid Request Parameters")
+
+        user_update_schema.validate_data(
+            {"user_email": user_email, "newpassword": newpassword}
+        )
+        self.auth_obj.update_password(user_email, newpassword, send_email=True)
+        logging.info("Updated password")
+        return {"message": "Password Updated"}, 200
+
+    @require_user_token(ADMIN, PROVIDER, PATIENT, ESUSER, CUSTOMER_SERVICE, STUDY_MANAGER)
     def update_user_password(self, decrypt):
         logging.info("Updating User Password")
         user_json = request.json
@@ -70,7 +88,8 @@ class AuthOperation:
         user_update_schema.validate_data(
             {"user_email": decrypt["user_email"], "newpassword": newpassword}
         )
-        self.auth_obj.update_password(decrypt["user_email"], newpassword)
+
+        self.auth_obj.update_password(decrypt["user_email"], newpassword, send_email=False)
         logging.info("Updated password")
         return {"message": "Password Updated"}, 200
 
@@ -156,3 +175,26 @@ class AuthOperation:
     def patient_portal_login(self):
         login_object = user_login_schema.validate_data(request.json)
         return self.auth_obj.patient_portal_login(login_object)
+
+    @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER)
+    def send_password_to_cs(self, token):
+        user_json = validate_request()
+        try:
+            user_email = user_json["user_email"]
+        except Exception as ex:
+            logging.error(ex)
+            return {"message": "Invalid Request Parameters"}, 400
+
+        self.auth_obj.send_user_password_to_cs(user_email)
+        return {"message": "Success"}, 200
+
+    def resend_patients_portal_password(self):
+        user_json = validate_request()
+        try:
+            user_email = user_json["user_email"]
+            self.auth_obj.resend_patients_portal_password(user_email)
+        except Exception as ex:
+            logging.error(ex)
+            return {"message": str(ex)}, 401
+
+        return {"message": "Success"}, 200

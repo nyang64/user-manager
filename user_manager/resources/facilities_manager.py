@@ -15,7 +15,8 @@ class FacilitiesManager:
     def __init__(self):
         self.facility_service_obj = FacilityService()
 
-    @require_user_token(ADMIN, STUDY_MANAGER)
+
+    @require_user_token(ADMIN, STUDY_MANAGER, CUSTOMER_SERVICE)
     def add_facility(self, token):
         logging.debug("User: {} Adding a facility".format(token["user_email"]))
 
@@ -68,7 +69,7 @@ class FacilitiesManager:
             http.client.OK,
         )
 
-    @require_user_token(ADMIN, STUDY_MANAGER)
+    @require_user_token(ADMIN, STUDY_MANAGER, CUSTOMER_SERVICE)
     def get_facility(self, token):
         """Return facility object"""
         """
@@ -102,7 +103,7 @@ class FacilitiesManager:
         resp['on_call_phone'] = facility.on_call_phone
         return jsonify(resp), http.client.OK
 
-    @require_user_token(ADMIN, STUDY_MANAGER)
+    @require_user_token(ADMIN, STUDY_MANAGER, CUSTOMER_SERVICE)
     def update_facility(self, token):
         from schema.facility_schema import update_facility_schema
         from services.facility_services import FacilityService

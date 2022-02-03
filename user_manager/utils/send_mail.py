@@ -10,7 +10,7 @@ from werkzeug.exceptions import InternalServerError
 
 from config import read_environ_value
 from utils.s3_api import S3Api
-from utils.constants import CUSTOMER_SERVICE_EMAIL
+from utils.constants import CUSTOMER_SERVICE_EMAIL, PATIENT, PROVIDER
 
 value = os.environ.get('SECRET_MANAGER_ARN')
 
@@ -18,18 +18,23 @@ value = os.environ.get('SECRET_MANAGER_ARN')
 def send_otp(
         name: str, to_address: str,
         subject: str, otp: str):
-
     from_address = read_environ_value(value, "SMTP_FROM")
     msg = MIMEMultipart()
     msg['From'] = from_address
     msg['To'] = to_address
     msg['Subject'] = "Notification: {}".format(subject)
     body = """
-    Hello {0},
+    <html>
+          <head>
+          Element Science
+          </head>
+          <body>
+            Hello {0},
 
-    <p>{1} is Your ES-Cloud OTP. OTP is confidential. </p>
-    <p>For Security Reasons, DO NOT share this OTP with anyone.</p>
-
+            <p>{1} is Your ES-Cloud OTP. OTP is confidential. </p>
+            <p>For Security Reasons, DO NOT share this OTP with anyone.</p>
+        </body>
+    </html>
     """.format(name, otp)
     msg.attach(MIMEText(body, 'plain'))
     try:
@@ -51,7 +56,6 @@ def send_otp(
 def send_patient_registration_email(
         first_name: str, to_address: str,
         subject: str, username: str, password: str):
-
     from_address = read_environ_value(value, "SMTP_FROM")
     msg = MIMEMultipart()
     msg['From'] = from_address
@@ -84,6 +88,7 @@ def send_patient_registration_email(
         server.login(read_environ_value(value, "SMTP_USERNAME"),
                      read_environ_value(value, "SMTP_PASSWORD"))
         text = msg.as_string()
+        logging.info(f"Patients: sending email to: {to_address}")
         server.sendmail(from_address, to_address, text)
         server.quit()
         return True
@@ -121,7 +126,7 @@ def send_newsletter_email(html_body, subject_line, user_reg_obj):
 
 
 def send_provider_registration_email(first_name, last_name, to_address,
-                                        username, password):
+                                     username, password):
     from_address = read_environ_value(value, "SMTP_FROM")
     msg = MIMEMultipart()
     msg['From'] = from_address
@@ -168,7 +173,7 @@ def send_provider_registration_email(first_name, last_name, to_address,
 
 
 def send_user_registration_email(first_name, last_name, to_address,
-                                        username, password):
+                                 username, password):
     from_address = read_environ_value(value, "SMTP_FROM")
     msg = MIMEMultipart()
     msg['From'] = from_address
@@ -224,8 +229,8 @@ def send_product_request_email(seq_number, docx_content, csv_content, sender):
 
     msg['From'] = from_address
     msg['To'] = to_address
-    msg['Subject'] = "Product Request Form"
-    body = MIMEText("Product Request Form", "html")
+    msg['Subject'] = f"Product Request Form - R{seq_number}"
+    body = MIMEText(f"Product Request Form", "html")
     msg.attach(body)
 
     part = MIMEBase("application", "octate-stream")
@@ -250,6 +255,84 @@ def send_product_request_email(seq_number, docx_content, csv_content, sender):
                      read_environ_value(value, "SMTP_PASSWORD"))
         print(f"sending email to: {to_address}")
         server.sendmail(from_address, to_address, msg.as_string())
+        server.quit()
+        return True
+    except Exception as e:
+        logging.error(e)
+        raise InternalServerError("Something went wrong. {0}".format(e))
+
+
+def send_password_reset_email(first_name, last_name, to_address, username, password,
+                              send_to_cs, role):
+    from_address = read_environ_value(value, "SMTP_FROM")
+    msg = MIMEMultipart()
+    msg['From'] = from_address
+    msg['To'] = to_address
+    msg['Subject'] = "Password reset"
+    if send_to_cs is True:
+        msg['Cc'] = CUSTOMER_SERVICE_EMAIL
+
+    app_url = None
+    testflight_url = None
+
+    if role == PATIENT:
+        testflight_url = read_environ_value(value, "TESTFLIGHT_LINK")
+        app_url = read_environ_value(value, "APP_LINK")
+    elif role == PROVIDER:
+        app_url = read_environ_value(value, "CLINICAL_PORTAL_URL")
+
+    body = """
+        <html>
+          <body>
+              Hello {} {},
+              <p>
+                  Please use the below credentials to login. If you did not initiate this request for login credentials,
+                   please call 1-800-985-5702 to report the incident. <br>
+            <br>Username: {} </br>
+            <br>Password: {} </br>
+
+            """
+    if role == PATIENT:
+        body += """
+                 <p>
+                 <b> App set up instructions </b>
+                 <li>In order to download the Jewel App, you need to download TestFlight first. 
+                 Download TestFlight using this link: {}
+                 <li>After downloading TestFlight, you will be able to download the Jewel App with this 
+                 link: {}
+                 <li>Bluetooth must be enabled and notifications allowed in order for the Jewel App to function properly.
+                 </p>
+               """
+    if role == PROVIDER:
+        body += """
+            <br>Link to the clinical portal: {} </br>
+            <br>
+            """
+    body += """
+            </p>
+          </body>
+        </html>
+        """
+
+    if testflight_url is not None:
+        body = body.format(first_name, last_name, username, password, testflight_url, app_url)
+    elif app_url is not None:
+        body = body.format(first_name, last_name, username, password, app_url)
+    else:
+        body = body.format(first_name, last_name, username, password)
+
+    msg.attach(MIMEText(body, 'html'))
+
+    try:
+        server = smtplib.SMTP(
+            read_environ_value(value, "SMTP_SERVER"),
+            read_environ_value(value, "SMTP_PORT"))
+        server.starttls()
+        server.login(read_environ_value(value, "SMTP_USERNAME"),
+                     read_environ_value(value, "SMTP_PASSWORD"))
+        text = msg.as_string()
+        print(f"sending email to: {to_address}")
+        server.sendmail(from_address, to_address, text)
         server.quit()
         return True
     except Exception as e:

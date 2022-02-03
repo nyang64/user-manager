@@ -33,7 +33,8 @@ from schema.register_schema import RegistrationSchema
 from schema.user_schema import UserSchema
 from services.patient_services import PatientServices
 from services.material_request_services import MaterialRequestService
-from utils.constants import ADMIN, PATIENT, PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER, ENROLLED, DISENROLLED
+from services.device_manager_api import DeviceManagerApi
+from utils.constants import ADMIN, PATIENT, PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER, ENROLLED, DISENROLLED, ASSIGNED
 from utils.common import generate_random_password, have_keys
 from utils.jwt import require_user_token
 from utils.validation import validate_request
@@ -59,40 +60,48 @@ class PatientManager:
         request_params["password"] = pwd
         request_params["role_name"] = "PATIENT"
 
-        register_params, user_params, patient_params = create_patient_schema.load(
-            request_params
-        )
+        try:
+            register_params, user_params, patient_params = create_patient_schema.load(
+                request_params
+            )
 
-        # check if the device is already assigned to a patient before registering the patient
-        device_in_use = False
-        if request_params.get("device_serial_number"):
-            device_in_use = PatientsDevices.device_in_use(request_params["device_serial_number"])
+            # check if the device is already assigned to a patient before registering the patient
+            device_in_use = False
+            if request_params.get("device_serial_number"):
+                device_in_use = PatientsDevices.device_in_use(request_params["device_serial_number"])
 
-        if device_in_use:
-            raise Exception("Device is already in use")
+            if device_in_use:
+                raise Exception("Device is already assigned to another patient")
 
-        patient_id = self.patient_obj.register_patient(register_params, user_params, patient_params)
-        send_patient_registration_email(
-            user_params[0],
-            register_params[0],
-            "Welcome to Element Science",
-            register_params[0],
-            register_params[1],
-        )
+            # Check device status. This is just an additional check to make sure the device is available before assigning
+            status = DeviceManagerApi.get_device_status(request_params["device_serial_number"])
+            if ASSIGNED == status:
+                raise Exception(f"Can't assign the device to a patient as the device status is {status}")
 
-        if request_params.get("device_serial_number"):
-            self.assign_first_device(patient_id, request_params["device_serial_number"])
+            patient_id = self.patient_obj.register_patient(register_params, user_params, patient_params)
+            send_patient_registration_email(
+                user_params[0],
+                register_params[0],
+                "Welcome to Element Science",
+                register_params[0],
+                register_params[1],
+            )
 
-        if patient_params.get("patches") is not None:
-            self.assign_patches(patient_id, patient_params["patches"])
+            if request_params.get("device_serial_number"):
+                self.assign_first_device(patient_id, request_params["device_serial_number"])
 
-        patient_schema = PatientSchema()
-        patient = Patient.find_by_id(patient_id)
+            if patient_params.get("patches") is not None:
+                self.assign_patches(patient_id, patient_params["patches"])
 
-        prs = MaterialRequestService()
-        prs.send_initial_product_request(token["user_email"], patient, register_params[0])
+            patient_schema = PatientSchema()
+            patient = Patient.find_by_id(patient_id)
 
-        return jsonify(patient_schema.dump(patient)), http.client.CREATED
+            prs = MaterialRequestService()
+            prs.send_initial_product_request(token["user_email"], patient, register_params[0])
+
+            return jsonify(patient_schema.dump(patient)), http.client.CREATED
+        except Exception as ex:
+            return {"message": str(ex)}, http.client.BAD_REQUEST
 
 
     def assign_first_device(self, patient_id, device_serial_number):
@@ -171,7 +180,7 @@ class PatientManager:
         self.patient_obj.assign_device_to_patient(patient_device)
         return {"message": "Device assigned", "status_code": "201"}, http.client.CREATED
 
-    @require_user_token(PATIENT, ADMIN, PROVIDER)
+    @require_user_token(PATIENT, ADMIN, PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER)
     def patient_device_list(self, token):
         device_list = self.patient_obj.patient_device_list(token)
         resp = {"devices": device_list}
@@ -265,8 +274,7 @@ class PatientManager:
         }
         return jsonify(response), 200
 
-
-    @require_user_token(ADMIN, PROVIDER)
+    @require_user_token(ADMIN, PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER)
     def patient_remove_device(self, token):
         device_sn = request.args.get("device_serial_number")
         if device_sn is None:

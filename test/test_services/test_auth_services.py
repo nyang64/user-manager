@@ -77,14 +77,14 @@ class TestAuthServices(TestCase):
         with app.app_context():
             auth = self.populate_data.register_user("register@gmail.com")
             self.populate_data.seed_otp_data(auth.id)
-            resp = self.auth_service.update_password(auth.email, "newpass")
+            resp = self.auth_service.update_password(auth.email, "newpass", False)
             self.assertTupleEqual(resp, ({"message": "Password Updated"}, 200))
 
     def test_update_password_raise_exception(self):
         app = create_test_app()
         with app.app_context():
             with pytest.raises(NotFound) as e:
-                self.auth_service.update_password("user@fmai.com", "new")
+                self.auth_service.update_password("user@fmai.com", "new", False)
             self.assertIsInstance(e.value, NotFound)
 
     @mock.patch.object(AuthServices, "update_db")

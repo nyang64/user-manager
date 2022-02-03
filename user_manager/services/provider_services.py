@@ -78,7 +78,10 @@ class ProviderService(DbRepository):
         provider = provider_schema.load(
             {"user_id": user_id, "facility_id": facility_id, "is_primary": is_primary_provider}
         )
-        provider.save_to_db()
+        logging.info(f"Saving provider in the database {provider.__dict__}")
+        self.flush_db(provider)
+        self.commit_db()
+        # provider.save_to_db()
 
         # raise if provider was not saved
         if not provider.id:
@@ -90,7 +93,10 @@ class ProviderService(DbRepository):
         provider_role = provider_role_schema.load(
             {"provider_role_id": role.id, "provider_id": provider.id}
         )
-        provider_role.save_to_db()
+        logging.info(f"Saving provider role in the database")
+        self.flush_db(provider_role)
+        self.commit_db()
+        # provider_role.save_to_db()
 
         return provider.id
 

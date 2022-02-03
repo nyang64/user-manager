@@ -77,7 +77,7 @@ class DeviceManagerApi:
         if FLASK_ENV == "local":
             return AVAILABLE
 
-        header = {"Authorization": cls.auth_token()}
+        header = {"Authorization": cls.get_auth_token()}
         payload = {"serial_number": device_serial_number}
         url = cls.base_url + "/get/device/status"
         device_status = None

@@ -4,6 +4,7 @@ from marshmallow import ValidationError, fields, post_load
 from schema.address_schema import AddressSchema
 from schema.base_schema import BaseSchema
 from services.material_request_services import MaterialRequestObj
+from utils.common import format_phone_number
 
 
 def must_not_blank(data):
@@ -43,7 +44,7 @@ class AddMaterialSchema(BaseSchema):
         req_obj.state = data.get("address").state
         req_obj.country = data.get("address").country
         req_obj.zip = data.get("address").postal_code
-        req_obj.phone = data.get("recipient_phone")
+        req_obj.phone = format_phone_number(data.get("recipient_phone"))
         req_obj.email = data.get("recipient_email")
 
         # requested new products
@@ -74,7 +75,7 @@ class AddMaterialSchema(BaseSchema):
 
         if data.get("special_instructions") is None or\
                 len(data.get("special_instructions")) == 0:
-            req_obj.special_instructions = "None"
+            req_obj.special_instructions = "N/A"
         else:
             req_obj.special_instructions = data.get("special_instructions")
 

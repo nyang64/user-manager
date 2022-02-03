@@ -48,6 +48,8 @@ definitions:
           - export TESTFLIGHT_LINK="$TESTFLIGHT_LINK"
           - export DEVICE_BASE_URL="$DEVICE_BASE_URL"
           - export PATIENT_PORTAL_PASSWORD="$PATIENT_PORTAL_PASSWORD"
+          - export DEFAULT_STUDY_MANAGER_USERNAME="$DEFAULT_STUDY_MANAGER_USERNAME"
+          - export CUSTOMER_SERVICE_EMAIL="$CUSTOMER_SERVICE_EMAIL"
           - envsubst < task-definition-template/"$BITBUCKET_DEPLOYMENT_ENVIRONMENT"-task-definition.json >  task-definition.json
 
     # Update the task definition.

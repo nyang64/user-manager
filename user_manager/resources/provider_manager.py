@@ -127,7 +127,7 @@ class ProviderManager:
 
         return response, 201
 
-    @require_user_token(ADMIN, PROVIDER)
+    @require_user_token(ADMIN, PROVIDER, STUDY_MANAGER, CUSTOMER_SERVICE)
     def get_provider_by_id(self, decrypt):
         provider_id = request.args.get("id")
         provider = Providers.find_by_id(provider_id)
@@ -172,7 +172,7 @@ class ProviderManager:
             providers_lst.append(provider_dict)
         return {"message": "Users Found", "data": providers_lst}, 200
 
-    @require_user_token(ADMIN)
+    @require_user_token(ADMIN, STUDY_MANAGER, CUSTOMER_SERVICE)
     def delete_provider(self, decrypt):
         provider_json = request.json
         if have_keys(provider_json, "provider_id") is False:
@@ -186,7 +186,7 @@ class ProviderManager:
         session.commit()
         return {"message": "Provider Deleted"}, 200
 
-    @require_user_token(ADMIN, STUDY_MANAGER)
+    @require_user_token(ADMIN, STUDY_MANAGER, CUSTOMER_SERVICE)
     def update_provider(self, token):
         """Update a facility details"""
         logging.debug("User: {} updating providers".format(token["user_email"]))
@@ -212,7 +212,7 @@ class ProviderManager:
 
         return {"message": "Successfully updated provider"}, http.client.OK
 
-    @require_user_token(PROVIDER)
+    @require_user_token(PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER, ADMIN)
     def get_patient_list(self, token):
         """
         :param :- page_number, record_per_page, first_name,
@@ -238,7 +238,7 @@ class ProviderManager:
             http.client.OK,
         )
 
-    @require_user_token(PROVIDER)
+    @require_user_token(PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER, ADMIN)
     def get_patient_detail_byid(self, token):
         """
         Fetch the patient detail by their patientid
@@ -301,3 +301,5 @@ class ProviderManager:
             },
             http.client.OK,
         )
+
+

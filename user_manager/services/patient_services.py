@@ -308,6 +308,7 @@ class PatientServices(DbRepository):
                     registration.password = encPass(pwd)
                     registration.updated_at = datetime.now()
                     session.add(registration)
+                    registration_updated = True
 
             # 3. Update patient information
             patient_data_from_db.copy(patient)
@@ -345,6 +346,11 @@ class PatientServices(DbRepository):
             session = self.__update_patch_details(session, patient_details["patches"], patient_data_from_db.id)
 
             session.commit()
+
+            if registration_updated:
+                logging.info("Sending an email notification to the new email address")
+                send_patient_registration_email(user.first_name, email, "Welcome to Element Science",
+                                                email, pwd)
         except Exception as ex:
             session.rollback()
             logging.error("Error occurred: {}".format(str(ex)))

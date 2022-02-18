@@ -542,7 +542,8 @@ class PatientServices(DbRepository):
                 "therapy_date",
                 "patient_id",
                 "enrollment_status",
-                "reason"
+                "reason",
+                "primary_contact"
             )
         )
 
@@ -556,7 +557,8 @@ class PatientServices(DbRepository):
             TherapyReport.created_at,
             PatientsProviders.provider_id,
             Patient.id,
-            UserStatus.deactivation_reason
+            UserStatus.deactivation_reason,
+            Users.phone_number
         )
 
         filter_query = self._filter_query(base_query, name, external_id, status)
@@ -606,7 +608,8 @@ class PatientServices(DbRepository):
                         site=facility.name,
                         patient_id=data[7],
                         enrollment_status=data[3],
-                        reason=data[8]
+                        reason=data[8],
+                        primary_contact=data[9]
                     )
 
                     lists.append(patient_data._asdict())

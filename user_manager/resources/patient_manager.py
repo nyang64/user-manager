@@ -23,8 +23,7 @@ from schema.patient_schema import (
     create_patient_schema,
     update_patient_schema,
     patient_list_schema,
-    deactivate_patient_schema,
-    patient_download_schema
+    deactivate_patient_schema
 )
 from schema.patient_schema import patients_schema
 from schema.patients_devices_schema import PatientsDevicesSchema

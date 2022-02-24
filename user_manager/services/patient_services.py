@@ -729,9 +729,9 @@ class PatientServices(DbRepository):
                 Patient.mobile_app_user
             )
 
-            name= ''
-            external_id = ''
-            status=''
+            name= ""
+            external_id = ""
+            status= ""
 
             filter_query = self._filter_query(base_query, name, external_id, status)
             query_data = []

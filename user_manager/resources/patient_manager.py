@@ -23,7 +23,8 @@ from schema.patient_schema import (
     create_patient_schema,
     update_patient_schema,
     patient_list_schema,
-    deactivate_patient_schema
+    deactivate_patient_schema,
+    patient_download_schema
 )
 from schema.patient_schema import patients_schema
 from schema.patients_devices_schema import PatientsDevicesSchema
@@ -364,3 +365,24 @@ class PatientManager:
         }
 
         return jsonify(response)
+
+
+
+    @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER, PROVIDER)
+    def patients_download(self, token):
+        """
+        :param : None
+        :return complete patient list to be used to download to a csv file
+        """
+        request_data = validate_request()
+        logging.debug(
+            "User: {} with role: {} - is requesting a list of patients to download as a csv".format(token["user_email"],
+                                                                                   token["user_role"]))
+        patients_list = self.patient_obj.get_patients_download()
+
+        return (
+            {
+                "patients": patients_list,
+            },
+            http.client.OK,
+        )

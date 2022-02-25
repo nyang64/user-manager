@@ -701,6 +701,11 @@ class PatientServices(DbRepository):
             return base_query
 
     def get_patients_download(self):
+
+            name= ""
+            external_id = ""
+            status= ""
+
             patient_download = namedtuple(
                 "PatientDownload",
                 (
@@ -718,7 +723,7 @@ class PatientServices(DbRepository):
 
             base_query = self._patient_download_query()
             base_query = base_query.with_entities(
-                Patient.id,
+                Users.external_user_id,
                 Patient.enrolled_date,
                 TherapyReport.created_at,
                 PatientsProviders.provider_id,
@@ -728,10 +733,6 @@ class PatientServices(DbRepository):
                 PatientsDevices.device_serial_number,
                 Patient.mobile_app_user
             )
-
-            name= ""
-            external_id = ""
-            status= ""
 
             filter_query = self._filter_query(base_query, name, external_id, status)
             query_data = []

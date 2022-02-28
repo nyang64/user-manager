@@ -53,3 +53,7 @@ class PatientBluePrint(Blueprint):
                           'disassociate device from patient',
                           self.patient_obj.patient_remove_device,
                           methods=['DELETE'])
+        self.add_url_rule('/patients/download',
+                          'Downloadable list of all patients',
+                          self.patient_obj.patients_download,
+                          methods=['POST'])

@@ -678,5 +678,95 @@ class PatientServices(DbRepository):
             Users.id
 
         ).all()
-        print(base_query)
+        
         return None
+
+    def _patient_download_query(self):
+        
+            """
+            :return := Return the base query for patient download
+            """
+            patient_query = (db.session.query(Patient))
+
+            base_query = (
+                patient_query.join(Users, Users.id == Patient.user_id)
+                    .join(UserRegister, UserRegister.id == Users.registration_id)
+                    .join(UserStatus, Users.id == UserStatus.user_id, isouter=True)
+                    .join(UserStatusType, UserStatus.status_id == UserStatusType.id, isouter=True)
+                    .join(PatientsProviders, PatientsProviders.patient_id == Patient.id, isouter=True)
+                    .join(TherapyReport, TherapyReport.patient_id == Patient.id, isouter=True)
+                    .join(PatientsDevices, PatientsDevices.patient_id == Patient.id, isouter=True)
+            )
+
+            return base_query
+
+    def get_patients_download(self):
+
+            name= ""
+            external_id = ""
+            status= ""
+
+            patient_download = namedtuple(
+                "PatientDownload",
+                (
+                    "patient_id",
+                    "provider_name",
+                    "enrolled_on",
+                    "site",
+                    "therapy_date",
+                    "enrollment_status",
+                    "name",
+                    "device_serial_number",
+                    "is_mobile_user"
+                )
+            )
+
+            base_query = self._patient_download_query()
+            base_query = base_query.with_entities(
+                Users.external_user_id,
+                Patient.enrolled_date,
+                TherapyReport.created_at,
+                PatientsProviders.provider_id,
+                UserStatusType.name,
+                Users.first_name,
+                Users.last_name,
+                PatientsDevices.device_serial_number,
+                Patient.mobile_app_user
+            )
+
+            filter_query = self._filter_query(base_query, name, external_id, status)
+            query_data = []
+            lists = []
+
+            try:
+                query_data = (filter_query.order_by(Users.id, Users.first_name)).all()
+            except Exception as e:
+                logging.exception(e)
+
+        
+            if query_data is not None and len(query_data) > 0:
+                for data in query_data:
+                    provider_facility = db.session.query(Users, Facilities, Providers) \
+                        .join(Providers, Providers.user_id == Users.id) \
+                        .join(Facilities, Providers.facility_id == Facilities.id) \
+                        .filter(Providers.id == data[3]).all()
+
+                    user = provider_facility[0][0]
+                    facility = provider_facility[0][1]
+                    provider = provider_facility[0][2]
+
+                    patient_data = patient_download(
+                        name=data[5] + " " + data[6],
+                        therapy_date=data[2].strftime("%d-%b-%Y") if data[2] is not None else None,
+                        enrolled_on=data[1].strftime("%d-%b-%Y"),
+                        provider_name=user.first_name + " " + user.last_name,
+                        site=facility.name,
+                        patient_id=data[0],
+                        enrollment_status=data[4], 
+                        device_serial_number=data[7],
+                        is_mobile_user=data[8]
+                    )
+
+                    lists.append(patient_data._asdict())
+
+            return lists

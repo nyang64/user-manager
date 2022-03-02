@@ -64,7 +64,7 @@ class DeviceManager:
         logging.info(metric_json)
 
         device_serial_number = metric_json.get('device_serial_number')
-        received_at = metric_json.get('received_at')
+        receiver_recorded_at = metric_json.get('received_at')
         receiver_id = metric_json.get('receiver_id')
         recorded_at = metric_json.get('recorded_at')
         device_metrics_hex = metric_json.get('device_metrics')
@@ -105,6 +105,7 @@ class DeviceManager:
             db_metric["recorded_at"] = recorded_at
             db_metric["receiver_id"] = receiver_id
             db_metric["device_serial_number"] = device_serial_number
+            db_metric["receiver_recorded_at"] = receiver_recorded_at
 
             metric_schema = DeviceMetricSchema()
             metric = metric_schema.load(db_metric)

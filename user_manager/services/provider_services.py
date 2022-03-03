@@ -21,7 +21,8 @@ from services.auth_services import AuthServices
 from services.repository.db_repositories import DbRepository
 from services.user_services import UserServices
 from sqlalchemy.exc import SQLAlchemyError
-from utils.constants import PROVIDER
+from model.providers_roles import ProviderRoles
+from utils.constants import PROVIDER, STUDY_COORDINATOR
 from utils.common import generate_random_password, encPass
 from utils.send_mail import send_provider_registration_email
 from sqlalchemy import exc
@@ -457,6 +458,9 @@ class ProviderService(DbRepository):
             .join(UserStatus, Users.id == UserStatus.user_id, isouter=True)
             .join(UserStatusType, UserStatus.status_id == UserStatusType.id, isouter=True)
             .join(Facilities, Providers.facility_id == Facilities.id, isouter=True)
+            .join(ProviderRoles, ProviderRoles.provider_id == Providers.id, isouter=True)
+            .join(ProviderRoleTypes, ProviderRoleTypes.id == ProviderRoles.provider_role_id, isouter=True)
+            .filter(ProviderRoleTypes.name != STUDY_COORDINATOR)
         )
 
         if name is not None and len(name) > 0:

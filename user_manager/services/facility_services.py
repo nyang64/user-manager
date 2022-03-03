@@ -226,7 +226,7 @@ class FacilityService(DbRepository):
             )
 
         if name is not None and len(name) > 0:
-            facilities_query = facilities_query.filter(Facilities.name.ilike(name))
+            facilities_query = facilities_query.filter(Facilities.name.ilike(f'%{name}%'))
 
         data_count = facilities_query.count()
         query_data = []

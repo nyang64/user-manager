@@ -107,7 +107,7 @@ class MaterialRequestService:
 
         material_requests_db = MaterialRequests()
         material_requests_db.num_items = request_data.count_items()
-        material_requests_db.request_date = datetime.now()
+        material_requests_db.request_date = request_data.date_requested
         material_requests_db.requested_user_id = user.id
         material_requests_db.recipient = request_data.recipient_name
 

@@ -31,6 +31,7 @@ class MaterialRequestObj:
     def __init__(self):
         self.loggedin_user = ""
         self.today = datetime.now().strftime("%m/%d/%Y")
+        self.date_requested = None
         self.needed_by_date = None
         self.sequence_number = ""
         self.recipient_name = ""

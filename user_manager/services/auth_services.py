@@ -159,7 +159,7 @@ class AuthServices(DbRepository):
             user_session = self.get_user_session(user_data.email)
             logging.info(f"User session: {user_session}")
             session_end = user_session["session_end_at"]
-            current_time = datetime.utcnow().timestamp()
+            current_time = datetime.datetime.utcnow().timestamp()
 
             logging.error(f"Session end time: {session_end}")
             logging.error(f"Current time: {current_time}")
@@ -181,7 +181,7 @@ class AuthServices(DbRepository):
 
     def get_user_session(self, email):
         user_ses_dict = cache.get(email)
-        current_time = datetime.utcnow()
+        current_time = datetime.datetime.utcnow()
         lifetime = timedelta(minutes=constants.SESSION_EXPIRATION_TIME_IN_MINUTES)
 
         if user_ses_dict is None:
@@ -327,16 +327,14 @@ class AuthServices(DbRepository):
         user_id = user.external_user_id
 
         # Construct PW
-
         externalid = user_id[0:3]
         month = str(datetime.date.today()).split('-')[1]
         day = str(datetime.date.today()).split('-')[2]
         pwd = "es" + externalid + day + month
 
-        # pwd = generate_random_password()
-
         user_data.password = encPass(pwd)
         user_data.isFirst = False
+        user_data.locked = False
         self.update_db(user_data)
         UserOTPModel.deleteAll_OTP(user_id=user_data.id)
 

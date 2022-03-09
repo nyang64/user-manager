@@ -143,6 +143,9 @@ class AuthOperation:
                 return {"message": "OTP is Expired"}, 410
             otp_data.temp_password = encPass(user_json.get("password"))
             msg = self.auth_obj.update_otp_data(otp_data)
+
+            # check if the user account needs to be unlocked before returning
+            self.__unlock_account(user_data, user_json["email"])
             return {"message": msg}, 200
 
         have_keyN = have_keys(user_json, "email")
@@ -168,8 +171,19 @@ class AuthOperation:
             logging.info("OTP sent to email")
             user_otp = UserOTPModel(user_id=user_data.id, otp=otp, temp_password="")
             self.auth_obj.add_otp(user_otp)
+            # check if the user account needs to be unlocked before returning
+            self.__unlock_account(user_data, user_json["email"])
+
             return {"message": "OTP Sent to Email"}, 200
         return {"message": "Invalid Request Parameters"}, 400
+
+    # Unlock user account if locked
+    def __unlock_account(self, user_data, email):
+        if user_data.locked:
+            user_data.locked = False
+            user_data.save_to_db()
+            # Check the session and make sure the lock from the session is removed too.
+            self.auth_obj.reset_session(email)
 
     def patient_portal_login(self):
         login_object = user_login_schema.validate_data(request.json)

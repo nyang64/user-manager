@@ -530,7 +530,7 @@ class PatientServices(DbRepository):
 
         return True
 
-    def get_patients_list(self, page_number, record_per_page, name, external_id, facility_id, provider_id, status):
+    def get_patients_list(self, page_number, record_per_page, name, external_id, facility_id, provider_id, status, id):
         patient_list = namedtuple(
             "PatientList",
             (
@@ -636,13 +636,13 @@ class PatientServices(DbRepository):
     def _filter_query(self, base_query, name, external_id, status):
 
         if external_id is not None and len(external_id) > 0:
-            base_query = base_query.filter(Users.external_user_id == external_id)
+            base_query = base_query.filter(Users.external_user_id.ilike(f'%{external_id}%'))
 
         if name is not None and len(name) > 0:
-            base_query = base_query.filter(Users.first_name.ilike(name) | Users.last_name.ilike(name))
+            base_query = base_query.filter(Users.first_name.ilike(f'%{name}%') | Users.last_name.ilike(f'%{name}%'))
 
         if status is not None and len(status) > 0:
-            base_query = base_query.filter(UserStatusType.name.ilike(status))
+            base_query = base_query.filter(UserStatusType.name.ilike(f'%{status}%'))
 
         base_query = base_query.filter(PatientsProviders.provider_role_id ==
                                        ProviderRoleTypes.find_by_name(PRESCRIBING_PROVIDER).id)

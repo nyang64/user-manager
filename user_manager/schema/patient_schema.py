@@ -307,10 +307,11 @@ class PatientListSchema(BaseSchema):
     page_number = fields.Int(required=True, load_only=True)
     record_per_page = fields.Int(load_only=True)
     name = fields.Str(load_only=True)
-    id = fields.Str(load_only=True)
+    external_id = fields.Str(load_only=True)
     site_id = fields.Int(load_only=True)
     provider_id = fields.Int(load_only=True)
     status = fields.Str(load_only=True)
+    id = fields.Str(load_only=True)
 
     @post_load
     def post_data(self, data, **kwargs):
@@ -318,7 +319,8 @@ class PatientListSchema(BaseSchema):
             name = data.get("name", None)
             page_number = int(data.get("page_number", 0))
             record_per_page = int(data.get("record_per_page", 10))
-            external_id = data.get("id", None)
+            id = data.get("id", None)
+            external_id = data.get("external_id", None)
             site_id = int(data.get("site_id", 0))
             provider_id = int(data.get("provider_id", 0))
             status = data.get("status", None)
@@ -335,7 +337,8 @@ class PatientListSchema(BaseSchema):
             external_id,
             site_id,
             provider_id,
-            status
+            status,
+            id
         )
         return filter_input
 

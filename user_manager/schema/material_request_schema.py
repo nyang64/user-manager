@@ -19,7 +19,7 @@ class AddMaterialSchema(BaseSchema):
     requestor_last_name = fields.Str(required=True, validate=must_not_blank)
     date_requested = fields.Str(required=True)
     date_needed = fields.Str(required=True, validate=must_not_blank)
-    protocol_number  = fields.Str(required=True)
+    protocol_number = fields.Str(required=True)
     patient_id = fields.Int(required=False)
     site_id = fields.Int(required=False)
     site_name = fields.Str(required=True)
@@ -35,7 +35,7 @@ class AddMaterialSchema(BaseSchema):
     def load_data(self, data, **kwargs):
         req_obj = MaterialRequestObj()
         req_obj.needed_by_date = data.get("date_needed")
-        req_obj.date_requested =data.get("date_requested")
+        req_obj.date_requested = data.get("date_requested")
         req_obj.loggedin_user = data.get("requestor_first_name") + " " + data.get("requestor_last_name")
         req_obj.address = data.get("address").street_address_1
         if data.get("address").street_address_2 is not None and \

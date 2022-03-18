@@ -48,7 +48,7 @@ class FacilityListSchema(BaseSchema):
             name = data.get("name", None)
             page_number = int(data.get("page_number", default_page_number))
             record_per_page = int(data.get("record_per_page", default_record_per_page))
-            external_id = data.get("id", None)
+            external_id = data.get("external_id", None)
         except ValueError as e:
             logging.error(e)
             page_number = default_page_number

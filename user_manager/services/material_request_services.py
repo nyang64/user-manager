@@ -2,7 +2,7 @@ import json
 import io
 import os
 import logging
-
+from sqlalchemy import cast, String
 from collections import namedtuple
 from datetime import datetime, timedelta
 
@@ -144,7 +144,7 @@ class MaterialRequestService:
         # Get all facilities and address
         requests_query = db.session.query(MaterialRequests)
         if request_number is not None and len(request_number) > 0:
-            requests_query = requests_query.filter(MaterialRequests.request_number == request_number)
+            requests_query = requests_query.filter(cast(MaterialRequests.request_number, String).ilike(f'%{request_number}%'))
 
         data_count = requests_query.count()
         query_data = []

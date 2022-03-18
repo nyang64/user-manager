@@ -464,6 +464,6 @@ class ProviderService(DbRepository):
         )
 
         if name is not None and len(name) > 0:
-            provider_query = provider_query.filter(Users.first_name.ilike(name) | Users.last_name.ilike(name))
+            provider_query = provider_query.filter(Users.first_name.ilike(f'%{name}%') | Users.last_name.ilike(f'%{name}%'))
 
         return provider_query

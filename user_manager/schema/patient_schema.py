@@ -247,6 +247,7 @@ class PatientDetailSchema(BaseSchema):
     patient_id = fields.Int(attribute="id", dump_only=True)
     first_name = fields.Str(dump_only=True)
     last_name = fields.Str(dump_only=True)
+    external_user_id = fields.Str(dump_only=True)
     mobile = fields.Str(attribute="phone_number", dump_only=True)
     date_of_birth = fields.Str(dump_only=True)
     email = fields.Str(dump_only=True)
@@ -274,12 +275,14 @@ class FilterPatientSchema(BaseSchema):
     last_name = fields.Str(load_only=True)
     date_of_birth = fields.Str(load_only=True)
     report_id = fields.Int(load_only=True)
+    external_user_id = fields.Str(load_only=True)
 
     @post_load
     def post_data(self, data, **kwargs):
         first_name = data.get("first_name", None)
         last_name = data.get("last_name", None)
         date_of_birth = data.get("date_of_birth", None)
+        external_user_id = data.get("external_user_id", None)
         try:
             page_number = int(data.get("page_number", 0))
             record_per_page = int(data.get("record_per_page", 10))
@@ -296,6 +299,7 @@ class FilterPatientSchema(BaseSchema):
             last_name,
             date_of_birth,
             report_id,
+            external_user_id
         )
         return filter_input
 

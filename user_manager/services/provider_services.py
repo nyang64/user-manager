@@ -148,6 +148,7 @@ class ProviderService(DbRepository):
                 UserRegister.email,
                 Users.first_name,
                 Users.last_name,
+                Users.external_user_id,
                 Users.phone_number,
                 Patient.date_of_birth,
                 Patient.enrolled_date,
@@ -189,12 +190,14 @@ class ProviderService(DbRepository):
         last_name,
         date_of_birth,
         report_id,
+        external_user_id
     ):
         patient_list = namedtuple(
             "PatientList",
             (
                 "id",
                 "email",
+                "external_user_id",
                 "first_name",
                 "last_name",
                 "mobile",
@@ -207,6 +210,7 @@ class ProviderService(DbRepository):
         base_query = base_query.with_entities(
             Patient.id,
             UserRegister.email,
+            Users.external_user_id,
             Users.first_name,
             Users.last_name,
             Users.phone_number,
@@ -214,7 +218,7 @@ class ProviderService(DbRepository):
             UserStatusType.name,
         )
         filter_query = self._filter_query(
-            base_query, first_name, last_name, date_of_birth, report_id
+            base_query, first_name, last_name, date_of_birth, report_id, external_user_id
         )
         data_count = filter_query.count()
         query_data = (
@@ -282,7 +286,7 @@ class ProviderService(DbRepository):
         return base_query
 
     def _filter_query(
-        self, base_query, first_name, last_name, date_of_birth, report_id
+        self, base_query, first_name, last_name, date_of_birth, report_id, external_user_id
     ):
         if report_id is not None and report_id != 0:
             patient_id = (
@@ -305,6 +309,10 @@ class ProviderService(DbRepository):
 
         if date_of_birth is not None and len(date_of_birth):
             base_query = base_query.filter(Patient.date_of_birth == date_of_birth)
+
+        if external_user_id is not None and len(external_user_id) > 0:
+            external_user_id = "%{}%".format(external_user_id)
+            base_query = base_query.filter(Users.external_user_id.ilike(external_user_id))
 
         return base_query
 

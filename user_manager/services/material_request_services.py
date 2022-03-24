@@ -2,6 +2,9 @@ import json
 import io
 import os
 import logging
+import subprocess
+import tempfile
+
 from sqlalchemy import cast, String
 from collections import namedtuple
 from datetime import datetime, timedelta
@@ -366,27 +369,46 @@ class MaterialRequestService:
     def __send_request(self, request_data, logged_in_user_email):
         template_file = os.path.join(os.getcwd(), "templates", "PRD_template.docx")
         logging.info(f"template file: {str(template_file)}")
-        content = self.__doc_from_template(template_file, request_data)
+        template = self.__doc_from_template(template_file, request_data)
         csv_file = self.__generate_excel(request_data)
-        send_product_request_email(request_data["sequence_number"],
-                                   content.read(), csv_file.read(), logged_in_user_email)
 
-        content.seek(0)
+        outputdir = tempfile.mkdtemp()
+        temp_docx = outputdir + "/PDR_template.docx"
+        template.save(temp_docx)
+
+        # Convert docx to pdf
+        pdf_file = self.__convert_docx_to_pdf(temp_docx, outputdir)
+        pfd_content = open(pdf_file, 'rb')
+
+        send_product_request_email(request_data["sequence_number"],
+                                   pfd_content.read(), csv_file.read(), logged_in_user_email)
+
+        pfd_content.seek(0)
         csv_file.seek(0)
         csv_file_buff = io.BytesIO(csv_file.getvalue().encode())
+        pdf_file_buff = io.BytesIO(pfd_content.read())
+
         s3api = S3Api()
         s3api.upload_material_request_form(request_data["sequence_number"],
-                                           content, csv_file_buff)
+                                           pdf_file_buff, csv_file_buff)
+
+        # Remove lingering pdf file
+        if os.path.exists(pdf_file):
+            os.remove(pdf_file)
+
+        # Remove lingering docx file
+        if os.path.exists(temp_docx):
+            os.remove(temp_docx)
+
 
     def __doc_from_template(self, template_file, data):
         template = DocxTemplate(template_file)
         template.render(data)
-
         docx_stream = BytesIO()
         template.save(docx_stream)
         docx_stream.seek(0)
 
-        return docx_stream
+        return template
 
     def __generate_excel(self, data_dict):
         import csv
@@ -414,3 +436,12 @@ class MaterialRequestService:
         csv.writer(f).writerow(csv_data)
         f.seek(0)
         return f
+
+
+    def __convert_docx_to_pdf(self, content, outputdir):
+
+        cmd = "soffice --headless --convert-to pdf {} --outdir {}".format(content, outputdir)
+        subprocess.run(cmd, shell=True)
+        pdf_doc_path = outputdir + "/PDR_template.pdf"
+
+        return pdf_doc_path

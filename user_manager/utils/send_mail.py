@@ -242,7 +242,7 @@ def send_product_request_email(seq_number, docx_content, csv_content, sender):
     part.set_payload(docx_content)
     encoders.encode_base64(part)
     part.add_header("Content-Disposition",
-                    f"attachment; filename=ProductRequestForm-{seq_number}.docx")
+                    f"attachment; filename=ProductRequestForm-{seq_number}.pdf")
     msg.attach(part)
 
     part1 = MIMEBase("application", "octate-stream")

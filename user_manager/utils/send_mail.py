@@ -309,7 +309,7 @@ def send_password_reset_email(first_name, last_name, to_address, username, passw
                """
     if role == PROVIDER:
         body += """
-            <br>Link to the clinical portal: {} </br>
+            <br>Link to the clinical portal: {}</br>
             <br>
             """
     body += """

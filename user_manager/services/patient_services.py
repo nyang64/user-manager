@@ -304,7 +304,12 @@ class PatientServices(DbRepository):
                     raise InternalServerError(f"Another user with the email {email} already exists")
                 else:
                     registration.email = email
-                    pwd = generate_random_password()
+
+                    externalid = user_from_db.external_user_id[0:3]
+                    month = str(datetime.date.today()).split('-')[1]
+                    day = str(datetime.date.today()).split('-')[2]
+                    pwd = "es" + externalid + day + month
+
                     registration.password = encPass(pwd)
                     registration.updated_at = datetime.now()
                     session.add(registration)

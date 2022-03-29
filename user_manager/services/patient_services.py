@@ -1,5 +1,5 @@
 from collections import namedtuple
-from datetime import datetime
+import datetime
 import logging
 
 from db import db

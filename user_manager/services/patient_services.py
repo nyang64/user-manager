@@ -306,8 +306,8 @@ class PatientServices(DbRepository):
                     registration.email = email
 
                     externalid = user_from_db.external_user_id[0:3]
-                    month = str(datetime.date.today()).split('-')[1]
-                    day = str(datetime.date.today()).split('-')[2]
+                    month = str(datetime.today()).split('-')[1]
+                    day = str(datetime.today()).split('-')[2]
                     pwd = "es" + externalid + day + month
 
                     registration.password = encPass(pwd)

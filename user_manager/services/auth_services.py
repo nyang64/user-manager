@@ -1,12 +1,16 @@
 import logging
-from datetime import datetime, timedelta
+import datetime
+from datetime import timedelta
 
 import pytz
+import db
+from model.facilities import Facilities
 from model.user_otp import UserOTPModel
 from model.user_registration import UserRegister
 from model.users import Users
 from model.user_status import UserStatus
 from model.user_status_type import UserStatusType
+from model.patients_providers import PatientsProviders
 from services.repository.db_repositories import DbRepository
 from sqlalchemy.exc import SQLAlchemyError
 from utils.common import auth_response_model, checkPass, encPass, generate_random_password
@@ -15,6 +19,7 @@ from utils import constants
 from utils.cache import cache
 from utils.send_mail import send_password_reset_email
 from werkzeug.exceptions import Conflict, InternalServerError, NotFound, Unauthorized
+from model.providers import Providers
 
 utc = pytz.UTC
 
@@ -154,7 +159,7 @@ class AuthServices(DbRepository):
             user_session = self.get_user_session(user_data.email)
             logging.info(f"User session: {user_session}")
             session_end = user_session["session_end_at"]
-            current_time = datetime.utcnow().timestamp()
+            current_time = datetime.datetime.utcnow().timestamp()
 
             logging.error(f"Session end time: {session_end}")
             logging.error(f"Current time: {current_time}")
@@ -176,7 +181,7 @@ class AuthServices(DbRepository):
 
     def get_user_session(self, email):
         user_ses_dict = cache.get(email)
-        current_time = datetime.utcnow()
+        current_time = datetime.datetime.utcnow()
         lifetime = timedelta(minutes=constants.SESSION_EXPIRATION_TIME_IN_MINUTES)
 
         if user_ses_dict is None:
@@ -288,7 +293,6 @@ class AuthServices(DbRepository):
             return response.toJsonObj(), 403
 
         # Get the password from secret manager
-        logger.debug(f"comparing password with {constants.PATIENT_PORTAL_LOGIN_PASSWORD}")
         if data.password == constants.PATIENT_PORTAL_LOGIN_PASSWORD:
             access_token = encoded_Token(
                 False, str(data.email).lower(), role_name
@@ -312,12 +316,25 @@ class AuthServices(DbRepository):
 
     def send_user_password_to_cs(self, user_email):
         user_data = UserRegister.find_by_email(user_email)
+
         if user_data is None:
             raise NotFound("No Such User Exist")
 
-        pwd = generate_random_password()
+        user_registration_id = user_data.id
+
+        # Get User Data
+        user = Users.find_by_registration_id(user_registration_id)
+        user_id = user.external_user_id
+
+        # Construct PW
+        externalid = user_id[0:3]
+        month = str(datetime.date.today()).split('-')[1]
+        day = str(datetime.date.today()).split('-')[2]
+        pwd = "es" + externalid + day + month
+
         user_data.password = encPass(pwd)
         user_data.isFirst = False
+        user_data.locked = False
         self.update_db(user_data)
         UserOTPModel.deleteAll_OTP(user_id=user_data.id)
 

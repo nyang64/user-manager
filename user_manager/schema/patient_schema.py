@@ -247,6 +247,7 @@ class PatientDetailSchema(BaseSchema):
     patient_id = fields.Int(attribute="id", dump_only=True)
     first_name = fields.Str(dump_only=True)
     last_name = fields.Str(dump_only=True)
+    external_user_id = fields.Str(dump_only=True)
     mobile = fields.Str(attribute="phone_number", dump_only=True)
     date_of_birth = fields.Str(dump_only=True)
     email = fields.Str(dump_only=True)
@@ -274,12 +275,14 @@ class FilterPatientSchema(BaseSchema):
     last_name = fields.Str(load_only=True)
     date_of_birth = fields.Str(load_only=True)
     report_id = fields.Int(load_only=True)
+    external_user_id = fields.Str(load_only=True)
 
     @post_load
     def post_data(self, data, **kwargs):
         first_name = data.get("first_name", None)
         last_name = data.get("last_name", None)
         date_of_birth = data.get("date_of_birth", None)
+        external_user_id = data.get("external_user_id", None)
         try:
             page_number = int(data.get("page_number", 0))
             record_per_page = int(data.get("record_per_page", 10))
@@ -296,6 +299,7 @@ class FilterPatientSchema(BaseSchema):
             last_name,
             date_of_birth,
             report_id,
+            external_user_id
         )
         return filter_input
 
@@ -307,10 +311,11 @@ class PatientListSchema(BaseSchema):
     page_number = fields.Int(required=True, load_only=True)
     record_per_page = fields.Int(load_only=True)
     name = fields.Str(load_only=True)
-    id = fields.Str(load_only=True)
+    external_id = fields.Str(load_only=True)
     site_id = fields.Int(load_only=True)
     provider_id = fields.Int(load_only=True)
     status = fields.Str(load_only=True)
+    id = fields.Str(load_only=True)
 
     @post_load
     def post_data(self, data, **kwargs):
@@ -318,7 +323,8 @@ class PatientListSchema(BaseSchema):
             name = data.get("name", None)
             page_number = int(data.get("page_number", 0))
             record_per_page = int(data.get("record_per_page", 10))
-            external_id = data.get("id", None)
+            id = data.get("id", None)
+            external_id = data.get("external_id", None)
             site_id = int(data.get("site_id", 0))
             provider_id = int(data.get("provider_id", 0))
             status = data.get("status", None)
@@ -335,7 +341,8 @@ class PatientListSchema(BaseSchema):
             external_id,
             site_id,
             provider_id,
-            status
+            status,
+            id
         )
         return filter_input
 

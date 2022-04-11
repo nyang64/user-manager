@@ -1,0 +1,879 @@
+{
+	"info": {
+		"_postman_id": "cf089656-5947-4d8c-aefe-807dfcb236be",
+		"name": "Cloud APIs",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Auth Token",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\":{{admin_email}},\r\n   \"password\":{{admin_password}}\r\n}"
+				},
+				"url": {
+					"raw": "{{url}}/auth/token",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"auth",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add a Study Manager",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"first_name\":{{user_first_name}},\r\n    \"last_name\":{{user_last_name}},\r\n    \"email\":{{user_email}},\r\n    \"phone_number\":{{user_phone}},\r\n    \"external_user_id\": {{user_external_id}},\r\n    \"role_name\": \"STUDY_MANAGER\",\r\n    \"address\": {\r\n                \"street_address_1\": {{user_addr_1}},\r\n                \"street_address_2\": {{user_addr_2}},\r\n                \"city\": {{user_city}},\r\n                \"state\": {{user_state}},\r\n                \"postal_code\": {{user_zip}},\r\n                \"country\": {{user_country}}\r\n            }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/v1/create/user",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"v1",
+						"create",
+						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Auth Token-CSM",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\":{{user_email}},\r\n   \"password\":{{user_pwd}}\r\n}"
+				},
+				"url": {
+					"raw": "{{url}}/auth/token",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"auth",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Facility",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"facility_name\":{{fac_name}},\r\n    \"address\":{\r\n        \"street_address_1\":{{fac_addr_1}},\r\n        \"street_address_2\":{{fac_addr_1}},\r\n        \"city\":{{fac_addr_1}},\r\n        \"state\":{{fac_addr_1}},\r\n        \"country\":{{fac_addr_1}},\r\n        \"postal_code\":{{fac_addr_1}}\r\n    },\r\n    \"on_call_phone\": {{fac_on_call_ph}},\r\n    \"external_facility_id\": {{ext_fac_id}},\r\n    \"primary_contact_id\": {{primary_contact_id}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/add/facility",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"add",
+						"facility"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Provider",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"first_name\":{{prov_first_name}},\r\n    \"last_name\":{{prov_last_name}},\r\n    \"facility_id\":{{fac_id}},\r\n    \"phone_number\":{{prov_phone}},\r\n    \"email\":{{prov_email}},\r\n    \"role\":\"studycoordinator\",\r\n    \"is_primary\": {{is_primary}}\r\n}"
+				},
+				"url": {
+					"raw": "{{url}}/providers",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"providers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Patient",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"first_name\": {{pat_first_name}},\r\n  \"last_name\": {{pat_last_name}},\r\n  \"external_user_id\": {{pat_external_id}},\r\n  \"gender\": {{pat_gender}},\r\n  \"date_of_birth\": {{pat_dob}},\r\n  \"indication\": {{indication}},\r\n  \"permanent_address\": {\r\n    \"street_address_1\": {{pat_addr_1}},\r\n    \"street_address_2\": {{pat_addr_2}},\r\n    \"city\": {{pat_city}},\r\n    \"state\": {{pat_state}},\r\n    \"postal_code\": {{pat_zip}},\r\n    \"country\": {{pat_country}}\r\n  },\r\n  \"phone_number\": {{pat_primary_phone}},\r\n  \"other_phone\": {{pat_sec_phone}},\r\n  \"email\": {{pat_email}},\r\n  \"emergency_contact_name\": {{emergency_contact_name}},\r\n  \"emergency_contact_relationship\": {{emergency_contact_relation}},\r\n  \"emergency_contact_number\": {{emergency_contact_number}},\r\n  \"mobile_app_user\": {{mobile_app_user}},\r\n  \"mobile_model\": {{mobile_model}},\r\n  \"mobile_os_version\": {{mobile_os_version}},\r\n  \"outpatient_provider\": {{outpatient_prov_id}},\r\n  \"prescribing_provider\": {{prescrobing_prov_id}},\r\n  \"device_serial_number\": {{device_sn_numb}},\r\n  \"starter_kit_lot_number\": {{starter_kit_lot}},\r\n  \"applied_patch_lot_number\":{{applied_patch_lot}},\r\n  \"unused_patch_lot_number\": {{unused_patch_lot}},\r\n  \"pa_setting_front\": {{pa_setting_front}},\r\n  \"pa_setting_back\": {{pa_setting_back}},\r\n  \"upper_patch_setting\": {{upper_patch_setting}},\r\n  \"shoulder_strap_front\": {{shoulder_strap_front}},\r\n  \"shoulder_strap_back\": {{shoulder_strap_back}},\r\n  \"enrollment_notes\": {{enrollment_notes}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/patients",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"patients"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Send Material Request",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"requestor_first_name\": {{requestor_first_name}},\r\n    \"requestor_last_name\": {{requestor_last_name}},\r\n    \"date_requested\": {{date_requested}},\r\n    \"date_needed\": {{date_needed}},\r\n    \"protocol_number\": \"PR-2013\", \r\n    \"patient_id\": {{patient_id}},\r\n    \"site_id\": {{site_id}},\r\n    \"recipient_phone\":{{recipeient_phone}},\r\n    \"recipient_name\": {{recipient_name}},\r\n    \"site_name\": {{site_name}},\r\n    \"recipient_email\":{{recipient_email}},\r\n    \"address\": {\r\n        \"street_address_1\": {{addr_1}},\r\n        \"street_address_2\": {{addr_2}},\r\n        \"city\": {{city}},\r\n        \"state\": {{state}},\r\n        \"postal_code\": {{zip}},\r\n        \"country\": {{country}}\r\n    },\r\n    \"requested_product\": {\r\n        \"patch_unit\": {{pu}},\r\n        \"mdu\": {{mdu}},\r\n        \"starter_kit\": {{sk}},\r\n        \"skin_prep_kit\": {{spk}},\r\n        \"removal_kit\": {{rk}},\r\n        \"placement_accessory\": {{pa}},\r\n        \"hair_trimmer\": {{ht}},\r\n        \"ifu\": {{ifu}},\r\n        \"adhesive_laminate\": {{al}}\r\n        },\r\n        \"requested_return_product\": {\r\n            \"mdu_return\": {{mdu_ret}},\r\n            \"patch_unit_return\": {{pu_ret}},\r\n            \"placement_accessory_return\": {{pa_ret}},\r\n            \"return_label\": {{rl}}\r\n        },\r\n    \"special_instructions\": {{special_instructions}},\r\n    \"complaint_request\": {{complaint}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/materials",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"materials"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Materials List",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"request_number\":{{request_num}},\r\n    \"record_per_page\":{{records_per_page}},\r\n    \"page_number\": {{page_num}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/materials/list",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"materials",
+						"list"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Patient",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"patient_id\": {{patient_id}},\r\n  \"deactivation_reason\": [\r\n    {{deactivation_reasons_list}}\r\n  ],\r\n  \"notes\": {{deactivation_notes}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/patients",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"patients"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Facilities List",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\": {{facility_name}},\r\n  \"external_id\": {{external_id}},\r\n  \"record_per_page\": {{records_per_page}},\r\n  \"page_number\": {{page_number}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/facilities/list",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"facilities",
+						"list"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Patient List",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"disabled": true
+					},
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\": {{patient_name}},\r\n  \"record_per_page\": {{records_per_page}},\r\n  \"page_number\": {{page_number}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/patients/patients_list",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"patients",
+						"patients_list"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update/Edit Patient",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"first_name\": {{pat_first_name}},\r\n  \"last_name\": {{pat_last_name}},\r\n  \"external_user_id\": {{pat_external_id}},\r\n  \"gender\": {{pat_gender}},\r\n  \"date_of_birth\": {{pat_dob}},\r\n  \"indication\": {{indication}},\r\n  \"permanent_address\": {\r\n    \"street_address_1\": {{pat_addr_1}},\r\n    \"street_address_2\": {{pat_addr_2}},\r\n    \"city\": {{pat_city}},\r\n    \"state\": {{pat_state}},\r\n    \"postal_code\": {{pat_zip}},\r\n    \"country\": {{pat_country}}\r\n  },\r\n  \"phone_number\": {{pat_primary_phone}},\r\n  \"other_phone\": {{pat_sec_phone}},\r\n  \"email\": {{pat_email}},\r\n  \"emergency_contact_name\": {{emergency_contact_name}},\r\n  \"emergency_contact_relationship\": {{emergency_contact_relation}},\r\n  \"emergency_contact_number\": {{emergency_contact_number}},\r\n  \"mobile_app_user\": {{mobile_app_user}},\r\n  \"mobile_model\": {{mobile_model}},\r\n  \"mobile_os_version\": {{mobile_os_version}},\r\n  \"outpatient_provider\": {{outpatient_prov_id}},\r\n  \"prescribing_provider\": {{prescrobing_prov_id}},\r\n  \"device_serial_number\": {{device_sn_numb}},\r\n  \"starter_kit_lot_number\": {{starter_kit_lot}},\r\n  \"applied_patch_lot_number\":{{applied_patch_lot}},\r\n  \"unused_patch_lot_number\": {{unused_patch_lot}},\r\n  \"pa_setting_front\": {{pa_setting_front}},\r\n  \"pa_setting_back\": {{pa_setting_back}},\r\n  \"upper_patch_setting\": {{upper_patch_setting}},\r\n  \"shoulder_strap_front\": {{shoulder_strap_front}},\r\n  \"shoulder_strap_back\": {{shoulder_strap_back}},\r\n  \"enrollment_notes\": {{enrollment_notes}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/patients?id={{id}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"patients"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "{{id}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update/Edit Facility",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"facility_name\":{{fac_name}},\r\n    \"address\":{\r\n        \"street_address_1\":{{fac_addr_1}},\r\n        \"street_address_2\":{{fac_addr_1}},\r\n        \"city\":{{fac_addr_1}},\r\n        \"state\":{{fac_addr_1}},\r\n        \"country\":{{fac_addr_1}},\r\n        \"postal_code\":{{fac_addr_1}}\r\n    },\r\n    \"on_call_phone\": {{fac_on_call_ph}},\r\n    \"external_facility_id\": {{ext_fac_id}},\r\n    \"primary_contact_id\": {{primary_contact_id}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/facilities/facility_providers?id={{id}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"facilities",
+						"facility_providers"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "{{id}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Patient Portal Login",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": {{patient_email}},\r\n   \"password\": {{portal_password}}\r\n}"
+				},
+				"url": {
+					"raw": "{{url}}/patients/portal_login",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"patients",
+						"portal_login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Validate Token",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{url}}/validate_token",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"validate_token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Device Metric",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "  {\n    \"device_serial_number\": {{device_serial_num}}, \n    \"receiver_id\": {{receiver_id}}, \n    \"received_at\": \"{{$isoTimestamp}}\", \n    \"device_metrics\": {{device_metrics}},\n    \"recorded_at\": \"{{$isoTimestamp}}\"\n    }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/devices/metrics",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"devices",
+						"metrics"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Password-Unlock User Account",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"user_email\":{{user_email}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/unlock_account",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"unlock_account"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Passsword-Reset a Users Password",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"user_login\": {{user_email}},\r\n   \"password\": {{new_password}}\r\n}"
+				},
+				"url": {
+					"raw": "{{url}}/setpassword",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"setpassword"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Password-Resend Login Credential to a User",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"user_email\": {{user_email}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/customerservice/resend_password",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"customerservice",
+						"resend_password"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Password-Password Reset (mobile)",
+			"request": {
+				"auth": {
+					"type": "apikey",
+					"apikey": [
+						{
+							"key": "in",
+							"value": "header",
+							"type": "string"
+						},
+						{
+							"key": "value",
+							"value": "{{token}}",
+							"type": "string"
+						},
+						{
+							"key": "key",
+							"value": "Authentication",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\":{{user_email}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/resetpassword",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"resetpassword"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Password-Send Default Password to Patient Website",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"user_email\": {{user_email}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{user}}/patients/resend_portal_password",
+					"host": [
+						"{{user}}"
+					],
+					"path": [
+						"patients",
+						"resend_portal_password"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Password-Update LoggedIn(Self) Users Password",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"newpassword\": {{new_password}}\r\n}"
+				},
+				"url": {
+					"raw": "{{url}}/updatepassword",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"updatepassword"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Therapy Details",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{url}}/patients/{{id}}/therapy_report_details",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"patients",
+						"{{id}}",
+						"therapy_report_details"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Post Salvo Data",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"serious_adverse_event_data\": {{therapy_data}},\r\n\"device_serial_number\": {{device_serial_num}},\r\n\"received_at\": \"{{$isoTimestamp}}\",\r\n\"sent_at\": \"{{$isoTimestamp}}\",\r\n\"sent_by\": \"mobile\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/salvos",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"salvos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Device Manager - Login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\":{{device_mgr_login}},\r\n    \"password\":{{device_mgr_pwd}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{device_mgr_url}}/login",
+					"host": [
+						"{{device_mgr_url}}"
+					],
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Device Manager - Device Status Check",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{device_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{device_mgr_url}}/get/device/status?serial_number={{serial_num}}",
+					"host": [
+						"{{device_mgr_url}}"
+					],
+					"path": [
+						"get",
+						"device",
+						"status"
+					],
+					"query": [
+						{
+							"key": "serial_number",
+							"value": "{{serial_num}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Device Manager - Add Device ",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{device_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"serial_number\": {{device_serial_number}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{device_mgr_url}}/device/key",
+					"host": [
+						"{{device_mgr_url}}"
+					],
+					"path": [
+						"device",
+						"key"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

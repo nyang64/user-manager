@@ -52,8 +52,8 @@ class TestFacilityServices(TestCase):
         }
         self.mock_facility = Facilities(
             address_id="1",
-            on_call_phone="9090909090",
-            name="facility",
+            on_call_phone="9090909090", 
+            name="facility", 
             external_facility_id="100",
             primary_contact_id=1
         )

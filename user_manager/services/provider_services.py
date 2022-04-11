@@ -21,7 +21,8 @@ from services.auth_services import AuthServices
 from services.repository.db_repositories import DbRepository
 from services.user_services import UserServices
 from sqlalchemy.exc import SQLAlchemyError
-from utils.constants import PROVIDER
+from model.providers_roles import ProviderRoles
+from utils.constants import PROVIDER, STUDY_COORDINATOR
 from utils.common import generate_random_password, encPass
 from utils.send_mail import send_provider_registration_email
 from sqlalchemy import exc
@@ -147,6 +148,7 @@ class ProviderService(DbRepository):
                 UserRegister.email,
                 Users.first_name,
                 Users.last_name,
+                Users.external_user_id,
                 Users.phone_number,
                 Patient.date_of_birth,
                 Patient.enrolled_date,
@@ -188,12 +190,14 @@ class ProviderService(DbRepository):
         last_name,
         date_of_birth,
         report_id,
+        external_user_id
     ):
         patient_list = namedtuple(
             "PatientList",
             (
                 "id",
                 "email",
+                "external_user_id",
                 "first_name",
                 "last_name",
                 "mobile",
@@ -206,6 +210,7 @@ class ProviderService(DbRepository):
         base_query = base_query.with_entities(
             Patient.id,
             UserRegister.email,
+            Users.external_user_id,
             Users.first_name,
             Users.last_name,
             Users.phone_number,
@@ -213,7 +218,7 @@ class ProviderService(DbRepository):
             UserStatusType.name,
         )
         filter_query = self._filter_query(
-            base_query, first_name, last_name, date_of_birth, report_id
+            base_query, first_name, last_name, date_of_birth, report_id, external_user_id
         )
         data_count = filter_query.count()
         query_data = (
@@ -281,7 +286,7 @@ class ProviderService(DbRepository):
         return base_query
 
     def _filter_query(
-        self, base_query, first_name, last_name, date_of_birth, report_id
+        self, base_query, first_name, last_name, date_of_birth, report_id, external_user_id
     ):
         if report_id is not None and report_id != 0:
             patient_id = (
@@ -304,6 +309,10 @@ class ProviderService(DbRepository):
 
         if date_of_birth is not None and len(date_of_birth):
             base_query = base_query.filter(Patient.date_of_birth == date_of_birth)
+
+        if external_user_id is not None and len(external_user_id) > 0:
+            external_user_id = "%{}%".format(external_user_id)
+            base_query = base_query.filter(Users.external_user_id.ilike(external_user_id))
 
         return base_query
 
@@ -457,9 +466,12 @@ class ProviderService(DbRepository):
             .join(UserStatus, Users.id == UserStatus.user_id, isouter=True)
             .join(UserStatusType, UserStatus.status_id == UserStatusType.id, isouter=True)
             .join(Facilities, Providers.facility_id == Facilities.id, isouter=True)
+            .join(ProviderRoles, ProviderRoles.provider_id == Providers.id, isouter=True)
+            .join(ProviderRoleTypes, ProviderRoleTypes.id == ProviderRoles.provider_role_id, isouter=True)
+            .filter(ProviderRoleTypes.name != STUDY_COORDINATOR)
         )
 
         if name is not None and len(name) > 0:
-            provider_query = provider_query.filter(Users.first_name.ilike(name) | Users.last_name.ilike(name))
+            provider_query = provider_query.filter(Users.first_name.ilike(f'%{name}%') | Users.last_name.ilike(f'%{name}%'))
 
         return provider_query

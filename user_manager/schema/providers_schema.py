@@ -25,6 +25,7 @@ class ProvidersSchema(ma.SQLAlchemyAutoSchema):
     is_primary = ma.auto_field()
 
 
+
 class CreateProviderSchema(CreateUserSchema):
     facility_id = fields.Str(
         required=True,
@@ -32,6 +33,7 @@ class CreateProviderSchema(CreateUserSchema):
     user_id = fields.Str(
         required=True,
         validate=must_not_blank)
+
 
 
 class UpdateProviderSchema(BaseSchema):

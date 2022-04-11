@@ -18,6 +18,7 @@ value = os.environ.get('SECRET_MANAGER_ARN')
 def send_otp(
         name: str, to_address: str,
         subject: str, otp: str):
+
     from_address = read_environ_value(value, "SMTP_FROM")
     msg = MIMEMultipart()
     msg['From'] = from_address
@@ -29,14 +30,17 @@ def send_otp(
           Element Science
           </head>
           <body>
-            Hello {0},
-
-            <p>{1} is Your ES-Cloud OTP. OTP is confidential. </p>
-            <p>For Security Reasons, DO NOT share this OTP with anyone.</p>
+            <h2 class="font-36">Hello {0},</h2>
+        
+            <p style="font-size: 20px; margin-left: 40px;">
+                <span style="color:green;font-size:25px;font-weight:bold">{1}</span> 
+                is Your ES-Cloud OTP. OTP is confidential. 
+                </p>
+            <p style="font-size: 20px; margin-left: 40px;">For Security Reasons, DO NOT share this OTP with anyone.</p>
         </body>
     </html>
     """.format(name, otp)
-    msg.attach(MIMEText(body, 'plain'))
+    msg.attach(MIMEText(body, 'html'))
     try:
         server = smtplib.SMTP(
             read_environ_value(value, "SMTP_SERVER"),
@@ -56,6 +60,7 @@ def send_otp(
 def send_patient_registration_email(
         first_name: str, to_address: str,
         subject: str, username: str, password: str):
+
     from_address = read_environ_value(value, "SMTP_FROM")
     msg = MIMEMultipart()
     msg['From'] = from_address
@@ -126,7 +131,7 @@ def send_newsletter_email(html_body, subject_line, user_reg_obj):
 
 
 def send_provider_registration_email(first_name, last_name, to_address,
-                                     username, password):
+                                        username, password):
     from_address = read_environ_value(value, "SMTP_FROM")
     msg = MIMEMultipart()
     msg['From'] = from_address
@@ -173,7 +178,7 @@ def send_provider_registration_email(first_name, last_name, to_address,
 
 
 def send_user_registration_email(first_name, last_name, to_address,
-                                 username, password):
+                                        username, password):
     from_address = read_environ_value(value, "SMTP_FROM")
     msg = MIMEMultipart()
     msg['From'] = from_address
@@ -237,7 +242,7 @@ def send_product_request_email(seq_number, docx_content, csv_content, sender):
     part.set_payload(docx_content)
     encoders.encode_base64(part)
     part.add_header("Content-Disposition",
-                    f"attachment; filename=ProductRequestForm-{seq_number}.docx")
+                    f"attachment; filename=ProductRequestForm-{seq_number}.pdf")
     msg.attach(part)
 
     part1 = MIMEBase("application", "octate-stream")
@@ -265,12 +270,11 @@ def send_product_request_email(seq_number, docx_content, csv_content, sender):
 def send_password_reset_email(first_name, last_name, to_address, username, password,
                               send_to_cs, role):
     from_address = read_environ_value(value, "SMTP_FROM")
+    receivers_mail = [CUSTOMER_SERVICE_EMAIL, to_address]
     msg = MIMEMultipart()
     msg['From'] = from_address
     msg['To'] = to_address
     msg['Subject'] = "Password reset"
-    if send_to_cs is True:
-        msg['Cc'] = CUSTOMER_SERVICE_EMAIL
 
     app_url = None
     testflight_url = None
@@ -290,7 +294,7 @@ def send_password_reset_email(first_name, last_name, to_address, username, passw
                    please call 1-800-985-5702 to report the incident. <br>
             <br>Username: {} </br>
             <br>Password: {} </br>
-
+            
             """
     if role == PATIENT:
         body += """
@@ -305,7 +309,7 @@ def send_password_reset_email(first_name, last_name, to_address, username, passw
                """
     if role == PROVIDER:
         body += """
-            <br>Link to the clinical portal: {} </br>
+            <br>Link to the clinical portal: {}</br>
             <br>
             """
     body += """
@@ -331,8 +335,8 @@ def send_password_reset_email(first_name, last_name, to_address, username, passw
         server.login(read_environ_value(value, "SMTP_USERNAME"),
                      read_environ_value(value, "SMTP_PASSWORD"))
         text = msg.as_string()
-        print(f"sending email to: {to_address}")
-        server.sendmail(from_address, to_address, text)
+        print(f"sending email to: {receivers_mail[0]} and {receivers_mail[1]}")
+        server.sendmail(from_address, receivers_mail, text)
         server.quit()
         return True
     except Exception as e:

@@ -39,6 +39,7 @@ from utils.common import generate_random_password, have_keys
 from utils.jwt import require_user_token
 from utils.validation import validate_request
 from werkzeug.exceptions import BadRequest
+import datetime
 
 
 class PatientManager:
@@ -56,7 +57,12 @@ class PatientManager:
                                                                                    request_params["first_name"],
                                                                                    request_params["last_name"]))
 
-        pwd = generate_random_password()
+
+        externalid = request_params["external_user_id"][0:3]
+        month = str(datetime.date.today()).split('-')[1]
+        day = str(datetime.date.today()).split('-')[2]
+        pwd = "es" + externalid + day + month
+
         request_params["password"] = pwd
         request_params["role_name"] = "PATIENT"
 
@@ -82,7 +88,7 @@ class PatientManager:
             send_patient_registration_email(
                 user_params[0],
                 register_params[0],
-                "Welcome to Element Science",
+                "Setting up the Jewel App",
                 register_params[0],
                 register_params[1],
             )
@@ -364,3 +370,24 @@ class PatientManager:
         }
 
         return jsonify(response)
+
+
+
+    @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER, PROVIDER)
+    def patients_download(self, token):
+        """
+        :param : None
+        :return complete patient list to be used to download to a csv file
+        """
+        request_data = validate_request()
+        logging.debug(
+            "User: {} with role: {} - is requesting a list of patients to download as a csv".format(token["user_email"],
+                                                                                   token["user_role"]))
+        patients_list = self.patient_obj.get_patients_download()
+
+        return (
+            {
+                "patients": patients_list,
+            },
+            http.client.OK,
+        )

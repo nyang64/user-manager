@@ -174,6 +174,7 @@ def generate_random_password():
     password = ''.join(secrets.choice(alphabet) for i in range(8))
     return password
 
+
 def format_phone_number(ph_number):
     try:
         number = phonenumbers.parse(ph_number, 'US')

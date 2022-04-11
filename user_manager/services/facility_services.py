@@ -221,12 +221,10 @@ class FacilityService(DbRepository):
         )
 
         if external_id is not None and len(external_id) > 0:
-            facilities_query = facilities_query.filter(
-                Facilities.external_facility_id == external_id
-            )
+            facilities_query = facilities_query.filter(Facilities.external_facility_id.ilike(f'%{external_id}%'))
 
         if name is not None and len(name) > 0:
-            facilities_query = facilities_query.filter(Facilities.name.ilike(name))
+            facilities_query = facilities_query.filter(Facilities.name.ilike(f'%{name}%'))
 
         data_count = facilities_query.count()
         query_data = []
@@ -495,3 +493,4 @@ class FacilityService(DbRepository):
             "prescribing_providers": providers
         }
         return data
+

@@ -15,7 +15,6 @@ class FacilitiesManager:
     def __init__(self):
         self.facility_service_obj = FacilityService()
 
-
     @require_user_token(ADMIN, STUDY_MANAGER, CUSTOMER_SERVICE)
     def add_facility(self, token):
         logging.debug("User: {} Adding a facility".format(token["user_email"]))

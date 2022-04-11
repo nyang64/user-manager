@@ -41,18 +41,18 @@ class TestProviderServices(TestCase):
         with app.app_context():
             base = self.provider_service._base_query(1)
             with pytest.raises(NotFound) as e:
-                self.provider_service._filter_query(base, "A", "J", "20/12", 1)
+                self.provider_service._filter_query(base, "A", "J", "20/12", 1, "555-555")
             self.assertIsInstance(e.value, NotFound)
 
     def test_filter_query(self):
         app = create_test_app()
         with app.app_context():
             base = self.provider_service._base_query(1)
-            resp = self.provider_service._filter_query(base, "A", "J", "20/12", None)
+            resp = self.provider_service._filter_query(base, "A", "J", "20/12", None, "555-555")
             self.assertIsNotNone(resp)
             therapy = self.populate_data.create_therapy_report()
             resp1 = self.provider_service._filter_query(
-                base, "A", "J", "20/12", therapy.id
+                base, "A", "J", "20/12", therapy.id, "555-555"
             )
             self.assertIsNotNone(resp1)
 

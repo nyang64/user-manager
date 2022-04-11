@@ -42,7 +42,7 @@ class S3Api:
             # upload the content to S3
             cls._s3_client.upload_fileobj(material_request_form,
                                           cls._material_request_bucket_name,
-                                          str(folder_name) + '/material_request.docx')
+                                          str(folder_name) + '/material_request.pdf')
             cls._s3_client.upload_fileobj(material_request_sheet,
                                           cls._material_request_bucket_name,
                                           str(folder_name) + '/material_request.xls')

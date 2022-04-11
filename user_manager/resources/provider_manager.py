@@ -224,7 +224,7 @@ class ProviderManager:
         request_data = validate_request()
         filter_input = filter_patient_schema.load(request_data)
         patients_list, total = self.provider_obj.patients_list(
-            provider.id, *filter_input
+        provider.id, *filter_input
         )
 
         return (

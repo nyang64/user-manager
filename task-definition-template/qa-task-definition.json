@@ -38,10 +38,13 @@
         {
           "name": "PATIENT_PORTAL_PASSWORD",
           "value": "$PATIENT_PORTAL_PASSWORD"
+<<<<<<< HEAD
         },
         {
           "name": "CLINICAL_PORTAL_URL",
           "value": "https://qa.clinical.elementscience.com/"
+=======
+>>>>>>> d28abfff43453fd6f0ef9c5891643bf443005feb
         },
         {
           "name": "POSTGRES_DB_HOST",

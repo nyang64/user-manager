@@ -148,6 +148,7 @@ class PatientServices(DbRepository):
         devices = (
             db.session.query(PatientsDevices.device_serial_number)
                 .filter(PatientsDevices.patient_id == patient_id)
+                .filter(PatientsDevices.is_active == True)
                 .all()
         )
 

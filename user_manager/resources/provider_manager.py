@@ -1,4 +1,5 @@
 import http
+import json
 import logging
 from db import db
 
@@ -9,6 +10,7 @@ from model.providers import Providers
 from model.providers_roles import ProviderRoles
 from model.user_registration import UserRegister
 from model.users import Users
+from model.provider_facility import ProviderFacility
 from schema.address_schema import AddressSchema
 from schema.patient_schema import (
     filter_patient_schema,
@@ -54,10 +56,9 @@ class ProviderManager:
                     provider_json,
                     "first_name",
                     "last_name",
-                    "facility_id",
+                    "facilities",
                     "email",
-                    "role",
-                    "is_primary"
+                    "role"
                 )
                 is False
         ):
@@ -86,18 +87,17 @@ class ProviderManager:
             external_user_id
         )
 
-        facility_id = provider_json["facility_id"]
+        facilities = provider_json["facilities"]
         role_name = provider_json["role"]
 
         # Currently this is applicable only for study coordinators
-        is_primary_provider = provider_json["is_primary"]
         provider_id = self.provider_obj.register_provider_service(
-            register, user, facility_id, role_name, is_primary_provider
+            register, user, facilities, role_name
         )
 
         provider = Providers.find_by_id(provider_id)
-        facility = Facilities.find_by_id(int(facility_id))
-        address = Address.find_by_id(facility.address_id)
+        facilities = self.provider_obj.list_all_facilities_by_provider(provider_id=provider.id)
+
         provider_roles = ProviderRoles.find_by_provider_id(provider_id)
         user = Users.find_by_id(provider.user_id)
         registration = UserRegister.find_by_id(user.registration_id)
@@ -117,11 +117,7 @@ class ProviderManager:
             "registration": register_schema.dump(registration),
             "user": user_schema.dump(user),
             "provider_role": providers_roles_schema.dump(provider_roles),
-            "facility": {
-                "name": facility.name,
-                "address": address_schema.dump(address),
-                "on_call_phone": facility.on_call_phone,
-            },
+            "facilities": facilities
         }
         response.update(provider_schema.dump(provider))
 
@@ -134,13 +130,12 @@ class ProviderManager:
         if provider is None:
             return {"message": "No Such Provider Exist"}, 404
         user = Users.find_by_id(provider.user_id)
-        facility = Facilities.find_by_id(provider.facility_id)
+        facilities = self.provider_obj.list_all_facilities_by_provider(provider_id=provider.id)
         registration = UserRegister.find_by_id(user.registration_id)
         provider_dict = {
             "id": provider.id,
             "external_id": user.external_user_id,
-            "facility_id": provider.facility_id,
-            "facility_name": facility.name,
+            "facilities": facilities,
             "first_name": user.first_name,
             "last_name": user.last_name,
             "phone_number": user.phone_number,
@@ -157,16 +152,15 @@ class ProviderManager:
         providers_lst = []
         for provider in provider_data:
             user = Users.find_by_id(provider.user_id)
-            facility = Facilities.find_by_id(provider.facility_id)
+            provider_facilities = self.provider_obj.list_all_facilities_by_provider(provider_id=provider.id)
             patients = self.provider_obj.list_all_patients_by_provider(provider_id=provider.id)
             provider_dict = {
                 "id": provider.id,
                 "user_id": provider.user_id,
-                "facility_id": provider.facility_id,
                 "first_name": user.first_name,
                 "last_name": user.last_name,
                 "phone_number": user.phone_number,
-                "facility_name": facility.name,
+                "facilities": provider_facilities,
                 "patients": patients,
             }
             providers_lst.append(provider_dict)
@@ -197,18 +191,20 @@ class ProviderManager:
 
         try:
             request_data = validate_request()
-            req_facility_id, req_email, req_user = UpdateProviderSchema.load(request_data)
+            facilities_to_assign, facilities_to_unassign, req_email, req_user = UpdateProviderSchema.load(request_data)
 
             provider_data = Providers.find_by_id(_id=provider_id)
             if provider_data is None:
                 return {"message": "No Such Provider Exist"}, 404
 
-            self.provider_obj.update_provider(facility_id=req_facility_id,
-                                              user=req_user,
+            self.provider_obj.update_provider(user=req_user,
                                               email=req_email,
-                                              provider_from_db=provider_data)
+                                              provider_from_db=provider_data,
+                                              facilities_to_unassign=facilities_to_unassign,
+                                              facilities_to_assign=facilities_to_assign)
         except Exception as ex:
-            return {"message": ex.description}, http.client.BAD_REQUEST
+            logging.error("Unable to update provider")
+            return {"message": str(ex)}, http.client.BAD_REQUEST
 
         return {"message": "Successfully updated provider"}, http.client.OK
 

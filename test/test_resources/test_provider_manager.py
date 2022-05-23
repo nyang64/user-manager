@@ -8,6 +8,7 @@ from model.facilities import Facilities
 from model.providers import Providers
 from model.providers_roles import ProviderRoles
 from model.user_registration import UserRegister
+from model.provider_facility import ProviderFacility
 from model.users import Users
 from resources.provider_manager import ProviderManager
 from services.facility_services import FacilityService
@@ -19,12 +20,11 @@ def create_provider_req_value():
     return {
         "first_name": "Laura",
         "last_name": "Kirby",
-        "facility_id": "1",
+        "facilities": [],
         "phone_number": "9988776111",
         "email": "laura@elementsci.com",
         "role": "outpatient",
-        "external_user_id": "101-103",
-        "is_primary": False
+        "external_user_id": "101-103"
     }
 
 def create_facility_req_value():
@@ -92,7 +92,7 @@ class TestProviderManager(TestCase):
     @mock.patch.object(Users, "find_by_id")
     @mock.patch.object(ProviderRoles, "find_by_provider_id")
     @mock.patch.object(Address, "find_by_id")
-    @mock.patch.object(Facilities, "find_by_id")
+    @mock.patch.object(ProviderFacility, "find_facility_ids_by_provider_id")
     @mock.patch.object(Providers, "find_by_id")
     @mock.patch.object(ProviderService, "register_provider_service")
     @mock.patch("resources.provider_manager.send_provider_registration_email")
@@ -103,7 +103,7 @@ class TestProviderManager(TestCase):
         mock_email,
         mock_service,
         mock_provider,
-        mock_facility,
+        mock_facilities,
         mock_address,
         mock_prole,
         mock_user,
@@ -112,7 +112,7 @@ class TestProviderManager(TestCase):
         mock_req.json = create_provider_req_value()
         mock_service.return_value = 1
         mock_provider.return_value = Providers(id=1, user_id=1)
-        mock_facility.return_value = Facilities(id=1, address_id=1)
+        mock_facilities.return_value = []
         mock_address.return_value = Address(id=1)
         mock_prole.return_value = [ProviderRoles(id=1)]
         mock_user.return_value = Users(id=1, registration_id=1)

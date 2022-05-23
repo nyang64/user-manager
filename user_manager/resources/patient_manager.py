@@ -5,11 +5,13 @@ import json
 from flask import jsonify, request
 from model.address import Address
 from model.facilities import Facilities
+from model.provider_facility import ProviderFacility
 from model.patient import Patient
 from model.patients_devices import PatientsDevices
 from model.patients_patches import PatientsPatches
 from schema.patient_details_schema import PatientDetailsSchema
 from model.patients_providers import PatientsProviders
+from model.patient_facilities import PatientFacilities
 from model.provider_role_types import ProviderRoleTypes
 from model.providers import Providers
 from model.user_registration import UserRegister
@@ -93,6 +95,10 @@ class PatientManager:
                 register_params[1],
             )
 
+            # Assign patient to facility
+            if request_params.get("outpatient_provider") or request_params.get("prescribing_provider"):
+                self.assign_facility_to_patient(patient_id, request_params["facility_id"])
+
             if request_params.get("device_serial_number"):
                 self.assign_first_device(patient_id, request_params["device_serial_number"])
 
@@ -109,6 +115,9 @@ class PatientManager:
         except Exception as ex:
             return {"message": str(ex)}, http.client.BAD_REQUEST
 
+    def assign_facility_to_patient(self, patient_id, facility_id):
+        # Use outpatient provider id first
+        return self.patient_obj.assign_patient_to_facility(patient_id, facility_id)
 
     def assign_first_device(self, patient_id, device_serial_number):
         """
@@ -314,8 +323,6 @@ class PatientManager:
         )
         outpatient_provider = Providers.find_by_id(out_patient_provider.provider_id)
         outpatient_provider_user = Users.find_by_id(outpatient_provider.user_id)
-        outpatient_facility = Facilities.find_by_id(outpatient_provider.facility_id)
-        outpatient_address = Address.find_by_id(outpatient_facility.address_id)
         outpatient_registration = UserRegister.find_by_id(
             outpatient_provider_user.registration_id
         )
@@ -327,11 +334,14 @@ class PatientManager:
         )
         prescribing_provider = Providers.find_by_id(pre_patient_provider.provider_id)
         prescribing_provider_user = Users.find_by_id(prescribing_provider.user_id)
-        prescribing_facility = Facilities.find_by_id(prescribing_provider.facility_id)
-        prescribing_address = Address.find_by_id(prescribing_facility.address_id)
         prescribing_registration = UserRegister.find_by_id(
             prescribing_provider_user.registration_id
         )
+
+        # facility
+        patient_facility = PatientFacilities.find_facility_id_by_patient_id(patient_id)[0]  # Patients:Facilities 1:1
+        facility = Facilities.find_by_id(patient_facility.facility_id)
+        address = Address.find_by_id(facility.address_id)
 
         # PATCH FOR THERAPY REPORT - REPORT_GENERATOR NEEDS TO BE UPDATED AND USE "PERMANENT_ADDRESS" KEY INSTEAD
         # OF "ADDRESS" KEY IN PATIENT SCHEMA JSON
@@ -351,9 +361,9 @@ class PatientManager:
                     "user": user_schema.dump(outpatient_provider_user),
                     "provider": provider_schema.dump(outpatient_provider),
                     "facility": {
-                        "name": outpatient_facility.name,
-                        "address": address_schema.dump(outpatient_address),
-                        "on_call_phone": outpatient_facility.on_call_phone,
+                        "name": facility.name,
+                        "address": address_schema.dump(address),
+                        "on_call_phone": facility.on_call_phone,
                     },
                 },
                 "prescribing": {
@@ -361,9 +371,9 @@ class PatientManager:
                     "user": user_schema.dump(prescribing_provider_user),
                     "provider": provider_schema.dump(prescribing_provider),
                     "facility": {
-                        "name": prescribing_facility.name,
-                        "address": address_schema.dump(prescribing_address),
-                        "on_call_phone": prescribing_facility.on_call_phone,
+                        "name": facility.name,
+                        "address": address_schema.dump(address),
+                        "on_call_phone": facility.on_call_phone,
                     },
                 },
             },

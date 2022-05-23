@@ -3,7 +3,7 @@ import logging
 from marshmallow import ValidationError, fields, post_load
 from schema.address_schema import AddressSchema
 from schema.base_schema import BaseSchema
-
+from ma import ma
 
 def must_not_blank(data):
     if not data:
@@ -58,7 +58,23 @@ class FacilityListSchema(BaseSchema):
         filter_input = (page_number, record_per_page, name, external_id)
         return filter_input
 
+class BasicFacilitySchema(ma.Schema):
+    id = fields.Str(required=True)
+    is_primary = fields.Boolean(required=False)
+
+    @post_load
+    def post_data(self, data, **kwargs):
+        try:
+            id = data.get("id", None)
+            is_primary = data.get("is_primary")
+        except ValueError as e:
+            logging.error(e)
+        return id, is_primary
+
+class RequestBasicFacilitySchema(ma.Schema):
+    facility_list = fields.List(fields.Nested(BasicFacilitySchema))
 
 facility_list_schema = FacilityListSchema()
 update_facility_schema = UpdateFacilitySchema()
 add_facility_schema = AddFacilitySchema()
+basic_facility_schema = BasicFacilitySchema()

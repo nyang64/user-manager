@@ -23,7 +23,7 @@ class Providers(BaseModel):
 
     @classmethod
     def find_by_id(cls, _id: str) -> "Providers":
-        return cls.query.filter_by(id=_id).first()
+        return cls.query.with_entities(Providers.id, Providers.user_id).filter_by(id=_id).first()
 
     @classmethod
     def find_providers(cls) -> "Providers":

@@ -2,18 +2,22 @@ import json
 import logging
 
 from db import db
+from model.provider_role_types import ProviderRoleTypes
+from model.providers_roles import ProviderRoles
 from model.roles import Roles
 from model.user_roles import UserRoles
 from model.user_status import UserStatus
 from model.address import Address
 from model.user_status_type import UserStatusType
 from model.users import Users
+from model.user_registration import UserRegister
+from model.providers import Providers
 from model.study_managers import StudyManagers
 from services.auth_services import AuthServices
 from services.repository.db_repositories import DbRepository
 from sqlalchemy.exc import SQLAlchemyError
 from utils.common import generate_uuid
-from utils.constants import ENROLLED, DISENROLLED, STUDY_MANAGER
+from utils.constants import ENROLLED, DISENROLLED, STUDY_MANAGER, SITE_INVESTIGATOR
 from werkzeug.exceptions import InternalServerError, NotFound
 
 
@@ -69,6 +73,8 @@ class UserServices(DbRepository):
     def get_users_by_role(self, role_name):
         if role_name == STUDY_MANAGER:
             return self.__get_study_managers()
+        elif role_name == SITE_INVESTIGATOR:
+            return self.__get_study_investigators()
 
 
     def __get_study_managers(self):
@@ -102,6 +108,30 @@ class UserServices(DbRepository):
             users_list.append(users_dict)
 
         return users_list, len(study_managers)
+
+    def __get_study_investigators(self):
+        study_investigators = db.session.query(Providers, Users, UserRegister) \
+            .join(ProviderRoles, ProviderRoles.provider_id == Providers.id) \
+            .join(ProviderRoleTypes, ProviderRoleTypes.id == ProviderRoles.provider_role_id) \
+            .join(Users, Providers.user_id == Users.id) \
+            .join(UserRegister, Users.registration_id == UserRegister.id) \
+            .with_entities(Providers.id, Users.first_name, Users.last_name, Users.phone_number, Users.external_user_id,
+                           UserRegister.email) \
+            .filter(ProviderRoleTypes.name == 'outpatient')\
+            .all()
+        users_list = []
+        if study_investigators is None or len(study_investigators) == 0:
+            return users_list, 0
+        for x in study_investigators:
+            users_dict = {}
+            users_dict["user_id"] = x[0]
+            users_dict["first_name"] = x[1]
+            users_dict["last_name"] = x[2]
+            users_dict["phone_number"] = x[3]
+            users_dict["npi"] = x[4]
+            users_dict["email"] = x[5]
+            users_list.append(users_dict)
+        return users_list, len(study_investigators)
 
     def list_users(self):
         try:

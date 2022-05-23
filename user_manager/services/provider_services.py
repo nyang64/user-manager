@@ -7,6 +7,7 @@ from model.address import Address
 from model.facilities import Facilities
 from model.patient import Patient
 from model.patients_providers import PatientsProviders
+from model.provider_facility import ProviderFacility
 from model.provider_role_types import ProviderRoleTypes
 from model.providers import Providers
 from model.salvos import Salvos
@@ -15,6 +16,7 @@ from model.user_registration import UserRegister
 from model.user_status import UserStatus
 from model.user_status_type import UserStatusType
 from model.users import Users
+from schema.provider_facility_schema import ProvidersFacilitySchema
 from schema.providers_roles_schema import ProvidersRolesSchema
 from schema.providers_schema import ProvidersSchema
 from services.auth_services import AuthServices
@@ -30,6 +32,7 @@ from werkzeug.exceptions import InternalServerError, NotFound
 
 provider_role_schema = ProvidersRolesSchema()
 provider_schema = ProvidersSchema()
+provider_facility_schema = ProvidersFacilitySchema()
 
 
 class ProviderService(DbRepository):
@@ -37,7 +40,7 @@ class ProviderService(DbRepository):
         self.auth_obj = AuthServices()
         self.user_obj = UserServices()
 
-    def register_provider_service(self, register, user, facility_id, role, is_primary_provider):
+    def register_provider_service(self, register, user, facilities, role):
         try:
             # Save data in the registration table
             reg_id = self.auth_obj.register_new_user(register[0], register[1])
@@ -53,7 +56,7 @@ class ProviderService(DbRepository):
             self.user_obj.assign_role(user_id, PROVIDER)
 
             # Create and assign a provider, provider facility and provider role.
-            provider_id = self.add_provider(user_id, facility_id, role, is_primary_provider)
+            provider_id = self.add_provider(user_id, facilities, role)
 
             # return the id of the provider created.
             return provider_id
@@ -62,11 +65,14 @@ class ProviderService(DbRepository):
             logging.error(str(error))
             raise InternalServerError(str(error))
 
-    def add_provider(self, user_id, facility_id, role_name, is_primary_provider):
-        exist_facility = Facilities.find_by_id(facility_id)
-        # raise if invalid facility id was received
-        if not exist_facility:
-            raise NotFound(f"facility with id {facility_id} was not found")
+    def add_provider(self, user_id, facilities, role_name):
+
+        for facility in facilities:
+            exist_facility = Facilities.find_by_id(facility['id'])
+            # raise if invalid facility id was received
+            if not exist_facility:
+                logging.error(f"facility with id {facility['id']} was not found")
+                raise NotFound(f"facility with id {facility['id']} was not found")
 
         # raise if invalid role name was received
         role = ProviderRoleTypes.find_by_name(role_name)
@@ -77,7 +83,7 @@ class ProviderService(DbRepository):
 
         # create and save provider
         provider = provider_schema.load(
-            {"user_id": user_id, "facility_id": facility_id, "is_primary": is_primary_provider}
+            {"user_id": user_id}
         )
         logging.info(f"Saving provider in the database {provider.__dict__}")
         self.flush_db(provider)
@@ -87,8 +93,9 @@ class ProviderService(DbRepository):
         # raise if provider was not saved
         if not provider.id:
             raise NotFound(
-                f"provider with user_id {user_id} and facility_id {facility_id} was not created"
+                f"provider with user_id {user_id}  was not created"
             )
+        logging.info(f"Assigning Provider to Facilities")
 
         # assign a provider role to the provider
         provider_role = provider_role_schema.load(
@@ -98,6 +105,16 @@ class ProviderService(DbRepository):
         self.flush_db(provider_role)
         self.commit_db()
         # provider_role.save_to_db()
+
+        # Assign Facilities to Provider
+        logging.info(f"Beginning to assign facilities to provider")
+        for facility in facilities:
+            provider_facility = provider_facility_schema.load(
+                { "provider_id": provider.id, "facility_id": facility["id"], "is_primary": facility["is_primary"]}
+            )
+            logging.info(f"Saving provider facility in the database")
+            self.flush_db(provider_facility)
+            self.commit_db()
 
         return provider.id
 
@@ -264,6 +281,29 @@ class ProviderService(DbRepository):
             logging.error("Error occured: {}".format(str(error)))
             raise InternalServerError(str(error))
 
+    def list_all_facilities_by_provider(self, provider_id):
+        """List all Facilities based on provider_id"""
+        logging.debug(f"List all facilities for provider: {provider_id}")
+        try:
+            facility_ids = ProviderFacility.find_facility_ids_by_provider_id(provider_id)
+            facilities_list = []
+
+            for facility in facility_ids:
+                facility_obj = {}
+                facility_record = Facilities.find_by_id(facility[0])
+                facility_obj["id"] = facility_record.id
+                facility_obj["name"] = facility_record.name
+                facility_obj["external_facility_id"] = facility_record.external_facility_id
+                facility_obj["is_active"] = facility_record.is_active
+                facility_obj["is_primary"] = facility[1]
+
+                facilities_list.append(facility_obj)
+            return facilities_list
+        except exc.SQLAlchemyError as error:
+            logging.error("Error occured: {}".format(str(error)))
+            raise InternalServerError(str(error))
+
+
     def _base_query(self, provider_id):
         """
         :return := Return the base query for patient list
@@ -316,7 +356,7 @@ class ProviderService(DbRepository):
 
         return base_query
 
-    def update_provider(self, facility_id, user, email, provider_from_db):
+    def update_provider(self, user, email, provider_from_db, facilities_to_unassign, facilities_to_assign):
         """
         Updating providers will affect 3 tables on following checks
             - providers:    if the facility id is different from the data in DB.
@@ -335,11 +375,34 @@ class ProviderService(DbRepository):
 
             # 1.check if the facility id is the same from what was in the database
             # Facility id can not be NULL.
-            if int(facility_id) != provider_from_db.facility_id:
-                logging.debug("Facility_ids are different")
-                provider_from_db.facility_id = facility_id
-                provider_from_db.updated_on = datetime.now()
-                session.add(provider_from_db)
+            if facilities_to_unassign:
+                # Unassign Facilities
+                for facility in facilities_to_unassign:
+                    #Counstruct provider_facility object to persist
+                    provider_facility_to_delete = ProviderFacility.find_by_provID_facID(provider_from_db[0], int(facility[0]))
+                    if provider_facility_to_delete:
+                        logging.info("Removing provider facility tie in the database")
+                        session.delete(provider_facility_to_delete)
+                    else:
+                        logging.info("Provider Facility tie does not exist. Will not remove anything.")
+            if facilities_to_assign:
+                # Assign facilities
+                for facility in facilities_to_assign:
+                    provider_facility_to_assign = provider_facility_schema.load(
+                        {
+                            "provider_id" : provider_from_db[0],
+                            "facility_id" : int(facility[0]),
+                            "is_primary" : facility[1]
+                        }
+                    )
+
+                    facility_exists = ProviderFacility.find_by_provID_facID(provider_from_db[0], int(facility[0]))
+                    if not facility_exists:
+                        logging.info(f"Provider Facility tie does not exist. Saving provider facility in the database {provider_facility_to_assign.__dict__}")
+                        self.flush_db(provider_facility_to_assign)
+                        self.commit_db()
+                    else:
+                        logging.info(f"Provider Facility tie already exist. Will do anything with: {provider_facility_to_assign.__dict__}")
 
             # 2. check if the user object has any changes
             user_from_db = Users.find_by_id(_id=user_id)
@@ -418,7 +481,7 @@ class ProviderService(DbRepository):
                 "provider_name",
                 "id",
                 "phone",
-                "site_name",
+                "facilities",
                 "email_address"
             )
         )
@@ -444,11 +507,12 @@ class ProviderService(DbRepository):
             logging.exception(e)
 
         for data in query_data:
+            provider_facilities = self.list_all_facilities_by_provider(data[2])
             provider = provider_list(
                 provider_name=data[0] + " " + data[1],
                 id=data[2],
                 phone=data[3],
-                site_name=data[5],
+                facilities=provider_facilities,
                 email_address=data[4]
             )
             lists.append(provider._asdict())

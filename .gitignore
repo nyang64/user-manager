@@ -7,6 +7,7 @@ static/
 *.zip
 env/
 .*/
+*/templates/*
 migrations_1/
 htmlcov/
 .DS_Store

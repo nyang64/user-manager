@@ -65,6 +65,7 @@ class CreatePatientSchema(CreateUserSchema):
     gender = fields.Str(required=True, validate=must_not_blank)
     prescribing_provider = fields.Int(required=True, validate=must_not_blank)
     outpatient_provider = fields.Int(required=True, validate=must_not_blank)
+    facility_id = fields.Int(required=True, validate=must_not_blank)
     indication = fields.Str(required=True, validate=must_not_blank)
     device_serial_number = fields.Str(required=False)
     mobile_app_user = fields.Bool(required=False)
@@ -104,6 +105,7 @@ class CreatePatientSchema(CreateUserSchema):
                 "prescribing_provider_id": data.get("prescribing_provider"),
                 "outpatient_provider_id": data.get("outpatient_provider"),
             },
+            "facility": {"facility_id": data.get("facility_id")},
             "device": {"serial_number": data.get("device_serial_number")},
             "patches": {
                 "applied_patch_lot_number": data.get("applied_patch_lot_number"),
@@ -142,6 +144,7 @@ class UpdatePatientSchema(BaseSchema):
     gender = fields.Str(required=True, validate=must_not_blank)
     prescribing_provider = fields.Int(required=True, validate=must_not_blank)
     outpatient_provider = fields.Int(required=True, validate=must_not_blank)
+    facility_id = fields.Int(required=True, validate=must_not_blank)
     indication = fields.Str(required=True, validate=must_not_blank)
     device_serial_number = fields.Str(required=False)
     mobile_app_user = fields.Bool(required=False)
@@ -190,6 +193,7 @@ class UpdatePatientSchema(BaseSchema):
                 "prescribing_provider_id": data.get("prescribing_provider"),
                 "outpatient_provider_id": data.get("outpatient_provider"),
             },
+            "facility": {"facility_id": data.get("facility_id")},
             "device": {"serial_number": data.get("device_serial_number")},
             "details": {
                 "upper_patch_setting": data.get("upper_patch_setting"),

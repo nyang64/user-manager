@@ -33,6 +33,10 @@ class Facilities(BaseModel):
         return cls.query.filter_by(id=_id).first()
 
     @classmethod
+    def find_by_ids(cls, _ids) -> "Facilities":
+        return cls.query.where(Facilities.id.in_(_ids)).all()
+
+    @classmethod
     def find_by_external_id(cls, _ext_id) -> "Facilities":
         return cls.query.filter_by(external_facility_id=_ext_id).first()
 

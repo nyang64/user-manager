@@ -4,6 +4,8 @@ import logging
 
 from db import db
 from model.facilities import Facilities
+from model.provider_facility import ProviderFacility
+from model.patient_facilities import PatientFacilities
 from model.therapy_reports import TherapyReport
 from model.patient import Patient
 from model.patients_devices import PatientsDevices
@@ -173,6 +175,14 @@ class PatientServices(DbRepository):
     def save_patient_patches(self, patient_patches):
         for patient_patch in patient_patches:
             patient_patch.save_to_db()
+
+    def assign_patient_to_facility(self, patient_id, facility_id):
+        patient_facility_data = PatientFacilities(
+            patient_id=patient_id,
+            facility_id=facility_id
+        )
+        self.flush_db(patient_facility_data)
+        self.commit_db()
 
     def assign_device_to_patient(self, patient_device):
         exist_patient = Patient.find_by_id(patient_device.patient_id)
@@ -589,7 +599,8 @@ class PatientServices(DbRepository):
             for data in query_data:
                 provider_facility = db.session.query(Users, Facilities, Providers) \
                     .join(Providers, Providers.user_id == Users.id) \
-                    .join(Facilities, Providers.facility_id == Facilities.id) \
+                    .join(ProviderFacility, ProviderFacility.provider_id == Providers.id) \
+                    .join(Facilities, ProviderFacility.facility_id == Facilities.id) \
                     .filter(Providers.id == data[6]).all()
 
                 user = provider_facility[0][0]

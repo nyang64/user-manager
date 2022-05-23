@@ -63,8 +63,9 @@ class TestProviderServices(TestCase):
         with app.app_context():
             user = self.populate_data.create_user("user@gmail.com")
             fac = self.populate_data.create_facility()
+            fac = [{"id": fac.id, "is_primary": True}]
             self.populate_data.provider_role_types()
-            resp = self.provider_service.add_provider(user.id, fac.id, "prescribing", False)
+            resp = self.provider_service.add_provider(user.id, fac, "prescribing")
             self.assertIsNotNone(resp)
             self.assertEqual(1, resp)
 
@@ -73,8 +74,9 @@ class TestProviderServices(TestCase):
         with app.app_context():
             user = self.populate_data.create_user("user@gmail.com")
             fac = self.populate_data.create_facility()
+            fac_list = []
             with pytest.raises(NotFound) as e:
-                self.provider_service.add_provider(user.id, fac.id, "outpat", False)
+                self.provider_service.add_provider(user.id, fac_list, "outpat")
             self.assertIsInstance(e.value, NotFound)
 
     @mock.patch.object(Facilities, "find_by_id")
@@ -83,7 +85,7 @@ class TestProviderServices(TestCase):
         app = create_test_app()
         with app.app_context():
             with pytest.raises(NotFound) as e:
-                self.provider_service.add_provider(1, 1, "", False)
+                self.provider_service.add_provider(1, [], "")
             self.assertIsInstance(e.value, NotFound)
 
     def test_report_signed_link_for_none(self):
@@ -144,7 +146,7 @@ class TestProviderServices(TestCase):
         with app.app_context():
             self.populate_data.add_roles()
             resp = self.provider_service.register_provider_service(
-                reg, user, 1, "PROVIDER", False
+                reg, user, [{"id": 1, "is_primary": True}], "PROVIDER"
             )
             self.assertIsNotNone(resp)
             self.assertEqual(2, resp)
@@ -152,6 +154,6 @@ class TestProviderServices(TestCase):
         with app.app_context():
             with pytest.raises(InternalServerError) as e:
                 self.provider_service.register_provider_service(
-                    reg, user, 1, "PROVIDER", True
+                    reg, user, 1, "PROVIDER"
                 )
             self.assertIsInstance(e.value, InternalServerError)

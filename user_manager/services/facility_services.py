@@ -4,6 +4,7 @@ from collections import namedtuple
 from db import db
 from model.address import Address
 from model.facilities import Facilities
+from model.provider_facility import ProviderFacility
 from model.providers import Providers
 from model.patients_providers import PatientsProviders
 from model.provider_role_types import ProviderRoleTypes
@@ -341,12 +342,12 @@ class FacilityService(DbRepository):
         if study_coordinator is not None and len(study_coordinator) > 0:
             for sc in study_coordinator:
                 sc_json = {
-                    "first_name": sc.user.first_name,
-                    "last_name": sc.user.last_name,
-                    "id": sc.id,
-                    "external_id": sc.user.external_user_id,
-                    "email": sc.user.registration.email,
-                    "phone": sc.user.phone_number,
+                    "first_name": sc.provider.user.first_name,
+                    "last_name": sc.provider.user.last_name,
+                    "id": sc.provider.id,
+                    "external_id": sc.provider.user.external_user_id,
+                    "email": sc.provider.user.registration.email,
+                    "phone": sc.provider.user.phone_number,
                     "role": STUDY_COORDINATOR,
                     "is_primary": sc.is_primary
                 }
@@ -399,7 +400,9 @@ class FacilityService(DbRepository):
     def __find_study_coordinator_and_patients_count(
         self, facility_id, study_coordinator_role_id, outpatient_role_id
     ):
-        providers = Providers.find_by_facility_id(facility_id)
+        providers = db.session.query(ProviderFacility).join(Providers, ProviderFacility.provider_id == Providers.id) \
+            .filter(ProviderFacility.facility_id == facility_id).all()
+
 
         study_coordinators = []
         primary_study_coordinator_name = ""
@@ -409,19 +412,19 @@ class FacilityService(DbRepository):
             for provider in providers:
 
                 patients = PatientsProviders.find_patients_by_provider_and_role_id(
-                    provider.id, outpatient_role_id
+                    provider.provider_id, outpatient_role_id
                 )
                 patients_count += len(patients)
 
                 provider_role = ProviderRoles.find_by_provider_id(
-                    _provider_id=provider.id
+                    _provider_id=provider.provider_id
                 )
 
                 if provider_role:
                     if study_coordinator_role_id == provider_role[0].provider_role_id:
-                        study_coordinators.append(provider)
+                        study_coordinators.append(provider.provider)
                         if provider.is_primary is True:
-                            primary_study_coordinator_name = provider.user.first_name + " " + provider.user.last_name
+                            primary_study_coordinator_name = provider.provider.user.first_name + " " + provider.provider.user.last_name
 
         return study_coordinators, patients_count, primary_study_coordinator_name
 
@@ -435,7 +438,10 @@ class FacilityService(DbRepository):
             ProviderRoleTypes.find_by_name(_name=PRESCRIBING_PROVIDER).id
 
         # Assumption at this point is that there is going to be only one site investigator (Outpatient provider)
-        providers = Providers.find_by_facility_id(facility_id)
+        providers = db.session.query(ProviderFacility).join(Providers, ProviderFacility.provider_id == Providers.id) \
+            .filter(ProviderFacility.facility_id == facility_id).all()
+
+        #providers = db.session.query(ProviderFacility, Providers)
 
         study_coordinator = []
         outpatient_provider = []
@@ -444,14 +450,14 @@ class FacilityService(DbRepository):
         if providers is not None and len(providers) > 0:
             for provider in providers:
                 provider_role = ProviderRoles.find_by_provider_id(
-                    _provider_id=provider.id
+                    _provider_id=provider.provider_id
                 )
                 if provider_role:
                     if study_coordinator_role_id == provider_role[0].provider_role_id:
                         study_coordinator.append(provider)
 
                     if outpatient_role_id ==  provider_role[0].provider_role_id:
-                        outpatient_provider.append(provider)
+                        outpatient_provider.append(provider.provider)
 
                     if prescribing_role_id == provider_role[0].provider_role_id:
                         prescribing_provider.append(provider)
@@ -465,10 +471,10 @@ class FacilityService(DbRepository):
         if prescribing_providers is not None and len(prescribing_providers) > 0:
             for provider in prescribing_providers:
                 prov_json = {
-                    "name": provider.user.first_name + " " + provider.user.last_name,
-                    "id": provider.id,
-                    "email": provider.user.registration.email,
-                    "phone": provider.user.phone_number
+                    "name": provider.provider.user.first_name + " " + provider.provider.user.last_name,
+                    "id": provider.provider.id,
+                    "email": provider.provider.user.registration.email,
+                    "phone": provider.provider.user.phone_number
                 }
                 providers.append(prov_json)
 
@@ -481,7 +487,7 @@ class FacilityService(DbRepository):
 
         sc_data = ""
         if len(study_coordinator) > 0:
-            sc_data = study_coordinator[0].user.first_name + " " + study_coordinator[0].user.last_name
+            sc_data = study_coordinator[0].provider.user.first_name + " " + study_coordinator[0].provider.user.last_name
 
         data = {
             "site_name" : facility.name,

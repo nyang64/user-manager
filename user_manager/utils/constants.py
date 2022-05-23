@@ -26,6 +26,8 @@ DISENROLLED = "DISENROLLED"
 OUTPATIENT_PROVIDER = "outpatient"
 PRESCRIBING_PROVIDER = "prescribing"
 STUDY_COORDINATOR = "studycoordinator"
+PROVIDER = "PROVIDER"
+SITE_INVESTIGATOR = "SITE_INVESTIGATOR"
 
 
 # -------------- Report --------------

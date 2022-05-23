@@ -9,6 +9,7 @@ from model.facilities import Facilities
 from model.patient import Patient
 from model.patients_devices import PatientsDevices
 from model.patients_providers import PatientsProviders
+from model.patient_facilities import PatientFacilities
 from model.providers import Providers
 from model.user_registration import UserRegister
 from model.users import Users
@@ -148,8 +149,10 @@ class TestPatientManager(TestCase):
     @mock.patch.object(Address, "find_by_user_id")
     @mock.patch.object(Users, "find_by_patient_id")
     @mock.patch.object(Patient, "find_by_id")
+    @mock.patch.object(PatientFacilities, "find_facility_id_by_patient_id")
     def test_therapy_report_details(
         self,
+        mock_patient_facility,
         mock_patient,
         mock_user,
         mock_address,
@@ -171,6 +174,7 @@ class TestPatientManager(TestCase):
         )
         mock_provider.return_value = Providers(id=1, facility_id=1)
         mock_user1.return_value = Users(id=1, registration_id=1)
+        mock_patient_facility.return_value = [PatientFacilities(id=1, facility_id=1, patient_id=1)]
         mock_facility.return_value = Facilities(id=1, address_id=1)
         mock_address1.return_value = Address(id=1)
 

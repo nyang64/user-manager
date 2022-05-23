@@ -1,5 +1,7 @@
 import logging
 
+from schema.facility_schema import BasicFacilitySchema
+from schema.provider_facility_schema import ProvidersFacilitySchema
 from schema.user_schema import CreateUserSchema
 from marshmallow import fields, ValidationError, post_load
 from ma import ma
@@ -21,8 +23,8 @@ class ProvidersSchema(ma.SQLAlchemyAutoSchema):
 
     id = ma.auto_field(dump_only=True)
     user_id = ma.auto_field()
-    facility_id = ma.auto_field()
-    is_primary = ma.auto_field()
+    facility_id = ma.auto_field(required=False)
+    is_primary = ma.auto_field(required=False)
 
 
 
@@ -42,17 +44,21 @@ class UpdateProviderSchema(BaseSchema):
     external_user_id = fields.Str(required=False)
     phone_number = fields.Str(required=False)
     email = fields.Str(required=False)
-    facility_id = fields.Int(required=False)
+    facilities_to_unassign = ma.List(ma.Nested(BasicFacilitySchema))
+    facilities_to_assign = ma.List(ma.Nested(BasicFacilitySchema))
 
     @post_load
     def load_data(self, data, **kwargs):
-        facility_id = data.get("facility_id")
+
         user = Users(first_name=data.get("first_name"),
                      last_name=data.get("last_name"),
                      phone_number=data.get("phone_number"),
                      external_user_id=data.get("external_user_id"))
         email = data.get("email")
-        return facility_id, email, user
+        facilities_to_assign = data.get("facilities_to_assign")
+        facilities_to_unassign = data.get("facilities_to_unassign")
+
+        return facilities_to_assign, facilities_to_unassign, email, user
 
 
 UpdateProviderSchema = UpdateProviderSchema()

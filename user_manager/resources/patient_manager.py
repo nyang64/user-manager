@@ -279,9 +279,13 @@ class PatientManager:
             patient_data.id, prescribing_role_id
         )
 
+        # facility
+        facility = PatientFacilities.find_facility_id_by_patient_id(patient_id)[0]  # Returns an array of 1 element
+
         response = {
             "patient": {
                 "patient": patient_json,
+                "facility_id": facility.facility_id,
                 "outpatient_provider": outpatient_provider.provider_id,
                 "prescribing_provider": prescribing_provider.provider_id,
                 "details": details_json

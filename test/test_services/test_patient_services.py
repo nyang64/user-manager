@@ -386,6 +386,7 @@ class TestPatientServices(TestCase):
             "device": {
                 "serial_number": "12345"
             },
+            "facility": {"facility_id": 1},
             "providers": {
                 "outpatient_provider_id": 5,
                 "prescribing_provider_id": 3

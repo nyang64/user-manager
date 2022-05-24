@@ -274,6 +274,7 @@ class PatientServices(DbRepository):
             - patients: if any of the patients data changes
             - registration: if the email is different from the email in registrations table
             - patients-devices: if the device is different from the current device
+            - patient-facilities: if patients site changes, relationship to site must change too
             - address:
             - patient-providers:
             - patient-patches:
@@ -360,6 +361,11 @@ class PatientServices(DbRepository):
 
             # 8. Update patients and patches
             session = self.__update_patch_details(session, patient_details["patches"], patient_data_from_db.id)
+
+            #9. Update patient facilities table
+            session = self.__update_patient_facility(session,
+                                                     patient_details["facility"]["facility_id"],
+                                                     patient_data_from_db.id)
 
             session.commit()
 
@@ -509,6 +515,12 @@ class PatientServices(DbRepository):
                 updated_patches.append(patch)
         for item in updated_patches:
             session.add(item)
+        return session
+
+    def __update_patient_facility(self, session, new_facility_id, patient_id):
+        patient_facility = PatientFacilities.find_facility_id_by_patient_id(patient_id)[0]  # Returns array of 1 element
+        patient_facility.facility_id = new_facility_id
+        session.add(patient_facility)
         return session
 
     def assign_patches(self, patient_id, patches):

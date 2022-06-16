@@ -22,7 +22,7 @@ class FacilityService(DbRepository):
         pass
 
     def register_facility(
-        self, address, facility_name, on_call_phone, external_facility_id, primary_contact_id
+        self, address, facility_name, on_call_phone, external_facility_id, primary_contact_id, all_day_phone
     ):
         """ Commit the transcation"""
         logging.info("Transcation Started.")
@@ -32,7 +32,7 @@ class FacilityService(DbRepository):
             else:
                 address_id = None
             facility_id = self.save_facility(
-                facility_name, address_id, on_call_phone, external_facility_id, primary_contact_id
+                facility_name, address_id, on_call_phone, external_facility_id, primary_contact_id, all_day_phone
             )
             self.commit_db()
             logging.info("Transcation Completed")
@@ -118,7 +118,7 @@ class FacilityService(DbRepository):
             raise InternalServerError(str(error))
 
     def save_facility(
-        self, facility_name, address_id, on_call_phone, external_facility_id, primary_contact_id
+        self, facility_name, address_id, on_call_phone, external_facility_id, primary_contact_id,all_day_phone
     ):
         """ Flush the Facility transcation"""
         logging.info("Binding Facility Data")
@@ -128,7 +128,8 @@ class FacilityService(DbRepository):
                 name=facility_name,
                 on_call_phone=on_call_phone,
                 external_facility_id=external_facility_id,
-                primary_contact_id=primary_contact_id
+                primary_contact_id=primary_contact_id,
+                all_day_phone=all_day_phone
             )
             self.flush_db(facilities)
             logging.info("Flushed the Facility data")
@@ -141,7 +142,7 @@ class FacilityService(DbRepository):
             raise InternalServerError(str(error))
 
     def update_facility(
-        self, facility_id, address, facility_name, on_call_phone, external_facility_id, primary_contact_id
+        self, facility_id, address, facility_name, on_call_phone, external_facility_id, primary_contact_id, all_day_phone
     ):
         logging.info("Updating Facility Data")
         try:
@@ -170,7 +171,8 @@ class FacilityService(DbRepository):
                 on_call_phone=on_call_phone,
                 external_facility_id=external_facility_id,
                 address_id=address.id,
-                primary_contact_id=primary_contact_id
+                primary_contact_id=primary_contact_id,
+                all_day_phone=all_day_phone
             )
 
             self.commit_db()
@@ -196,7 +198,8 @@ class FacilityService(DbRepository):
                 "site_manager_name",
                 "facility_id",
                 "is_active",
-                "study_coordinator_count"
+                "study_coordinator_count",
+                "all_day_phone"
             ),
         )
 
@@ -218,7 +221,8 @@ class FacilityService(DbRepository):
             Facilities.id,
             Facilities.is_active,
             Users.first_name,
-            Users.last_name
+            Users.last_name,
+            Facilities.all_day_phone
         )
 
         if external_id is not None and len(external_id) > 0:
@@ -275,7 +279,8 @@ class FacilityService(DbRepository):
                 num_of_patients=patients_count,
                 primary_study_coordinator_name=primary_study_coordinator_name,
                 site_manager_name=study_manager_name,
-                study_coordinator_count=len(study_coordinators)
+                study_coordinator_count=len(study_coordinators),
+                all_day_phone=data[13]
             )
 
             lists.append(facilities._asdict())
@@ -316,6 +321,7 @@ class FacilityService(DbRepository):
             "id": facility.id,
             "name": facility.name,
             "on_call_phone": facility.on_call_phone,
+            "all_day_phone": facility.all_day_phone,
             "external_id": facility.external_facility_id,
             "address_line_1": address.street_address_1,
             "address_line_2": address.street_address_2,
@@ -386,12 +392,14 @@ class FacilityService(DbRepository):
         on_call_phone,
         external_facility_id,
         primary_contact_id,
-        address_id=None,
+        all_day_phone,
+        address_id=None
     ):
         facility_from_db.name = name
         facility_from_db.on_call_phone = on_call_phone
         facility_from_db.external_facility_id = external_facility_id
         facility_from_db.primary_contact_id = primary_contact_id
+        facility_from_db.all_day_phone = all_day_phone
         if address_id:
             facility_from_db.address_id = address_id
 

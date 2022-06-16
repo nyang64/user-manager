@@ -25,7 +25,7 @@ class FacilitiesManager:
 
         logging.info("Request Received to add facility")
         request_data = validate_request()
-        address, facility_name, on_call_phone, external_facility_id, primary_contact_id = \
+        address, facility_name, on_call_phone, external_facility_id, primary_contact_id, all_day_phone = \
             add_facility_schema.load(request_data)
         logging.debug(
             "User: {} with role: {} - adding new facility: {}::{}".format(token["user_email"], token["user_role"],
@@ -43,7 +43,7 @@ class FacilitiesManager:
                 )
 
         aid, fid = facility_obj.register_facility(address, facility_name, on_call_phone,
-                                                  external_facility_id, primary_contact_id)
+                                                  external_facility_id, primary_contact_id, all_day_phone)
         return (
             {"address_id": aid, "facility_id": fid, "external_facility_id": external_facility_id,
              "status_code": http.client.CREATED},
@@ -100,6 +100,7 @@ class FacilitiesManager:
         resp['address_id'] = facility.address_id
         resp['address'] = address_dict
         resp['on_call_phone'] = facility.on_call_phone
+        resp['all_day_phone'] = facility.all_day_phone
         return jsonify(resp), http.client.OK
 
     @require_user_token(ADMIN, STUDY_MANAGER, CUSTOMER_SERVICE)
@@ -116,12 +117,12 @@ class FacilitiesManager:
 
         try:
             request_data = validate_request()
-            address, facility_name, on_call_phone, external_facility_id, primary_contact_id = \
+            address, facility_name, on_call_phone, external_facility_id, primary_contact_id, all_day_phone = \
                 update_facility_schema.load(request_data)
 
             facility_svc = FacilityService()
             facility_svc.update_facility(facility_id, address, facility_name, on_call_phone,
-                                         external_facility_id, primary_contact_id)
+                                         external_facility_id, primary_contact_id, all_day_phone)
         except Exception as ex:
             return {"message": "Update failed. Please check logs for details"}, http.client.BAD_REQUEST
 

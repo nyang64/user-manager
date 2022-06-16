@@ -21,6 +21,7 @@ class Facilities(BaseModel):
     is_active = db.Column(
         "is_active", db.Boolean, nullable=False, default=True
     )
+    all_day_phone = db.Column("all_day_phone", db.String(12), nullable=True)
     primary_contact_id = db.Column(
         "primary_contact_id",
         db.Integer,

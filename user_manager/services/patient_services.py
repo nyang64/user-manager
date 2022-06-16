@@ -1,5 +1,5 @@
 from collections import namedtuple
-from datetime import datetime
+import datetime
 import logging
 
 from db import db
@@ -297,7 +297,7 @@ class PatientServices(DbRepository):
             updated, user_from_db = self.__update_user(user_from_db, user)
             if updated:
                 logging.debug("user data is modified")
-                user_from_db.updated_on = datetime.now()
+                user_from_db.updated_on = datetime.datetime.now()
                 session.add(user_from_db)
 
             # 2. Check if the email has changed
@@ -318,18 +318,18 @@ class PatientServices(DbRepository):
                     registration.email = email
 
                     externalid = user_from_db.external_user_id[0:3]
-                    month = str(datetime.today()).split('-')[1]
-                    day = str(datetime.today()).split('-')[2]
+                    month = str(datetime.date.today()).split('-')[1]
+                    day = str(datetime.date.today()).split('-')[2]
                     pwd = "es" + externalid + day + month
 
                     registration.password = encPass(pwd)
-                    registration.updated_at = datetime.now()
+                    registration.updated_at = datetime.datetime.now()
                     session.add(registration)
                     registration_updated = True
 
             # 3. Update patient information
             patient_data_from_db.copy(patient)
-            patient_data_from_db.updated_at = datetime.now()
+            patient_data_from_db.updated_at = datetime.datetime.now()
             session.add(patient_data_from_db)
 
             # 4. Check device association
@@ -390,7 +390,7 @@ class PatientServices(DbRepository):
         session = db.session
         try:
             # Unenroll patient from patients table
-            exist_patient.unenrolled_at = datetime.now()
+            exist_patient.unenrolled_at = datetime.datetime.now()
             session.add(exist_patient)
 
             # Proceed to soft delete from user table
@@ -446,7 +446,7 @@ class PatientServices(DbRepository):
                         if patient_devices:
                             # Set the current device to not active
                             patient_devices.is_active = False
-                            patient_devices.updated_on = datetime.now()
+                            patient_devices.updated_on = datetime.datetime.now()
                             session.add(patient_devices)
 
                         session.add(patient_device_new)
@@ -471,7 +471,7 @@ class PatientServices(DbRepository):
         else:
             perm_address = Address.find_by_id(perm_address_id)
             perm_address.copy(patient_in.permanent_address)
-            perm_address.updated_on = datetime.now()
+            perm_address.updated_on = datetime.datetime.now()
             session.add(perm_address)
 
         if perm_address_id == shipping_address_id:
@@ -482,7 +482,7 @@ class PatientServices(DbRepository):
         else:
             ship_address = Address.find_by_id(shipping_address_id)
             ship_address.copy(patient_in.shipping_address)
-            ship_address.updated_on = datetime.now()
+            ship_address.updated_on = datetime.datetime.now()
             session.add(ship_address)
 
         return session

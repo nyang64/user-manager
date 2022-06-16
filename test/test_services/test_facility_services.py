@@ -14,6 +14,7 @@ from sqlalchemy import exc
 mock_facility_data = Facilities(
             address_id="1",
             on_call_phone="9090909090",
+            all_day_phone="9090909090",
             name="facility",
             external_facility_id="100"
         )
@@ -22,6 +23,7 @@ def get_facilities():
     f = Facilities(
             address_id="1",
             on_call_phone="9090909090",
+            all_day_phone="9090909090",
             name="facility",
             external_facility_id="100"
         )
@@ -47,6 +49,7 @@ class TestFacilityServices(TestCase):
             "address": "123 a st",
             "facility_name": "Kaiser",
             "on_call_phone": "4155555555",
+            "all_day_phone": "4155555555",
             "external_facility_id": "100-1",
             "primary_contact_id": 1
         }
@@ -55,7 +58,8 @@ class TestFacilityServices(TestCase):
             on_call_phone="9090909090", 
             name="facility", 
             external_facility_id="100",
-            primary_contact_id=1
+            primary_contact_id=1,
+            all_day_phone="9090909090"
         )
 
     def setUp(self):
@@ -82,7 +86,8 @@ class TestFacilityServices(TestCase):
                 args["facility_name"],
                 args["on_call_phone"],
                 args["external_facility_id"],
-                args["primary_contact_id"]
+                args["primary_contact_id"],
+                args["all_day_phone"]
             )
             self.assertIsNotNone(resp1)
             self.assertIsNotNone(resp2)
@@ -161,7 +166,7 @@ class TestFacilityServices(TestCase):
         app = create_test_app()
         with app.app_context():
             with pytest.raises(InternalServerError) as e:
-                self.facility_service.save_facility("F", 1, "12", "1234567", 1)
+                self.facility_service.save_facility("F", 1, "12", "1234567", 1, "1234567890")
             self.assertIsInstance(e.value, InternalServerError)
 
     @mock.patch.object(FacilityService, "_FacilityService__update_facility_data")
@@ -173,5 +178,5 @@ class TestFacilityServices(TestCase):
         with app.app_context():
             with pytest.raises(InternalServerError) as e:
                 self.facility_service.update_facility(1, None,
-                                     "test", "1232311234", "100", 1)
+                                     "test", "1232311234", "100", 1, "1234567890")
             self.assertIsInstance(e.value, InternalServerError)

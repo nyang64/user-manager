@@ -75,6 +75,7 @@ class Patient(BaseModel):
         self.emergency_contact_name = updated_obj.emergency_contact_name
         self.emergency_contact_number = updated_obj.emergency_contact_number
         self.date_of_birth = updated_obj.date_of_birth
+        self.enrolled_date = updated_obj.enrolled_date
         self.gender = updated_obj.gender
         self.indication = updated_obj.indication
         self.mobile_app_user = updated_obj.mobile_app_user

@@ -62,6 +62,7 @@ class CreatePatientSchema(CreateUserSchema):
     emergency_contact_number = fields.Str(required=True, validate=validate_number)
     emergency_contact_relationship = fields.Str(required=False)
     date_of_birth = fields.Str(required=True, validate=must_not_blank)
+    enrolled_date = fields.Str(required=False)
     gender = fields.Str(required=True, validate=must_not_blank)
     prescribing_provider = fields.Int(required=True, validate=must_not_blank)
     outpatient_provider = fields.Int(required=True, validate=must_not_blank)
@@ -95,6 +96,7 @@ class CreatePatientSchema(CreateUserSchema):
                 "emergency_contact_number": data.get("emergency_contact_number"),
                 "emergency_contact_relationship": data.get("emergency_contact_relationship"),
                 "date_of_birth": data.get("date_of_birth"),
+                "enrolled_date":data.get("enrolled_date"),
                 "gender": data.get("gender"),
                 "indication": data.get("indication"),
                 "mobile_app_user": data.get("mobile_app_user"),
@@ -141,6 +143,7 @@ class UpdatePatientSchema(BaseSchema):
     emergency_contact_number = fields.Str(required=True, validate=validate_number)
     emergency_contact_relationship = fields.Str(required=False)
     date_of_birth = fields.Str(required=True, validate=must_not_blank)
+    enrolled_date = fields.Str(required=False)
     gender = fields.Str(required=True, validate=must_not_blank)
     prescribing_provider = fields.Int(required=True, validate=must_not_blank)
     outpatient_provider = fields.Int(required=True, validate=must_not_blank)
@@ -182,6 +185,7 @@ class UpdatePatientSchema(BaseSchema):
                           emergency_contact_number=data.get("emergency_contact_number"),
                           emergency_contact_relationship=data.get("emergency_contact_relationship"),
                           date_of_birth=data.get("date_of_birth"),
+                          enrolled_date=data.get("enrolled_date"),
                           gender=data.get("gender"),
                           indication=data.get("indication"),
                           mobile_app_user=data.get("mobile_app_user"),

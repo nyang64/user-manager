@@ -473,6 +473,20 @@ class TestPatientServices(TestCase):
             devices = self.patient_service.\
                 _PatientServices__check_patient_device_association(session, 1234, 1, pd)
             self.assertTrue(True)
+    
+    @mock.patch("services.patient_services.db.session")
+    @mock.patch.object(Patient, "find_by_id")
+    @mock.patch.object(PatientsDevices, "find_by_device_serial_number")
+    def test_patient_device_details_by_serial_number(self, session, mock_patient, mock_patient_device):
+        mock_patient = Patient()
+        mock_patient_device = PatientsDevices()
+        mock_patient_device.patient_id = 1
+        device_sn = 1234
+
+        app = create_test_app()
+        with app.app_context():
+            patient_device = self.patient_service.get_patient_details_by_serial_number(device_sn)
+            self.assertTrue(True)
 
     @mock.patch("services.patient_services.db.session")
     @mock.patch.object(PatientsDevices, "find_by_device_serial_number", return_value=True)

@@ -41,6 +41,10 @@ class PatientBluePrint(Blueprint):
                           'assign device to patient',
                           self.patient_obj.assign_device,
                           methods=['POST'])
+        self.add_url_rule('/patient/device/info',
+                          'get patient details given device sn',
+                          self.patient_obj.get_patient_by_device_serial_num,
+                          methods=['POST']),
         self.add_url_rule('/patient/device/get',
                           'patient device list',
                           self.patient_obj.patient_device_list,

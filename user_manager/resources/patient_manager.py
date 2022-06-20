@@ -201,6 +201,13 @@ class PatientManager:
         resp = {"devices": device_list}
         return jsonify(resp), http.client.OK
 
+    @require_user_token(PATIENT, ADMIN, PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER)
+    def get_patient_by_device_serial_num(self, token):
+        request_data = validate_request()
+        patient_info = self.patient_obj.get_patient_details_by_serial_number(request_data["device_serial_number"])
+        resp = {"patient": patient_info}
+        return jsonify(resp), http.client.OK
+
     @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER, PROVIDER)
     def patients(self, token):
         patient_schema = PatientSchema(many=True)

@@ -241,6 +241,32 @@ class PatientServices(DbRepository):
         else:
             raise NotFound("Device record not found in device database")
 
+    def get_patient_details_by_serial_number(self, serial_number):
+        patient_info = {}
+        devices_lst = []
+        patient_device = PatientsDevices.find_by_device_serial_number(serial_number)
+        patient_id = patient_device.patient_id
+        patient_devices_lst = PatientsDevices.find_all_devices_by_patient_id(patient_id)
+        
+        for device in patient_devices_lst:
+            device_json = device.__dict__
+            # remove unverified fields
+            device_json.pop('_sa_instance_state', None)
+            devices_lst.append(device_json)
+        
+        patient = Patient.find_by_id(patient_id)
+
+        patient_info = patient.__dict__
+        patient_info["patient_id"] = patient_id
+        patient_info["patient_device"] = patient_device.__dict__
+        patient_info["devices"] = devices_lst
+
+        # remove all non JSON valid entries
+        patient_info.pop('_sa_instance_state', None)
+        patient_info["patient_device"].pop('_sa_instance_state', None)
+        
+        return patient_info
+
     def patient_device_list(self, token):
         from sqlalchemy import and_
 

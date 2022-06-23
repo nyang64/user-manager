@@ -803,7 +803,8 @@ class PatientServices(DbRepository):
                 for data in query_data:
                     provider_facility = db.session.query(Users, Facilities, Providers) \
                         .join(Providers, Providers.user_id == Users.id) \
-                        .join(Facilities, Providers.facility_id == Facilities.id) \
+                        .join(ProviderFacility, Providers.id == ProviderFacility.provider_id) \
+                        .join(Facilities, ProviderFacility.facility_id == Facilities.id) \
                         .filter(Providers.id == data[3]).all()
 
                     user = provider_facility[0][0]

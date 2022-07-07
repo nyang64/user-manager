@@ -273,7 +273,6 @@ class ProviderManager:
         msg, code = self.provider_obj.update_uploaded_ts(report_id)
         return {"message": msg, "status_code": code}, code
 
-
     @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER, PROVIDER)
     def get_providers_list(self, token):
         """
@@ -298,4 +297,21 @@ class ProviderManager:
             http.client.OK,
         )
 
+    @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER)
+    def providers_download(self, token):
+        """
+        :param : None
+        :return complete providers list to be used to download to a csv file
+        """
+        validate_request()
+        logging.debug(
+            "User: {} with role: {} - is requesting a list of providers to download as a csv".format(token["user_email"],
+                                                                                   token["user_role"]))
+        providers_list = self.provider_obj.get_providers_download()
 
+        return (
+            {
+                "providers": providers_list,
+            },
+            http.client.OK,
+        )

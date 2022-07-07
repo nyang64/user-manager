@@ -69,3 +69,7 @@ class ProviderBlueprint(Blueprint):
             self.provider_Obj.update_uploaded_ts,
             methods=["POST"],
         )
+        self.add_url_rule('/providers/download',
+                          'Downloadable list of all providers',
+                          self.provider_Obj.providers_download,
+                          methods=['POST'])

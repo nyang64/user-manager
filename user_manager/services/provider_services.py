@@ -95,22 +95,22 @@ class ProviderService(DbRepository):
             raise NotFound(
                 f"provider with user_id {user_id}  was not created"
             )
-        logging.info(f"Assigning Provider to Facilities")
+        logging.info("Assigning Provider to Facilities")
 
         # assign a provider role to the provider
         provider_role = provider_role_schema.load(
             {"provider_role_id": role.id, "provider_id": provider.id}
         )
-        logging.info(f"Saving provider role in the database")
+        logging.info("Saving provider role in the database")
         self.flush_db(provider_role)
         self.commit_db()
         # provider_role.save_to_db()
 
         # Assign Facilities to Provider
-        logging.info(f"Beginning to assign facilities to provider")
+        logging.info("Beginning to assign facilities to provider")
         for facility in facilities:
             provider_facility = provider_facility_schema.load(
-                { "provider_id": provider.id, "facility_id": facility["id"], "is_primary": facility["is_primary"]}
+                {"provider_id": provider.id, "facility_id": facility["id"], "is_primary": facility["is_primary"]}
             )
             logging.info(f"Saving provider facility in the database")
             self.flush_db(provider_facility)
@@ -303,7 +303,6 @@ class ProviderService(DbRepository):
             logging.error("Error occured: {}".format(str(error)))
             raise InternalServerError(str(error))
 
-
     def _base_query(self, provider_id):
         """
         :return := Return the base query for patient list
@@ -378,7 +377,7 @@ class ProviderService(DbRepository):
             if facilities_to_unassign:
                 # Unassign Facilities
                 for facility in facilities_to_unassign:
-                    #Counstruct provider_facility object to persist
+                    # Counstruct provider_facility object to persist
                     provider_facility_to_delete = ProviderFacility.find_by_provID_facID(provider_from_db[0], int(facility[0]))
                     if provider_facility_to_delete:
                         logging.info("Removing provider facility tie in the database")
@@ -460,7 +459,7 @@ class ProviderService(DbRepository):
             user_from_db.first_name = user_from_req.first_name
             updated = True
 
-        if user_from_db.last_name !=  user_from_req.last_name:
+        if user_from_db.last_name != user_from_req.last_name:
             user_from_db.last_name = user_from_req.last_name
             updated = True
 
@@ -539,3 +538,50 @@ class ProviderService(DbRepository):
             provider_query = provider_query.filter(Users.first_name.ilike(f'%{name}%') | Users.last_name.ilike(f'%{name}%'))
 
         return provider_query
+
+    def get_providers_download(self):
+        """
+        :return := a list of provider records for download
+        """
+        provider_download = namedtuple(
+            "ProviderDownload",
+            (
+                "first_name",
+                "last_name",
+                "phone_number",
+                "facility_name"
+            )
+        )
+
+        provider_download_query = (db.session.query(Users)
+                                  .join(Providers, Users.id == Providers.user_id)
+                                  .join(ProviderFacility, Providers.id == ProviderFacility.provider_id, isouter=True)
+                                  .join(Facilities, ProviderFacility.facility_id == Facilities.id, isouter=True))
+
+        provider_download_query = provider_download_query.with_entities(
+            Users.first_name,
+            Users.last_name,
+            Users.phone_number,
+            Facilities.name
+        )
+        query_data = []
+        lists = []
+
+        try:
+            query_data = (provider_download_query.order_by(Users.first_name, Users.last_name, Facilities.name)).all()
+            # query_data = provider_download_query.all()
+        except Exception as e:
+            logging.exception(e)
+
+        if query_data is not None and len(query_data) > 0:
+            for data in query_data:
+                provider_record = provider_download(
+                    first_name=data[0],
+                    last_name=data[1],
+                    phone_number=data[2],
+                    facility_name=data[3]
+                )
+
+                lists.append(provider_record._asdict())
+
+        return lists

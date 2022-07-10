@@ -36,7 +36,8 @@ from schema.user_schema import UserSchema
 from services.patient_services import PatientServices
 from services.material_request_services import MaterialRequestService
 from services.device_manager_api import DeviceManagerApi
-from utils.constants import ADMIN, PATIENT, PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER, ENROLLED, DISENROLLED, ASSIGNED
+from utils.constants import ADMIN, PATIENT, PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER, ENROLLED, DISENROLLED, ASSIGNED, \
+    ES_CLINICAL
 from utils.common import generate_random_password, have_keys
 from utils.jwt import require_user_token
 from utils.validation import validate_request
@@ -251,7 +252,7 @@ class PatientManager:
         del patient_data_json["_sa_instance_state"]
         return {"message": "Users Found", "Data": [patient_data_json]}, 200
 
-    @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER, PROVIDER)
+    @require_user_token(ADMIN, CUSTOMER_SERVICE, STUDY_MANAGER, PROVIDER, ES_CLINICAL)
     def get_patient_details_by_id(self, token):
         patient_id = request.args.get("id")
         patient_data = Patient.find_by_id(patient_id)

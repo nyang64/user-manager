@@ -24,7 +24,7 @@ from services.repository.db_repositories import DbRepository
 from services.user_services import UserServices
 from sqlalchemy.exc import SQLAlchemyError
 from model.providers_roles import ProviderRoles
-from utils.constants import PROVIDER, STUDY_COORDINATOR
+from utils.constants import PROVIDER, STUDY_COORDINATOR, ES_CLINICAL
 from utils.common import generate_random_password, encPass
 from utils.send_mail import send_provider_registration_email
 from sqlalchemy import exc
@@ -200,6 +200,7 @@ class ProviderService(DbRepository):
 
     def patients_list(
         self,
+        user_role,
         provider_id,
         page_number,
         record_per_page,
@@ -223,7 +224,7 @@ class ProviderService(DbRepository):
                 "reports",
             ),
         )
-        base_query = self._base_query(provider_id)
+        base_query = self._base_query(provider_id, user_role)
         base_query = base_query.with_entities(
             Patient.id,
             UserRegister.email,
@@ -303,15 +304,21 @@ class ProviderService(DbRepository):
             logging.error("Error occured: {}".format(str(error)))
             raise InternalServerError(str(error))
 
-    def _base_query(self, provider_id):
+
+    def _base_query(self, provider_id, user_role):
         """
         :return := Return the base query for patient list
         """
-        patient_query = (
-            db.session.query(Patient).distinct()
-            .join(PatientsProviders, Patient.id == PatientsProviders.patient_id)
-            .filter(PatientsProviders.provider_id == provider_id)
-        )
+        if user_role.upper() == ES_CLINICAL:
+            patient_query = (
+                db.session.query(Patient).distinct()
+            )
+        else:
+            patient_query = (
+                db.session.query(Patient).distinct()
+                .join(PatientsProviders, Patient.id == PatientsProviders.patient_id)
+                .filter(PatientsProviders.provider_id == provider_id)
+            )
 
         base_query = (
             patient_query.join(Users, Users.id == Patient.user_id)
@@ -522,6 +529,7 @@ class ProviderService(DbRepository):
         """
         :return := Return the base query for patient list
         """
+
         provider_query = (db.session.query(Providers))
         provider_query = (
             provider_query.join(Users, Users.id == Providers.user_id)

@@ -26,7 +26,7 @@ from services.provider_services import ProviderService
 from services.user_services import UserServices
 from services.facility_services import FacilityService
 from utils.common import have_keys
-from utils.constants import ADMIN, PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER, STUDY_COORDINATOR
+from utils.constants import ADMIN, PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER, STUDY_COORDINATOR, ES_CLINICAL
 from utils.jwt import require_user_token
 from utils.validation import validate_request
 from utils.common import generate_random_password
@@ -208,7 +208,7 @@ class ProviderManager:
 
         return {"message": "Successfully updated provider"}, http.client.OK
 
-    @require_user_token(PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER, ADMIN)
+    @require_user_token(PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER, ADMIN, ES_CLINICAL)
     def get_patient_list(self, token):
         """
         :param :- page_number, record_per_page, first_name,
@@ -217,9 +217,12 @@ class ProviderManager:
         """
 
         provider = Providers.find_by_email(token["user_email"])
+        if not provider:
+            provider = Users.find_by_email(token["user_email"])
+
         request_data = validate_request()
         filter_input = filter_patient_schema.load(request_data)
-        patients_list, total = self.provider_obj.patients_list(
+        patients_list, total = self.provider_obj.patients_list(token["user_role"],
         provider.id, *filter_input
         )
 
@@ -234,7 +237,7 @@ class ProviderManager:
             http.client.OK,
         )
 
-    @require_user_token(PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER, ADMIN)
+    @require_user_token(PROVIDER, CUSTOMER_SERVICE, STUDY_MANAGER, ADMIN, ES_CLINICAL)
     def get_patient_detail_byid(self, token):
         """
         Fetch the patient detail by their patientid
@@ -248,7 +251,7 @@ class ProviderManager:
         patient_data["report"] = patient_reports_schema.dump(reports)
         return jsonify(patient_data), http.client.OK
 
-    @require_user_token(PROVIDER)
+    @require_user_token(PROVIDER, ES_CLINICAL)
     def get_report_signed_link(self, token):
         """
         Fetch the key by reportid from Salvos Table and get the signed url

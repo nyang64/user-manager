@@ -13,6 +13,8 @@ from blueprint.materials_blueprint import MaterialsBlueprint
 from blueprint.user_blueprint import UserBluePrint
 from config import get_connection_url, read_environ_value
 from db import db
+from flask import g
+from werkzeug.local import LocalProxy
 from utils.cache import cache
 from flask_cors import CORS
 from flask_migrate import Migrate
@@ -41,6 +43,8 @@ print(os.getenv("SQLALCHEMY_DATABASE_URI"))
 app.config["SQLALCHEMY_DATABASE_URI"] = get_connection_url()
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 app.config["E_EXCEPTIONS"] = True
+app.config['SQLALCHEMY_POOL_SIZE'] = 10
+app.config['SQLALCHEMY_MAX_OVERFLOW'] = 0
 
 # Config for flask cache that holds user login session information
 cache.init_app(app, config={'CACHE_TYPE': 'simple'})
@@ -58,6 +62,7 @@ logger.setLevel(level=LOG_LEVEL)
 migrate = Migrate()
 db.init_app(app)
 db.app = app
+
 ma.init_app(app)
 migrate.init_app(app, db)
 
@@ -98,6 +103,20 @@ def cron_tasks():
     logging.info("Start CRON job")
     NewsletterServices(_db=db, _app=app).deliver_newsletters()
 
+def get_db():
+    if 'db' not in g:
+        g.db = db
+
+    return g.db
+
+@app.teardown_appcontext
+def teardown_db(response):
+    db = g.pop('db', None)
+
+    if db is not None:
+        db.close()
+
+
 
 if __name__ == "__main__":
     # NOTE: DO NOT change the host and port numbers while deploying to cloud. The application
@@ -105,4 +124,5 @@ if __name__ == "__main__":
     # make changes to the ECS infrastructure.
     logging.info("App is up")
     value = os.environ.get("SECRET_MANAGER_ARN")
+    db = LocalProxy(get_db)
     app.run(host="0.0.0.0", port=5000, debug=read_environ_value(value, "DEBUG"), use_reloader=False)

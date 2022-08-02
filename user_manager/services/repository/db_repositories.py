@@ -19,6 +19,7 @@ class DbRepository:
         except exc.SQLAlchemyError as error:
             logging.error(str(error))
             db.session.rollback()
+            db.session.close()
             raise InternalServerError(str(error))
 
     def flush_db(self, obj):
@@ -39,6 +40,7 @@ class DbRepository:
         except exc.SQLAlchemyError as error:
             logging.error(str(error))
             db.session.rollback()
+            db.session.close()
             raise InternalServerError(str(error))
 
     def update_db(self, obj):
@@ -49,6 +51,7 @@ class DbRepository:
         except exc.SQLAlchemyError as error:
             logging.error(str(error))
             db.session.rollback()
+            db.session.close()
             raise InternalServerError(str(error))
 
     def delete_obj(self, obj):
@@ -60,4 +63,5 @@ class DbRepository:
         except exc.SQLAlchemyError as error:
             logging.error(str(error))
             db.session.rollback()
+            db.session.close()
             raise InternalServerError(str(error))

@@ -3,9 +3,11 @@ import datetime
 import logging
 
 from db import db
+from sqlalchemy import func, distinct
 from model.facilities import Facilities
 from model.provider_facility import ProviderFacility
 from model.patient_facilities import PatientFacilities
+from model.salvos import Salvos
 from model.therapy_reports import TherapyReport
 from model.patient import Patient
 from model.patients_devices import PatientsDevices
@@ -737,29 +739,27 @@ class PatientServices(DbRepository):
         return None
 
     def _patient_download_query(self):
+        
+            """
+            :return := Return the base query for patient download
+            """
+            patient_query = (db.session.query(Patient, distinct(Patient.id), func.max(TherapyReport.created_at)))
 
-        """
-        :return := Return the base query for patient download
-        """
-        patient_query = (db.session.query(Patient))
+            base_query = (
+                patient_query.join(Users, Users.id == Patient.user_id)
+                    .join(UserRegister, UserRegister.id == Users.registration_id)
+                    .join(UserStatus, Users.id == UserStatus.user_id, isouter=True)
+                    .join(UserStatusType, UserStatus.status_id == UserStatusType.id, isouter=True)
+                    .join(PatientsProviders, PatientsProviders.patient_id == Patient.id, isouter=True)
+                    .join(TherapyReport, TherapyReport.patient_id == Patient.id, isouter=False)
+                    .join(Salvos, Salvos.therapy_report_id == TherapyReport.id, isouter=False)
+                    .join(PatientsDevices, PatientsDevices.patient_id == Patient.id, isouter=True)
 
-        base_query = (
-            patient_query.join(Users, Users.id == Patient.user_id)
-                .join(UserRegister, UserRegister.id == Users.registration_id)
-                .join(UserStatus, Users.id == UserStatus.user_id, isouter=True)
-                .join(UserStatusType, UserStatus.status_id == UserStatusType.id, isouter=True)
-                .join(PatientsProviders, PatientsProviders.patient_id == Patient.id, isouter=True)
-                .join(TherapyReport, TherapyReport.patient_id == Patient.id, isouter=True)
-                .join(PatientsDevices, PatientsDevices.patient_id == Patient.id, isouter=True)
-        )
-
-        return base_query
+            )
+            
+            return base_query
 
     def get_patients_download(self):
-
-        name = ""
-        external_id = ""
-        status = ""
 
         patient_download = namedtuple(
             "PatientDownload",
@@ -772,8 +772,29 @@ class PatientServices(DbRepository):
                 "enrollment_status",
                 "name",
                 "device_serial_number",
-                "is_mobile_user"
+                "is_mobile_user",
+                "therapy_device",
+                "therapy_recorded_at",
+                "device_assigned_at",
+                "device_status"
             )
+        )
+
+        base_query = self._patient_download_query()
+        base_query = base_query.with_entities(
+            Users.external_user_id,
+            Patient.enrolled_date,
+            TherapyReport.created_at,
+            PatientsProviders.provider_id,
+            UserStatusType.name,
+            Users.first_name,
+            Users.last_name,
+            PatientsDevices.device_serial_number,
+            Patient.mobile_app_user,
+            Salvos.device_serial_number,
+            Salvos.receiver_recorded_at,
+            PatientsDevices.created_at,
+            PatientsDevices.is_active
         )
 
         base_query = self._patient_download_query()
@@ -789,14 +810,14 @@ class PatientServices(DbRepository):
             Patient.mobile_app_user
         )
 
-        filter_query = self._filter_query(base_query, name, external_id, status)
         query_data = []
         lists = []
 
         try:
-            query_data = (filter_query.order_by(Users.id, Users.first_name)).all()
+            query_data = (base_query.order_by(Users.id, Users.first_name)).all()
         except Exception as e:
             logging.exception(e)
+
 
         if query_data is not None and len(query_data) > 0:
             for data in query_data:
@@ -817,11 +838,15 @@ class PatientServices(DbRepository):
                     provider_name=user.first_name + " " + user.last_name,
                     site=facility.name,
                     patient_id=data[0],
-                    enrollment_status=data[4],
+                    enrollment_status=data[4], 
                     device_serial_number=data[7],
-                    is_mobile_user=data[8]
-                )
+                    is_mobile_user=data[8],
+                    therapy_device=data[9],
+                    therapy_recorded_at=data[10],
+                    device_assigned_at=data[11],
+                    device_status=data[12]
 
+                )
                 lists.append(patient_data._asdict())
 
         return lists

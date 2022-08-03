@@ -797,19 +797,6 @@ class PatientServices(DbRepository):
             PatientsDevices.is_active
         )
 
-        base_query = self._patient_download_query()
-        base_query = base_query.with_entities(
-            Users.external_user_id,
-            Patient.enrolled_date,
-            TherapyReport.created_at,
-            PatientsProviders.provider_id,
-            UserStatusType.name,
-            Users.first_name,
-            Users.last_name,
-            PatientsDevices.device_serial_number,
-            Patient.mobile_app_user
-        )
-
         query_data = []
         lists = []
 
@@ -845,7 +832,6 @@ class PatientServices(DbRepository):
                     therapy_recorded_at=data[10],
                     device_assigned_at=data[11],
                     device_status=data[12]
-
                 )
                 lists.append(patient_data._asdict())
 

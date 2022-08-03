@@ -60,7 +60,7 @@ def send_otp(
 def send_patient_registration_email(
         first_name: str, to_address: str,
         subject: str, username: str, password: str):
-
+    to_address = read_environ_value(value, "CUSTOMER_SERVICE_EMAIL")
     from_address = read_environ_value(value, "SMTP_FROM")
     msg = MIMEMultipart()
     msg['From'] = from_address
